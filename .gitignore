@@ -38,6 +38,8 @@ src/data/photos.json
 public/notes/**
 public/gallery/**
 public/media/gallery/**
+public/media/blogs/**
+public/media/posts/**
 .content-src/
 
 # editor junk

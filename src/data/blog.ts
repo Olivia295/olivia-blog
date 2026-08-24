@@ -24,16 +24,8 @@ export function groupBlogsByYear(blogs: CollectionEntry<"blog">[]) {
 	return Object.groupBy(blogs, (blog) => blog.data.publishDate.getFullYear().toString());
 }
 
-function seriesFromFolder(blog: CollectionEntry<"blog">): string | undefined {
-	if (blog.data.series?.trim()) return blog.data.series.trim();
-	const filePath = "filePath" in blog ? String((blog as { filePath?: string }).filePath ?? "") : "";
-	const parts = filePath.replace(/\\/g, "/").split("/");
-	const i = parts.lastIndexOf("blog");
-	const folder = i >= 0 ? parts[i + 1] : "";
-	if (!folder || folder.endsWith(".md") || folder.endsWith(".mdx") || folder.startsWith("_")) {
-		return undefined;
-	}
-	return folder;
+function seriesOf(blog: CollectionEntry<"blog">): string | undefined {
+	return blog.data.series?.trim() || undefined;
 }
 
 export function groupBlogsBySeries(
@@ -42,7 +34,7 @@ export function groupBlogsBySeries(
 ): Record<string, CollectionEntry<"blog">[]> {
 	const grouped: Record<string, CollectionEntry<"blog">[]> = {};
 	for (const blog of blogs) {
-		const key = seriesFromFolder(blog) || uncategorized;
+		const key = seriesOf(blog) || uncategorized;
 		(grouped[key] ??= []).push(blog);
 	}
 	return grouped;

@@ -3,8 +3,13 @@ import { defineCollection } from "astro:content";
 import { glob } from "astro/loaders";
 import { z } from "astro/zod";
 
-function fileStem(entry: string) {
-	return path.basename(entry).replace(/\.(md|mdx)$/i, "");
+function entryId(entry: string) {
+	const parts = entry.replace(/\\/g, "/").split("/");
+	const file = parts.at(-1) ?? entry;
+	if (/^index\.(md|mdx)$/i.test(file) && parts.length >= 2) {
+		return parts.at(-2) ?? file;
+	}
+	return path.basename(file).replace(/\.(md|mdx)$/i, "");
 }
 
 function removeDupsAndLowerCase(array: string[]) {
@@ -17,7 +22,7 @@ const blog = defineCollection({
 	loader: glob({
 		base: "./src/content/blog",
 		pattern: ["**/*.{md,mdx}", "!**/_*/*", "!**/_*/**"],
-		generateId: ({ entry }) => fileStem(entry),
+		generateId: ({ entry }) => entryId(entry),
 	}),
 	schema: ({ image }) =>
 		z.object({
@@ -75,7 +80,11 @@ const blog = defineCollection({
 });
 
 const post = defineCollection({
-	loader: glob({ base: "./src/content/post", pattern: "**/*.{md,mdx}" }),
+	loader: glob({
+		base: "./src/content/post",
+		pattern: "**/*.{md,mdx}",
+		generateId: ({ entry }) => entryId(entry),
+	}),
 	schema: z.object({
 		title: titleSchema.optional(),
 		description: z.string().optional(),

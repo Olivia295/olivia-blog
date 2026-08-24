@@ -11,9 +11,10 @@ interface Props {
 	/** Override catalog; omit to use full music.json list. */
 	songs?: Song[];
 	lang?: Lang;
+	autoplay?: boolean;
 }
 
-const { songs: songsProp, lang: langProp } = Astro.props;
+const { songs: songsProp, lang: langProp, autoplay = false } = Astro.props;
 const lang = langProp ?? getLangFromUrl(Astro.url) ?? defaultLang;
 const t = useTranslations(lang);
 const songs = songsProp ?? getSongs();
@@ -23,7 +24,15 @@ const singleTrack = songs.length === 1;
 
 {
 	hasSongs ? (
-		<div id="music-player" class="music-player" data-single={singleTrack ? "true" : "false"}>
+		<div
+			id="music-player"
+			class="music-player"
+			data-single={singleTrack ? "true" : "false"}
+			data-autoplay={autoplay ? "true" : "false"}
+			data-bgm-soon={t("music.bgmSoon")}
+			data-bgm-hint={t("music.bgmHint")}
+			data-bgm-play={t("music.bgmPlay")}
+		>
 			<div class="now-playing">
 				<p class="label">{singleTrack ? t("music.trackForBlog") : t("music.nowPlaying")}</p>
 				<p id="current-title" class="current-title">
@@ -34,9 +43,19 @@ const singleTrack = songs.length === 1;
 				</p>
 			</div>
 
-			<audio id="audio-player" controls preload="metadata">
+			<audio id="audio-player" controls preload="auto">
 				<source id="audio-source" src={songs[0]?.src} type="audio/mpeg" />
 			</audio>
+			{
+				autoplay && (
+					<div class="bgm-toast" role="status">
+						<p class="bgm-toast__text">{t("music.bgmSoon")}</p>
+						<button type="button" class="bgm-toast__play">
+							{t("music.bgmPlay")}
+						</button>
+					</div>
+				)
+			}
 
 			{
 				!singleTrack && (
@@ -67,6 +86,44 @@ const singleTrack = songs.length === 1;
 
 <script>
 	const root = document.getElementById("music-player");
+	const audioEl = document.getElementById("audio-player") as HTMLAudioElement | null;
+
+	function fadeIn(audio: HTMLAudioElement, duration = 2200) {
+		audio.volume = 0;
+		const start = performance.now();
+		const tick = (now: number) => {
+			const t = Math.min(1, (now - start) / duration);
+			audio.volume = t * 0.7;
+			if (t < 1) requestAnimationFrame(tick);
+		};
+		requestAnimationFrame(tick);
+	}
+
+	function bindAutoplay(rootEl: HTMLElement, audio: HTMLAudioElement) {
+		if (rootEl.dataset.autoplay !== "true") return;
+		const toast = rootEl.querySelector<HTMLElement>(".bgm-toast");
+		const playBtn = rootEl.querySelector<HTMLButtonElement>(".bgm-toast__play");
+		const text = rootEl.querySelector<HTMLElement>(".bgm-toast__text");
+		const startPlayback = () => {
+			audio.volume = 0;
+			void audio
+				.play()
+				.then(() => {
+					fadeIn(audio);
+					if (text && rootEl.dataset.bgmHint) text.textContent = rootEl.dataset.bgmHint;
+					window.setTimeout(() => toast?.classList.add("is-gone"), 3200);
+				})
+				.catch(() => {
+					if (text && rootEl.dataset.bgmHint) text.textContent = rootEl.dataset.bgmHint;
+					toast?.classList.add("needs-click");
+				});
+		};
+		playBtn?.addEventListener("click", startPlayback);
+		window.setTimeout(startPlayback, 5000);
+	}
+
+	if (root && audioEl) bindAutoplay(root, audioEl);
+
 	if (root && root.dataset.single !== "true") {
 		const audio = document.getElementById("audio-player") as HTMLAudioElement;
 		const source = document.getElementById("audio-source") as HTMLSourceElement;
@@ -208,5 +265,59 @@ const singleTrack = songs.length === 1;
 	.playlist::-webkit-scrollbar-thumb {
 		background: color-mix(in oklch, var(--color-global-text) 25%, transparent);
 		border-radius: 999px;
+	}
+
+	.bgm-toast {
+		position: fixed;
+		z-index: 40;
+		right: 1rem;
+		bottom: 5.5rem;
+		display: flex;
+		align-items: center;
+		gap: 0.75rem;
+		max-width: min(22rem, calc(100vw - 2rem));
+		padding: 0.7rem 0.85rem;
+		border-radius: 0.85rem;
+		background: color-mix(in oklch, var(--color-global-bg) 88%, var(--color-brand));
+		border: 1px solid color-mix(in oklch, var(--color-brand) 35%, transparent);
+		box-shadow: 0 12px 32px color-mix(in oklch, black 16%, transparent);
+		animation: bgm-in 0.55s ease both;
+	}
+
+	.bgm-toast.is-gone {
+		opacity: 0;
+		transform: translateY(8px);
+		pointer-events: none;
+		transition: opacity 0.4s ease, transform 0.4s ease;
+	}
+
+	.bgm-toast__text {
+		margin: 0;
+		font-size: 0.8rem;
+		font-weight: 600;
+	}
+
+	.bgm-toast__play {
+		flex-shrink: 0;
+		border: none;
+		border-radius: 999px;
+		padding: 0.3rem 0.7rem;
+		background: var(--color-brand);
+		color: white;
+		font: inherit;
+		font-size: 0.75rem;
+		font-weight: 700;
+		cursor: pointer;
+	}
+
+	@keyframes bgm-in {
+		from {
+			opacity: 0;
+			transform: translateY(10px);
+		}
+		to {
+			opacity: 1;
+			transform: translateY(0);
+		}
 	}
 </style>

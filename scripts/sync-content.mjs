@@ -72,6 +72,71 @@ async function cloneRepo(repo, dest) {
 }
 
 const IMAGE_EXT = new Set([".jpg", ".jpeg", ".png", ".webp", ".gif", ".avif"]);
+const AUDIO_EXT = new Set([".mp3", ".m4a", ".ogg", ".wav", ".flac"]);
+
+function isAbsUrl(src) {
+	return /^(https?:)?\/\//i.test(src) || src.startsWith("/") || src.startsWith("data:");
+}
+
+function rewriteRelativeMedia(markdown, publicPrefix) {
+	return markdown.replace(
+		/((?:src\s*=\s*|\]\()["']?)([^"')\s>]+)(["']?)/g,
+		(full, left, src, right) => {
+			if (isAbsUrl(src) || src.startsWith("#") || src.startsWith("mailto:")) return full;
+			const clean = src.replace(/^\.\//, "");
+			if (!IMAGE_EXT.has(path.extname(clean).toLowerCase()) && !AUDIO_EXT.has(path.extname(clean).toLowerCase())) {
+				return full;
+			}
+			return `${left}${publicPrefix}/${path.basename(clean)}${right}`;
+		},
+	);
+}
+
+function injectMusicFrontmatter(markdown, src, title) {
+	if (/^---[\s\S]*?^music:/m.test(markdown)) return markdown;
+	if (!markdown.startsWith("---")) {
+		return `---\nmusic:\n  src: ${src}\n  title: ${JSON.stringify(title)}\n---\n\n${markdown}`;
+	}
+	return markdown.replace(/^---\n/, `---\nmusic:\n  src: ${src}\n  title: ${JSON.stringify(title)}\n`);
+}
+
+async function enhanceEntryFolders(contentRoot, publicKind, { withAudio = false } = {}) {
+	if (!existsSync(contentRoot)) return;
+	const publicRoot = path.join(root, "public/media", publicKind);
+	for (const entry of await readdir(contentRoot, { withFileTypes: true })) {
+		if (!entry.isDirectory() || entry.name.startsWith("_") || entry.name.startsWith(".")) continue;
+		const folder = path.join(contentRoot, entry.name);
+		const files = await readdir(folder, { withFileTypes: true });
+		const mdFiles = files.filter((f) => f.isFile() && /\.(md|mdx)$/i.test(f.name));
+		if (!mdFiles.length) continue;
+		const slug = entry.name;
+		const publicPrefix = `/media/${publicKind}/${slug}`;
+		const destPublic = path.join(publicRoot, slug);
+		await mkdir(destPublic, { recursive: true });
+		const mediaFiles = files.filter(
+			(f) =>
+				f.isFile() &&
+				(IMAGE_EXT.has(path.extname(f.name).toLowerCase()) ||
+					AUDIO_EXT.has(path.extname(f.name).toLowerCase())),
+		);
+		for (const file of mediaFiles) {
+			await cp(path.join(folder, file.name), path.join(destPublic, file.name));
+		}
+		const audio = withAudio
+			? mediaFiles.find((f) => AUDIO_EXT.has(path.extname(f.name).toLowerCase()))
+			: undefined;
+		for (const md of mdFiles) {
+			const mdPath = path.join(folder, md.name);
+			let text = await readFile(mdPath, "utf8");
+			text = rewriteRelativeMedia(text, publicPrefix);
+			if (audio) {
+				const title = path.basename(audio.name, path.extname(audio.name));
+				text = injectMusicFrontmatter(text, `${publicPrefix}/${audio.name}`, title);
+			}
+			await writeFile(mdPath, text);
+		}
+	}
+}
 
 async function buildGalleryFromFolders(galleryRoot, photosOut, mediaOut) {
 	if (!existsSync(galleryRoot)) return false;
@@ -87,7 +152,6 @@ async function buildGalleryFromFolders(galleryRoot, photosOut, mediaOut) {
 		}
 		const slug = String(meta.slug || entry.name);
 		const title = String(meta.title || entry.name);
-		const alts = meta.alts && typeof meta.alts === "object" ? meta.alts : {};
 		const files = (await readdir(folder))
 			.filter((name) => IMAGE_EXT.has(path.extname(name).toLowerCase()))
 			.sort((a, b) => a.localeCompare(b, "en"));
@@ -96,7 +160,7 @@ async function buildGalleryFromFolders(galleryRoot, photosOut, mediaOut) {
 			return {
 				slug: stem,
 				src: `/media/gallery/${slug}/${name}`,
-				alt: alts[stem] || alts[name] || stem,
+				alt: "",
 			};
 		});
 		if (Array.isArray(meta.photos)) {
@@ -150,6 +214,8 @@ await mkdir(blogDir, { recursive: true });
 await mkdir(postDir, { recursive: true });
 await writeFile(path.join(blogDir, ".gitkeep"), "");
 await writeFile(path.join(postDir, ".gitkeep"), "");
+await enhanceEntryFolders(blogDir, "blogs", { withAudio: true });
+await enhanceEntryFolders(postDir, "posts", { withAudio: false });
 await copyIfPresent(path.join(source, "post/images"), path.join(root, "public/notes"));
 await copyIfPresent(path.join(source, "notes-images"), path.join(root, "public/notes"));
 
