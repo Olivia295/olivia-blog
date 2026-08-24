@@ -79,10 +79,14 @@ npx vercel --prod
 2. GitHub 生成 Fine-grained PAT，权限：该私有仓库 Read。
 3. Vercel → Project → Settings → Environment Variables：
 
+私有仓库：`https://github.com/Olivia295/olivia-blog-content`（private）
+
+Vercel 已配置：
+
 | Name | Value |
 | --- | --- |
-| `CONTENT_REPO` | `https://github.com/Olivia295/olivia-blog-content.git` |
-| `CONTENT_REPO_TOKEN` | 你的 PAT |
+| `CONTENT_REPO` | `git@github.com:Olivia295/olivia-blog-content.git` |
+| `CONTENT_SSH_KEY` | 只读 deploy key（base64，已放在 Vercel 里） |
 
 `npm run build` 会先跑 `scripts/sync-content.mjs`：本地已有 `.md` 就用本地的；否则从私有仓库 clone 到 `src/content/` 再构建。
 

@@ -40,3 +40,7 @@ public/notes/**
 # editor junk
 *.swp
 *~
+.vercel
+.env
+.env.*
+!.env.example

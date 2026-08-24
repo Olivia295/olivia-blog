@@ -1,15 +1,19 @@
 #!/usr/bin/env node
 /**
- * Fill src/content/{post,note} from a private source when the folders are empty.
+ * Fill src/content/{post,note} from a private source when those folders
+ * have no markdown (e.g. Vercel git clone of the public repo).
  *
- * Local writing: do nothing (markdown is already in src/content).
- * Backup folder: CONTENT_DIR=/path/to/olivia-blog-content
- * Private repo:  CONTENT_REPO=https://github.com/you/olivia-blog-content.git
- *                CONTENT_REPO_TOKEN=...
+ * Local writing wins: if .md files already exist, this is a no-op.
+ *
+ * CONTENT_DIR=/path/to/olivia-blog-content
+ * CONTENT_REPO=git@github.com:Olivia295/olivia-blog-content.git
+ * CONTENT_SSH_KEY=base64 of a read-only deploy key (or raw PEM)
+ * CONTENT_REPO_TOKEN=https PAT (optional alternative to SSH)
  */
 import { execSync } from "node:child_process";
-import { cp, mkdir, readdir } from "node:fs/promises";
+import { cp, mkdir, readdir, writeFile } from "node:fs/promises";
 import { existsSync } from "node:fs";
+import os from "node:os";
 import path from "node:path";
 
 const root = process.cwd();
@@ -40,27 +44,39 @@ async function copyIfPresent(from, to) {
 	return true;
 }
 
-const hasLocal = (await hasMarkdown(postDir)) || (await hasMarkdown(noteDir));
-const contentDir = process.env.CONTENT_DIR;
-const repo = process.env.CONTENT_REPO;
-const token = process.env.CONTENT_REPO_TOKEN;
+async function cloneRepo(repo, dest) {
+	const env = { ...process.env };
+	const sshKey = process.env.CONTENT_SSH_KEY;
+	const token = process.env.CONTENT_REPO_TOKEN;
+	if (sshKey) {
+		const keyPath = path.join(os.tmpdir(), "olivia-content-deploy-key");
+		let pem = sshKey.includes("BEGIN") ? sshKey.replace(/\\n/g, "\n") : Buffer.from(sshKey, "base64").toString("utf8");
+		if (!pem.endsWith("\n")) pem += "\n";
+		await writeFile(keyPath, pem, { mode: 0o600 });
+		env.GIT_SSH_COMMAND = `ssh -i "${keyPath}" -o IdentitiesOnly=yes -o StrictHostKeyChecking=accept-new`;
+	}
+	let url = repo;
+	if (token && url.startsWith("https://")) {
+		url = url.replace(/^https:\/\//, `https://x-access-token:${token}@`);
+	}
+	execSync(`git clone --depth 1 "${url}" "${dest}"`, { env, stdio: "inherit" });
+}
 
-if (hasLocal && !contentDir && !repo) {
+if ((await hasMarkdown(postDir)) || (await hasMarkdown(noteDir))) {
 	console.log("sync-content: using local markdown in src/content");
 	process.exit(0);
 }
 
+const contentDir = process.env.CONTENT_DIR;
+const repo = process.env.CONTENT_REPO;
 let source = contentDir ?? "";
 
 if (repo) {
-	const cache = path.join(root, ".content-src");
-	const authUrl = token
-		? repo.replace(/^https:\/\//, `https://x-access-token:${token}@`)
-		: repo;
+	const cache = path.join(root, ".content-src", "repo");
 	if (existsSync(path.join(cache, ".git"))) {
 		execSync("git pull --ff-only", { cwd: cache, stdio: "inherit" });
 	} else {
-		execSync(`git clone --depth 1 "${authUrl}" "${cache}"`, { stdio: "inherit" });
+		await cloneRepo(repo, cache);
 	}
 	source = cache;
 }
@@ -78,4 +94,4 @@ const images = path.join(source, "notes-images");
 if (existsSync(images)) {
 	await copyIfPresent(images, path.join(root, "public/notes"));
 }
-console.log(`sync-content: copied from ${contentDir || "CONTENT_REPO"}`);
+console.log("sync-content: copied writing into src/content");
