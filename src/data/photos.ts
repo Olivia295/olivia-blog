@@ -1,4 +1,5 @@
-import photosManifest from "./photos.json";
+import { existsSync, readFileSync } from "node:fs";
+import path from "node:path";
 import { resolveMediaUrl } from "@/utils/media";
 
 export type Photo = {
@@ -13,8 +14,20 @@ export type PhotoAlbum = {
 	photos: Photo[];
 };
 
+type PhotosFile = { albums: PhotoAlbum[] };
+
+function loadPhotosManifest(): PhotosFile {
+	const file = path.join(process.cwd(), "src/data/photos.json");
+	if (!existsSync(file)) return { albums: [] };
+	try {
+		return JSON.parse(readFileSync(file, "utf8")) as PhotosFile;
+	} catch {
+		return { albums: [] };
+	}
+}
+
 export function getPhotoAlbums(): PhotoAlbum[] {
-	return photosManifest.albums.map((album) => ({
+	return loadPhotosManifest().albums.map((album) => ({
 		slug: album.slug,
 		title: album.title,
 		photos: album.photos.map((photo) => ({

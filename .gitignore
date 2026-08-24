@@ -34,7 +34,9 @@ src/content/post/**
 !src/content/post/.gitkeep
 src/content/note/**
 !src/content/note/.gitkeep
+src/data/photos.json
 public/notes/**
+public/gallery/**
 .content-src/
 
 # editor junk

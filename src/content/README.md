@@ -1,13 +1,16 @@
 # 文章不进 GitHub
 
-`post/`（文章 / Blogs）和 `note/`（短记 / Posts）已加入 `.gitignore`。  
-本地照常写；`git push` 只推代码，不推正文。
+`post/`（文章 / Blogs）、`note/`（短记 / Posts）和画廊清单已加入 `.gitignore`。  
+本地照常写；`git push` 只推代码，不推正文和相册。
 
 目录约定：
 
 ```
-src/content/post/   长文，对应 /posts
-src/content/note/   短记，对应 /notes
+src/content/post/     长文，对应 /posts
+src/content/note/     短记，对应 /notes
+src/data/photos.json  画廊合集清单
+public/gallery/       画廊本地图片
+public/notes/         短记配图
 ```
 
 ## 日常（本地）
@@ -30,22 +33,23 @@ npm run dev
 ```
 olivia-blog-content/
   post/
-    open-the-kitchen.md
-    ...
   note/
-    water-at-seven.md
-    ...
+  notes-images/
+  gallery/
+    photos.json
+    images/
 ```
 
 从本仓库导出一份：
 
 ```bash
-mkdir -p ../olivia-blog-content
+mkdir -p ../olivia-blog-content/gallery/images
 cp -R src/content/post ../olivia-blog-content/
 cp -R src/content/note ../olivia-blog-content/
-# 如需短记配图：
 mkdir -p ../olivia-blog-content/notes-images
 cp -R public/notes/. ../olivia-blog-content/notes-images/ 2>/dev/null || true
+cp src/data/photos.json ../olivia-blog-content/gallery/photos.json
+cp -R public/gallery/. ../olivia-blog-content/gallery/images/ 2>/dev/null || true
 ```
 
 私有仓库（可选）：

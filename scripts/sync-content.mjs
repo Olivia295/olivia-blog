@@ -19,6 +19,7 @@ import path from "node:path";
 const root = process.cwd();
 const postDir = path.join(root, "src/content/post");
 const noteDir = path.join(root, "src/content/note");
+const photosJson = path.join(root, "src/data/photos.json");
 
 async function hasMarkdown(dir) {
 	if (!existsSync(dir)) return false;
@@ -62,16 +63,19 @@ async function cloneRepo(repo, dest) {
 	execSync(`git clone --depth 1 "${url}" "${dest}"`, { env, stdio: "inherit" });
 }
 
-if ((await hasMarkdown(postDir)) || (await hasMarkdown(noteDir))) {
-	console.log("sync-content: using local markdown in src/content");
+const hasLocalWriting = (await hasMarkdown(postDir)) || (await hasMarkdown(noteDir));
+const hasLocalGallery = existsSync(photosJson);
+const contentDir = process.env.CONTENT_DIR;
+const repo = process.env.CONTENT_REPO;
+
+if (hasLocalWriting && hasLocalGallery && !contentDir && !repo) {
+	console.log("sync-content: using local writing and gallery");
 	process.exit(0);
 }
 
-const contentDir = process.env.CONTENT_DIR;
-const repo = process.env.CONTENT_REPO;
 let source = contentDir ?? "";
 
-if (repo) {
+if (!source && repo && (!hasLocalWriting || !hasLocalGallery)) {
 	const cache = path.join(root, ".content-src", "repo");
 	if (existsSync(path.join(cache, ".git"))) {
 		execSync("git pull --ff-only", { cwd: cache, stdio: "inherit" });
@@ -83,15 +87,24 @@ if (repo) {
 
 if (!source) {
 	console.log(
-		"sync-content: no local markdown and no CONTENT_DIR/CONTENT_REPO — building with empty posts/notes",
+		"sync-content: no local content and no CONTENT_DIR/CONTENT_REPO — building with empty writing/gallery",
 	);
 	process.exit(0);
 }
 
-await copyIfPresent(path.join(source, "post"), postDir);
-await copyIfPresent(path.join(source, "note"), noteDir);
-const images = path.join(source, "notes-images");
-if (existsSync(images)) {
-	await copyIfPresent(images, path.join(root, "public/notes"));
+if (!hasLocalWriting) {
+	await copyIfPresent(path.join(source, "post"), postDir);
+	await copyIfPresent(path.join(source, "note"), noteDir);
+	await copyIfPresent(path.join(source, "notes-images"), path.join(root, "public/notes"));
 }
-console.log("sync-content: copied writing into src/content");
+
+if (!hasLocalGallery) {
+	const remotePhotos = path.join(source, "gallery/photos.json");
+	if (existsSync(remotePhotos)) {
+		await mkdir(path.dirname(photosJson), { recursive: true });
+		await cp(remotePhotos, photosJson);
+	}
+	await copyIfPresent(path.join(source, "gallery/images"), path.join(root, "public/gallery"));
+}
+
+console.log("sync-content: copied private content");
