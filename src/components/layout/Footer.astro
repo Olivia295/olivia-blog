@@ -1,36 +1,12 @@
 ---
-import type { Lang } from "@/i18n/config";
-import { localePath, useTranslations } from "@/i18n/utils";
-import { menuLinkDefs, siteConfig } from "@/site.config";
-
-interface Props {
-	lang: Lang;
-}
-
-const { lang } = Astro.props;
-const t = useTranslations(lang);
-const year = new Date().getFullYear();
-const menuLinks = menuLinkDefs.map((link) => ({
-	path: localePath(lang, link.path),
-	title: t(link.titleKey),
-}));
+import { siteConfig } from "@/site.config";
 ---
 
 <footer
-	class="text-muted mt-auto flex w-full flex-col items-center justify-center gap-y-2 pt-8 pb-1 text-center align-top text-xs font-semibold sm:flex-row sm:justify-between sm:gap-y-2 sm:pt-16 sm:pb-2"
+	class="text-muted mt-auto flex w-full flex-col items-center justify-center pt-8 pb-1 text-center text-xs font-semibold sm:pt-14 sm:pb-2"
 >
-	<div class="me-0 sm:me-4">
+	<div>
 		&copy; {siteConfig.author}
-		{year}.<span class="inline-block">&nbsp;·&nbsp;{siteConfig.title}</span>
+		{new Date().getFullYear()}.<span class="inline-block">&nbsp;·&nbsp;{siteConfig.title}</span>
 	</div>
-	<nav aria-labelledby="footer_links" class="sm:divide-muted flex gap-x-2 sm:gap-x-0 sm:divide-x">
-		<p id="footer_links" class="sr-only">{t("nav.siteLinks")}</p>
-		{
-			menuLinks.map((link) => (
-				<a class="hover:text-global-text px-3 py-1.5 hover:underline sm:px-4 sm:py-0" href={link.path}>
-					{link.title}
-				</a>
-			))
-		}
-	</nav>
 </footer>

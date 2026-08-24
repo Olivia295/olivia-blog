@@ -1,8 +1,12 @@
 ---
+import FormattedDate from "@/components/FormattedDate.astro";
 import PageLayout from "@/layouts/Base.astro";
 import type { Lang } from "@/i18n/config";
-import { getStaticLangPaths, useTranslations } from "@/i18n/utils";
+import { getStaticLangPaths, localePath, useTranslations } from "@/i18n/utils";
+import { getAllNotes } from "@/data/note";
+import { getAllPosts } from "@/data/post";
 import { siteConfig } from "@/site.config";
+import { collectionDateSort } from "@/utils/date";
 
 export function getStaticPaths() {
 	return getStaticLangPaths();
@@ -10,37 +14,212 @@ export function getStaticPaths() {
 
 const lang = Astro.params.lang as Lang;
 const t = useTranslations(lang);
+
+const RECENT_POSTS = 3;
+const RECENT_NOTES = 3;
+
+const recentPosts = (await getAllPosts())
+	.filter((post) => !post.data.draft)
+	.sort(collectionDateSort)
+	.slice(0, RECENT_POSTS);
+
+const recentNotes = (await getAllNotes())
+	.filter((note) => !note.data.draft)
+	.sort(collectionDateSort)
+	.slice(0, RECENT_NOTES);
 ---
 
 <PageLayout lang={lang} meta={{ title: t("home.title"), description: t("site.description") }}>
 	<section class="foyer">
 		<h1 class="title foyer-title">{siteConfig.title}</h1>
 		<p class="foyer-tagline">{t("home.tagline")}</p>
+		<figure class="foyer-hero">
+			<img
+				alt={t("home.heroAlt")}
+				class="foyer-hero__img"
+				height="777"
+				src="/home-hero.jpg"
+				width="1240"
+			/>
+		</figure>
+	</section>
+
+	<section class="home-feed" aria-label={t("home.title")}>
+		<details class="home-fold" open>
+			<summary class="home-fold__summary">{t("home.recentPosts")}</summary>
+			{
+				recentPosts.length === 0 ? (
+					<p class="home-fold__empty">{t("posts.empty")}</p>
+				) : (
+					<ul class="home-fold__list">
+						{recentPosts.map((post) => (
+							<li>
+								<a class="home-fold__link" href={localePath(lang, `/posts/${post.id}/`)}>
+									<span class="home-fold__title">{post.data.title}</span>
+									<FormattedDate class="home-fold__date" date={post.data.publishDate} lang={lang} />
+								</a>
+							</li>
+						))}
+					</ul>
+				)
+			}
+			<a class="home-fold__more" href={localePath(lang, "/posts/")}>{t("home.viewAllPosts")}</a>
+		</details>
+
+		<details class="home-fold" open>
+			<summary class="home-fold__summary">{t("home.recentNotes")}</summary>
+			{
+				recentNotes.length === 0 ? (
+					<p class="home-fold__empty">{t("notes.empty")}</p>
+				) : (
+					<ul class="home-fold__list">
+						{recentNotes.map((note) => (
+							<li>
+								<a class="home-fold__link" href={localePath(lang, `/notes/#note-${note.id}`)}>
+									<span class="home-fold__title">{note.data.title}</span>
+									<FormattedDate class="home-fold__date" date={note.data.publishDate} lang={lang} />
+								</a>
+							</li>
+						))}
+					</ul>
+				)
+			}
+			<a class="home-fold__more" href={localePath(lang, "/notes/")}>{t("home.viewAllNotes")}</a>
+		</details>
 	</section>
 </PageLayout>
 
 <style>
 	.foyer {
-		padding: 1.25rem 0 1.5rem;
-	}
-
-	@media (min-width: 640px) {
-		.foyer {
-			padding: 2.5rem 0 4rem;
-		}
+		padding: 0.5rem 0 0.25rem;
 	}
 
 	.foyer-title {
-		margin-bottom: 0.85rem;
-		font-size: clamp(2rem, 5vw, 2.75rem);
+		margin-bottom: 0.5rem;
+		font-size: clamp(1.85rem, 5vw, 2.5rem);
 		line-height: 1.15;
 	}
 
 	.foyer-tagline {
-		margin: 0;
+		margin: 0 0 1.15rem;
 		max-width: 22rem;
 		font-size: 1.05rem;
 		line-height: 1.7;
 		opacity: 0.78;
+	}
+
+	.foyer-hero {
+		margin: 0;
+		overflow: hidden;
+		border-radius: 0.85rem;
+		background: color-mix(in oklch, var(--color-global-text) 6%, transparent);
+	}
+
+	.foyer-hero__img {
+		display: block;
+		width: 100%;
+		height: auto;
+		aspect-ratio: 3 / 2;
+		object-fit: cover;
+	}
+
+	.home-feed {
+		display: flex;
+		flex-direction: column;
+		gap: 0.65rem;
+		margin-top: 1.35rem;
+		padding-bottom: 1.5rem;
+	}
+
+	.home-fold {
+		border-radius: 0.75rem;
+		background: color-mix(in oklch, var(--color-global-text) 4.5%, transparent);
+		padding: 0.15rem 0.9rem 0.85rem;
+	}
+
+	.home-fold__summary {
+		cursor: pointer;
+		list-style: none;
+		padding: 0.8rem 0 0.55rem;
+		font-size: 0.92rem;
+		font-weight: 700;
+		user-select: none;
+	}
+
+	.home-fold__summary::-webkit-details-marker {
+		display: none;
+	}
+
+	.home-fold__summary::before {
+		content: "▸";
+		display: inline-block;
+		margin-inline-end: 0.4rem;
+		color: var(--color-accent);
+		transition: transform 0.15s ease;
+	}
+
+	.home-fold[open] > .home-fold__summary::before {
+		transform: rotate(90deg);
+	}
+
+	.home-fold__empty {
+		margin: 0.15rem 0 0.5rem;
+		color: var(--color-muted);
+		font-size: 0.85rem;
+	}
+
+	.home-fold__list {
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+
+	.home-fold__link {
+		display: flex;
+		flex-direction: column;
+		gap: 0.15rem;
+		padding: 0.55rem 0;
+		border-top: 1px solid color-mix(in oklch, var(--color-global-text) 8%, transparent);
+		text-decoration: none;
+		color: inherit;
+	}
+
+	.home-fold__title {
+		font-weight: 600;
+		line-height: 1.4;
+	}
+
+	.home-fold__date {
+		color: var(--color-muted);
+		font-size: 0.75rem;
+		font-weight: 600;
+	}
+
+	.home-fold__link:hover .home-fold__title {
+		color: var(--color-accent);
+	}
+
+	.home-fold__more {
+		display: inline-block;
+		margin-top: 0.35rem;
+		font-size: 0.8rem;
+		font-weight: 600;
+		color: var(--color-accent);
+		text-decoration: none;
+	}
+
+	.home-fold__more:hover {
+		text-decoration: underline;
+		text-underline-offset: 2px;
+	}
+
+	@media (min-width: 640px) {
+		.foyer {
+			padding: 0.75rem 0 0.5rem;
+		}
+
+		.home-feed {
+			margin-top: 1.75rem;
+		}
 	}
 </style>
