@@ -1,25 +1,39 @@
 ---
 import { type CollectionEntry, render } from "astro:content";
 
+import FloatingBack from "@/components/FloatingBack.astro";
 import Masthead from "@/components/blog/Masthead.astro";
 import TOC from "@/components/blog/TOC.astro";
 import WebMentions from "@/components/blog/webmentions/index.astro";
+import MusicPlayer from "@/components/MusicPlayer.astro";
+import { resolvePostMusic } from "@/data/music";
+import { defaultLang, type Lang } from "@/i18n/config";
+import { getLangFromUrl, localePath, useTranslations } from "@/i18n/utils";
 
 import BaseLayout from "./Base.astro";
 
 interface Props {
 	post: CollectionEntry<"post">;
+	lang?: Lang;
 }
 
-const { post } = Astro.props;
-const { ogImage, title, description, updatedDate, publishDate } = post.data;
+const { post, lang: langProp } = Astro.props;
+const lang = langProp ?? getLangFromUrl(Astro.url) ?? defaultLang;
+const t = useTranslations(lang);
+const { ogImage, title, description, updatedDate, publishDate, music } = post.data;
 const socialImage = ogImage ?? `/og-image/${post.id}.png`;
 const articleDate = updatedDate?.toISOString() ?? publishDate.toISOString();
 const { headings, remarkPluginFrontmatter } = await render(post);
-const readingTime: string = remarkPluginFrontmatter.readingTime;
+const readingTimeMinutes: number =
+	typeof remarkPluginFrontmatter.readingTimeMinutes === "number"
+		? remarkPluginFrontmatter.readingTimeMinutes
+		: 1;
+const postSongs = resolvePostMusic(music);
+const showMusicSlot = Boolean(postSongs) || Astro.slots.has("music");
 ---
 
 <BaseLayout
+	lang={lang}
 	meta={{
 		articleDate,
 		description,
@@ -28,23 +42,38 @@ const readingTime: string = remarkPluginFrontmatter.readingTime;
 	}}
 >
 	<article class="grow break-words" data-pagefind-body>
-		<div id="blog-hero" class="mb-12"><Masthead content={post} readingTime={readingTime} /></div>
+		<div id="blog-hero" class="mb-12">
+			<Masthead content={post} readingTimeMinutes={readingTimeMinutes} lang={lang} />
+		</div>
 		<div class="flex flex-col gap-10 lg:flex-row lg:items-start lg:justify-between">
-			{!!headings.length && <TOC headings={headings} />}
+			{!!headings.length && <TOC headings={headings} lang={lang} />}
 			<div
 				class="prose prose-sm prose-headings:font-semibold prose-headings:text-accent-2 prose-headings:before:absolute prose-headings:before:-ms-4 prose-headings:before:text-muted prose-headings:hover:before:text-accent sm:prose-headings:before:content-['#'] sm:prose-th:before:content-none"
 			>
 				<slot />
+				{
+					showMusicSlot && (
+						<aside class="not-prose mt-12" data-pagefind-ignore>
+							<slot name="music">
+								{postSongs && <MusicPlayer songs={postSongs} lang={lang} />}
+							</slot>
+						</aside>
+					)
+				}
 				<WebMentions />
 			</div>
 		</div>
 	</article>
+
+	<FloatingBack href={localePath(lang, "/posts/")} label={t("post.back")} />
+
 	<button
-		class="hover:border-link fixed end-4 bottom-8 z-90 flex h-10 w-10 translate-y-28 cursor-pointer items-center justify-center rounded-full border-2 border-transparent bg-zinc-200 text-3xl opacity-0 transition-all transition-discrete duration-300 data-[show=true]:translate-y-0 data-[show=true]:opacity-100 sm:end-8 sm:h-12 sm:w-12 dark:bg-zinc-700"
+		class="to-top-btn hover:border-link fixed end-4 z-90 flex h-11 w-11 translate-y-28 cursor-pointer items-center justify-center rounded-full border-2 border-transparent bg-zinc-200/90 text-3xl opacity-0 shadow-md backdrop-blur transition-all transition-discrete duration-300 data-[show=true]:translate-y-0 data-[show=true]:opacity-100 sm:end-8 sm:h-12 sm:w-12 dark:bg-zinc-700/90"
 		data-show="false"
 		id="to-top-btn"
+		type="button"
 	>
-		<span class="sr-only">Back to top</span>
+		<span class="sr-only">{t("backToTop")}</span>
 		<svg
 			aria-hidden="true"
 			class="h-6 w-6"
@@ -61,20 +90,34 @@ const readingTime: string = remarkPluginFrontmatter.readingTime;
 </BaseLayout>
 
 <script>
-	const scrollBtn = document.getElementById("to-top-btn") as HTMLButtonElement;
-	const targetHeader = document.getElementById("blog-hero") as HTMLDivElement;
+	const scrollBtn = document.getElementById("to-top-btn") as HTMLButtonElement | null;
+	const targetHeader = document.getElementById("blog-hero") as HTMLDivElement | null;
 
-	function callback(entries: IntersectionObserverEntry[]) {
-		entries.forEach((entry) => {
-			// only show the scroll to top button when the heading is out of view
-			scrollBtn.dataset.show = (!entry.isIntersecting).toString();
+	if (targetHeader && scrollBtn) {
+		function callback(entries: IntersectionObserverEntry[]) {
+			entries.forEach((entry) => {
+				scrollBtn.dataset.show = (!entry.isIntersecting).toString();
+			});
+		}
+
+		scrollBtn.addEventListener("click", () => {
+			document.documentElement.scrollTo({ behavior: "smooth", top: 0 });
 		});
+
+		const observer = new IntersectionObserver(callback);
+		observer.observe(targetHeader);
 	}
-
-	scrollBtn.addEventListener("click", () => {
-		document.documentElement.scrollTo({ behavior: "smooth", top: 0 });
-	});
-
-	const observer = new IntersectionObserver(callback);
-	observer.observe(targetHeader);
 </script>
+
+<style>
+	.to-top-btn {
+		bottom: max(1rem, calc(0.75rem + env(safe-area-inset-bottom)));
+		right: max(1rem, env(safe-area-inset-right));
+	}
+	@media (min-width: 640px) {
+		.to-top-btn {
+			bottom: max(2rem, calc(1.25rem + env(safe-area-inset-bottom)));
+			right: max(2rem, env(safe-area-inset-right));
+		}
+	}
+</style>

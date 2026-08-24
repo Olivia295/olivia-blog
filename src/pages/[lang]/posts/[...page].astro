@@ -2,9 +2,12 @@
 import type { CollectionEntry } from "astro:content";
 import type { GetStaticPaths, Page } from "astro";
 import { Icon } from "astro-icon/components";
+import FloatingBack from "@/components/FloatingBack.astro";
 import PostPreview from "@/components/blog/PostPreview.astro";
 import Pagination from "@/components/Paginator.astro";
 import { getAllPosts, getUniqueTags, groupPostsByYear } from "@/data/post";
+import { languages, type Lang } from "@/i18n/config";
+import { localePath, useTranslations } from "@/i18n/utils";
 import PageLayout from "@/layouts/Base.astro";
 import { collectionDateSort } from "@/utils/date";
 
@@ -20,10 +23,14 @@ export const getStaticPaths = (async ({ paginate }) => {
 		.filter((p) => p.data.pinned)
 		.take(MAX_PINNED_POSTS)
 		.toArray();
-	return paginate(allPostsByDate, {
-		pageSize: MAX_POSTS_PER_PAGE,
-		props: { uniqueTags, pinnedPosts },
-	});
+
+	return languages.flatMap((lang) =>
+		paginate(allPostsByDate, {
+			params: { lang },
+			pageSize: MAX_POSTS_PER_PAGE,
+			props: { uniqueTags, pinnedPosts },
+		}),
+	);
 }) satisfies GetStaticPaths;
 
 interface Props {
@@ -32,23 +39,25 @@ interface Props {
 	pinnedPosts: CollectionEntry<"post">[];
 }
 
+const lang = Astro.params.lang as Lang;
+const t = useTranslations(lang);
 const { page, uniqueTags, pinnedPosts } = Astro.props;
 
 const meta = {
-	description: "Read my collection of posts and the things that interest me",
-	title: "Posts",
+	description: t("posts.description"),
+	title: t("posts.title"),
 };
 
 const paginationProps = {
 	...(page.url.prev && {
 		prevUrl: {
-			text: "← Previous Page",
+			text: t("pagination.prev"),
 			url: page.url.prev,
 		},
 	}),
 	...(page.url.next && {
 		nextUrl: {
-			text: "Next Page →",
+			text: t("pagination.next"),
 			url: page.url.next,
 		},
 	}),
@@ -58,11 +67,11 @@ const groupedByYear = groupPostsByYear(page.data);
 const descYearKeys = Object.keys(groupedByYear).sort((a, b) => +b - +a);
 ---
 
-<PageLayout meta={meta}>
+<PageLayout lang={lang} meta={meta}>
 	<div class="mb-12 flex items-center gap-3">
-		<h1 class="title">Posts</h1>
-		<a class="text-accent" href="/rss.xml" target="_blank">
-			<span class="sr-only">RSS feed</span>
+		<h1 class="title">{t("posts.title")}</h1>
+		<a class="text-accent" href={localePath(lang, "/rss.xml")} target="_blank">
+			<span class="sr-only">{t("rss.label")}</span>
 			<Icon aria-hidden="true" class="h-6 w-6" focusable="false" name="mdi:rss" />
 		</a>
 	</div>
@@ -71,11 +80,11 @@ const descYearKeys = Object.keys(groupedByYear).sort((a, b) => +b - +a);
 			{
 				pinnedPosts.length > 0 && (
 					<section class="mb-16">
-						<h2 class="title mb-6 text-xl">Pinned Posts</h2>
+						<h2 class="title mb-6 text-xl">{t("posts.pinned")}</h2>
 						<ul class="space-y-4" role="list">
 							{pinnedPosts.map((p) => (
 								<li class="grid gap-1 sm:grid-cols-[auto_1fr]">
-									<PostPreview post={p} />
+									<PostPreview post={p} lang={lang} />
 								</li>
 							))}
 						</ul>
@@ -83,16 +92,21 @@ const descYearKeys = Object.keys(groupedByYear).sort((a, b) => +b - +a);
 				)
 			}
 			{
+				descYearKeys.length === 0 && pinnedPosts.length === 0 && (
+					<p class="text-muted mb-8">{t("posts.empty")}</p>
+				)
+			}
+			{
 				descYearKeys.map((yearKey) => (
 					<section class="mb-16">
 						<h2 id={`year-${yearKey}`} class="title text-lg">
-							<span class="sr-only">Posts in</span>
+							<span class="sr-only">{t("posts.year")}</span>
 							{yearKey}
 						</h2>
 						<ul class="mt-5 space-y-4 text-start">
 							{groupedByYear[yearKey]?.map((p) => (
 								<li class="grid gap-1 sm:grid-cols-[auto_1fr] sm:[&_q]:col-start-2">
-									<PostPreview post={p} />
+									<PostPreview post={p} lang={lang} />
 								</li>
 							))}
 						</ul>
@@ -121,27 +135,29 @@ const descYearKeys = Object.keys(groupedByYear).sort((a, b) => +b - +a);
 							<path d="M17.573 18.407l2.834 -2.834a2.025 2.025 0 0 0 0 -2.864l-7.117 -7.116" />
 							<path d="M6 9h-.01" />
 						</svg>
-						Tags
+						{t("posts.tags")}
 					</h2>
 					<ul class="flex flex-wrap gap-2">
 						{uniqueTags.map((tag) => (
 							<li>
-								<a class="cactus-link flex items-center justify-center" href={`/tags/${tag}/`}>
+								<a
+									class="cactus-link flex items-center justify-center"
+									href={localePath(lang, `/tags/${tag}/`)}
+								>
 									<span aria-hidden="true">#</span>
-									<span class="sr-only">View all posts with the tag</span>
 									{tag}
 								</a>
 							</li>
 						))}
 					</ul>
 					<span class="mt-4 block sm:text-end">
-						<a class="hover:text-link" href="/tags/">
-							View all <span aria-hidden="true">→</span>
-							<span class="sr-only">blog tags</span>
+						<a class="hover:text-link" href={localePath(lang, "/tags/")}>
+							{t("tags.title")} <span aria-hidden="true">→</span>
 						</a>
 					</span>
 				</aside>
 			)
 		}
 	</div>
+	<FloatingBack href={localePath(lang, "/")} label={t("back.home")} />
 </PageLayout>

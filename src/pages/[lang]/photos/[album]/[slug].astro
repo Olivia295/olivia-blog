@@ -1,0 +1,142 @@
+---
+import FloatingBack from "@/components/FloatingBack.astro";
+import {
+	buildPhotoSrcSet,
+	getPhoto,
+	getPhotoAlbums,
+	photoFullUrl,
+} from "@/data/photos";
+import { languages, type Lang } from "@/i18n/config";
+import { localePath, useTranslations } from "@/i18n/utils";
+import PageLayout from "@/layouts/Base.astro";
+
+export function getStaticPaths() {
+	const albums = getPhotoAlbums();
+	return languages.flatMap((lang) =>
+		albums.flatMap((album) =>
+			album.photos.map((photo) => ({
+				params: { lang, album: album.slug, slug: photo.slug },
+			})),
+		),
+	);
+}
+
+const lang = Astro.params.lang as Lang;
+const albumSlug = Astro.params.album as string;
+const photoSlug = Astro.params.slug as string;
+const t = useTranslations(lang);
+
+const resolved = getPhoto(albumSlug, photoSlug)!;
+const { album, photo, index } = resolved;
+const prev = album.photos[index - 1];
+const next = album.photos[index + 1];
+const full = photoFullUrl(photo.src, 1600);
+const srcset = buildPhotoSrcSet(photo.src, [800, 1200, 1600]);
+
+const meta = {
+	title: `${photo.alt} · ${album.title}`,
+	description: photo.alt,
+};
+---
+
+<PageLayout lang={lang} meta={meta}>
+	<article class="photo-detail">
+		<p class="crumb">
+			<a href={localePath(lang, "/photos/")}>{t("photos.back")}</a>
+			<span aria-hidden="true"> / </span>
+			<span>{album.title}</span>
+		</p>
+
+		<figure>
+			<img
+				src={full}
+				srcset={srcset}
+				sizes="(max-width: 768px) 100vw, 900px"
+				alt={photo.alt}
+				loading="eager"
+				decoding="async"
+			/>
+			<figcaption>
+				<strong>{photo.alt}</strong>
+				<span class="album-name">{album.title}</span>
+			</figcaption>
+		</figure>
+
+		<nav class="pager" aria-label="photo navigation">
+			{
+				prev ? (
+					<a href={localePath(lang, `/photos/${album.slug}/${prev.slug}/`)}>
+						← {t("photos.prev")}
+					</a>
+				) : (
+					<span class="disabled">← {t("photos.prev")}</span>
+				)
+			}
+			{
+				next ? (
+					<a href={localePath(lang, `/photos/${album.slug}/${next.slug}/`)}>
+						{t("photos.next")} →
+					</a>
+				) : (
+					<span class="disabled">{t("photos.next")} →</span>
+				)
+			}
+		</nav>
+	</article>
+	<FloatingBack href={localePath(lang, "/photos/")} label={t("photos.back")} />
+</PageLayout>
+
+<style>
+	.crumb {
+		margin: 0 0 1.5rem;
+		font-size: 0.85rem;
+		opacity: 0.75;
+	}
+
+	.crumb a {
+		color: var(--color-accent);
+		text-decoration: underline;
+		text-underline-offset: 2px;
+	}
+
+	figure {
+		margin: 0;
+	}
+
+	figure img {
+		display: block;
+		width: 100%;
+		max-height: 80vh;
+		object-fit: contain;
+		border-radius: 1rem;
+		background: color-mix(in oklch, var(--color-global-text) 5%, transparent);
+	}
+
+	figcaption {
+		display: flex;
+		flex-direction: column;
+		gap: 0.25rem;
+		margin-top: 1rem;
+	}
+
+	.album-name {
+		opacity: 0.6;
+		font-size: 0.85rem;
+	}
+
+	.pager {
+		display: flex;
+		justify-content: space-between;
+		gap: 1rem;
+		margin-top: 2rem;
+		font-weight: 600;
+	}
+
+	.pager a {
+		color: var(--color-accent);
+	}
+
+	.pager .disabled {
+		opacity: 0.35;
+	}
+</style>

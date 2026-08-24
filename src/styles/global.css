@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "./motion.css";
 /* tailwind to ignore satori generated og-image */
 @source not "../pages/og-image";
 /* config for tailwindcss-typography plugin */
@@ -59,7 +60,10 @@
 	html {
 		color-scheme: light dark;
 		accent-color: var(--color-accent);
-		scrollbar-gutter: stable;
+		/* Avoid mobile horizontal scroll from glow/blur/shadow bleed */
+		overflow-x: clip;
+		/* stable gutter can add a side gap on some mobile browsers */
+		scrollbar-gutter: auto;
 
 		&[data-theme="light"] {
 			color-scheme: light;
@@ -89,6 +93,11 @@
 			--color-quote var(--color-mode-transition-duration) var(--color-mode-transition-easing);
 	}
 
+	body {
+		overflow-x: clip;
+		max-width: 100%;
+	}
+
 	:target {
 		scroll-margin-block: 5ex;
 	}
@@ -116,10 +125,42 @@
 
 	.cactus-link {
 		@apply hover:decoration-link underline underline-offset-2 hover:decoration-2;
+		transition:
+			text-decoration-thickness 0.15s ease,
+			color 0.15s ease;
 	}
 
 	.title {
 		@apply text-accent-2 text-2xl font-semibold;
+	}
+
+	/* Main content enter (all pages) */
+	#main {
+		animation: kitchen-fade-up 0.55s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+		min-width: 0;
+		max-width: 100%;
+	}
+
+	/* Prevent horizontal overflow on mobile */
+	img,
+	video,
+	iframe {
+		max-width: 100%;
+		height: auto;
+	}
+
+	/* Tap targets */
+	@media (max-width: 639px) {
+		a,
+		button {
+			-webkit-tap-highlight-color: color-mix(in oklch, var(--color-accent) 18%, transparent);
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		#main {
+			animation: none !important;
+		}
 	}
 }
 

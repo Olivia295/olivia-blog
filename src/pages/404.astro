@@ -1,13 +1,229 @@
 ---
 import PageLayout from "@/layouts/Base.astro";
+import { defaultLang } from "@/i18n/config";
+import { localePath, useTranslations } from "@/i18n/utils";
+import { siteConfig } from "@/site.config";
+
+const lang = defaultLang;
+const t = useTranslations(lang);
 
 const meta = {
-	description: "Oops! It looks like this page is lost in space!",
-	title: "Oops! You found a missing page!",
+	description: t("404.body"),
+	title: t("404.title"),
 };
+
+const homeZh = localePath("zh", "/");
+const homeEn = localePath("en", "/");
+const postsZh = localePath("zh", "/posts/");
+const notesZh = localePath("zh", "/notes/");
 ---
 
-<PageLayout meta={meta}>
-	<h1 class="title mb-12">404 | Oops something went wrong</h1>
-	<p class="mb-8">Please use the navigation to find your way back</p>
+<PageLayout lang={lang} meta={meta}>
+	<section class="not-found motion-soft-pop" data-404>
+		<p class="not-found__code" aria-hidden="true">{t("404.code")}</p>
+		<h1 class="title not-found__heading">{t("404.heading")}</h1>
+		<p class="not-found__body" data-404-body>{t("404.body")}</p>
+
+		<div class="not-found__actions">
+			<a class="not-found__btn not-found__btn--primary motion-press" href={homeZh} data-404-home>
+				{t("404.home")}
+			</a>
+			<a class="not-found__btn motion-press" href={postsZh} data-404-posts>
+				{t("404.posts")}
+			</a>
+			<a class="not-found__btn motion-press" href={notesZh} data-404-notes>
+				{t("404.notes")}
+			</a>
+		</div>
+
+		<p class="not-found__lang">
+			<a href={homeZh}>中文首页</a>
+			<span aria-hidden="true"> · </span>
+			<a href={homeEn}>English home</a>
+		</p>
+
+		<p class="not-found__brand">{siteConfig.title}</p>
+	</section>
 </PageLayout>
+
+{/* Localize CTAs from cookie / path when possible (static 404 is zh by default). */}
+<script is:inline>
+	(function () {
+		const ui = {
+			zh: {
+				heading: "这里什么都没有",
+				body: "这道菜不在菜单上。回厨房看看，或者换条路。",
+				home: "回厨房首页",
+				posts: "去看文章",
+				notes: "去看笔记",
+			},
+			en: {
+				heading: "Nothing cooking here",
+				body: "This dish isn't on the menu. Head back to the kitchen, or try another path.",
+				home: "Back to kitchen",
+				posts: "Browse posts",
+				notes: "Browse notes",
+			},
+		};
+
+		function readCookie(name) {
+			const m = document.cookie.match(new RegExp("(?:^|; )" + name + "=([^;]*)"));
+			return m ? decodeURIComponent(m[1]) : null;
+		}
+
+		const cookie = readCookie("locale");
+		const pathHint = location.pathname.split("/").filter(Boolean)[0];
+		let lang = "zh";
+		if (cookie === "zh" || cookie === "en") lang = cookie;
+		else if (pathHint === "en" || pathHint === "zh") lang = pathHint;
+		else if ((navigator.language || "").toLowerCase().startsWith("zh")) lang = "zh";
+		else lang = "en";
+
+		const copy = ui[lang] || ui.zh;
+		const root = document.querySelector("[data-404]");
+		if (!root) return;
+
+		const heading = root.querySelector(".not-found__heading");
+		const body = root.querySelector("[data-404-body]");
+		const home = root.querySelector("[data-404-home]");
+		const posts = root.querySelector("[data-404-posts]");
+		const notes = root.querySelector("[data-404-notes]");
+
+		if (heading) heading.textContent = copy.heading;
+		if (body) body.textContent = copy.body;
+		if (home) {
+			home.textContent = copy.home;
+			home.setAttribute("href", "/" + lang + "/");
+		}
+		if (posts) {
+			posts.textContent = copy.posts;
+			posts.setAttribute("href", "/" + lang + "/posts/");
+		}
+		if (notes) {
+			notes.textContent = copy.notes;
+			notes.setAttribute("href", "/" + lang + "/notes/");
+		}
+		document.documentElement.lang = lang === "zh" ? "zh-CN" : "en-GB";
+	})();
+</script>
+
+<style>
+	.not-found {
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		justify-content: center;
+		min-height: min(58vh, 28rem);
+		padding: 1rem 0 3rem;
+		gap: 0.75rem;
+	}
+
+	.not-found__code {
+		margin: 0;
+		font-size: clamp(3.5rem, 14vw, 6rem);
+		font-weight: 700;
+		line-height: 1;
+		letter-spacing: -0.04em;
+		color: color-mix(in oklch, var(--color-accent) 55%, var(--color-global-text));
+		opacity: 0.35;
+		user-select: none;
+		animation: kitchen-fade-up 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+	}
+
+	.not-found__heading {
+		margin: 0;
+		font-size: clamp(1.35rem, 4.5vw, 1.85rem);
+		animation: kitchen-fade-up 0.7s cubic-bezier(0.22, 1, 0.36, 1) 0.08s both;
+	}
+
+	.not-found__body {
+		margin: 0;
+		max-width: 28rem;
+		line-height: 1.7;
+		opacity: 0.78;
+		font-size: 0.95rem;
+		animation: kitchen-fade-up 0.7s cubic-bezier(0.22, 1, 0.36, 1) 0.14s both;
+	}
+
+	.not-found__actions {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.6rem;
+		margin-top: 1.25rem;
+		animation: kitchen-fade-up 0.7s cubic-bezier(0.22, 1, 0.36, 1) 0.2s both;
+	}
+
+	.not-found__btn {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		min-height: 2.75rem;
+		padding: 0.55rem 1rem;
+		border-radius: 999px;
+		border: 1px solid color-mix(in oklch, var(--color-global-text) 14%, transparent);
+		background: color-mix(in oklch, var(--color-global-text) 5%, transparent);
+		color: inherit;
+		text-decoration: none;
+		font-weight: 600;
+		font-size: 0.85rem;
+		transition:
+			background 0.2s ease,
+			border-color 0.2s ease,
+			transform 0.2s ease;
+	}
+
+	.not-found__btn:hover {
+		border-color: color-mix(in oklch, var(--color-accent) 45%, transparent);
+		background: color-mix(in oklch, var(--color-accent) 12%, transparent);
+	}
+
+	.not-found__btn--primary {
+		background: color-mix(in oklch, var(--color-accent) 18%, transparent);
+		border-color: color-mix(in oklch, var(--color-accent) 40%, transparent);
+		color: var(--color-accent-2);
+	}
+
+	:global(html[data-theme="dark"]) .not-found__btn--primary {
+		color: var(--color-accent);
+	}
+
+	.not-found__lang {
+		margin: 1.5rem 0 0;
+		font-size: 0.8rem;
+		opacity: 0.65;
+		animation: kitchen-fade-up 0.7s cubic-bezier(0.22, 1, 0.36, 1) 0.28s both;
+	}
+
+	.not-found__lang a {
+		color: var(--color-accent);
+		text-underline-offset: 2px;
+	}
+
+	.not-found__brand {
+		margin: 2rem 0 0;
+		font-size: 0.75rem;
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+		opacity: 0.4;
+	}
+
+	@media (max-width: 639px) {
+		.not-found__actions {
+			width: 100%;
+			flex-direction: column;
+		}
+		.not-found__btn {
+			width: 100%;
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.not-found__code,
+		.not-found__heading,
+		.not-found__body,
+		.not-found__actions,
+		.not-found__lang {
+			animation: none !important;
+		}
+	}
+</style>

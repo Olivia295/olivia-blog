@@ -23,3 +23,7 @@ pnpm-debug.log*
 *.pem
 .cache
 .astro
+
+# local media mirror (binaries stay out of git)
+media-local/**
+!media-local/README.md

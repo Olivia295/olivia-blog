@@ -1,9 +1,10 @@
 ---
-title: Hello, Welcome
-description: An introduction to using the note feature in Astro Cactus
+title: 欢迎来到厨房
+description: 示例笔记（草稿，生产不展示）
 publishDate: "2024-10-14T11:23:00Z"
+draft: true
 ---
 
-Hi, Hello. This is an example note feature included with Astro Cactus 🌵
+这是主题自带的示例笔记，保持 draft，线上不会出现。
 
-They're for shorter, more concise posts that you'd like to share. They generally don't include headings, but hey, it's entirely up to you!
+本地开发时仍可预览。

@@ -1,0 +1,84 @@
+---
+import { languageLabels, languages, type Lang } from "@/i18n/config";
+import { switchLocalePath } from "@/i18n/utils";
+
+interface Props {
+	lang: Lang;
+}
+
+const { lang } = Astro.props;
+const pathname = Astro.url.pathname;
+---
+
+<div class="lang-switch" role="group" aria-label={lang === "zh" ? "切换语言" : "Switch language"}>
+	{
+		languages.map((code) => {
+			const href = switchLocalePath(pathname, code);
+			const active = code === lang;
+			return (
+				<a
+					href={href}
+					class:list={["lang-link", { active }]}
+					aria-current={active ? "page" : undefined}
+					hreflang={code}
+					data-set-locale={code}
+				>
+					{languageLabels[code]}
+				</a>
+			);
+		})
+	}
+</div>
+
+<script>
+	document.querySelectorAll<HTMLAnchorElement>("[data-set-locale]").forEach((link) => {
+		link.addEventListener("click", () => {
+			const locale = link.dataset.setLocale;
+			if (!locale) return;
+			// 1 year
+			document.cookie = `locale=${locale}; path=/; max-age=31536000; samesite=lax`;
+		});
+	});
+</script>
+
+<style>
+	.lang-switch {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.1rem;
+		margin-inline-start: 0.15rem;
+		font-size: 0.7rem;
+		font-weight: 600;
+		flex-shrink: 0;
+	}
+
+	.lang-link {
+		padding: 0.3rem 0.35rem;
+		border-radius: 0.35rem;
+		opacity: 0.55;
+		text-decoration: none;
+		color: inherit;
+		min-width: 1.75rem;
+		text-align: center;
+	}
+
+	@media (min-width: 640px) {
+		.lang-switch {
+			margin-inline-start: 0.35rem;
+			font-size: 0.75rem;
+		}
+		.lang-link {
+			padding: 0.25rem 0.4rem;
+		}
+	}
+
+	.lang-link:hover {
+		opacity: 0.9;
+	}
+
+	.lang-link.active {
+		opacity: 1;
+		background: color-mix(in oklch, var(--color-global-text) 8%, transparent);
+		color: var(--color-accent);
+	}
+</style>

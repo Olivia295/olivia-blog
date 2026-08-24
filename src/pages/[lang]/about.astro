@@ -1,0 +1,32 @@
+---
+import FloatingBack from "@/components/FloatingBack.astro";
+import { getStaticLangPaths, localePath, useTranslations } from "@/i18n/utils";
+import type { Lang } from "@/i18n/config";
+import PageLayout from "@/layouts/Base.astro";
+
+export function getStaticPaths() {
+	return getStaticLangPaths();
+}
+
+const lang = Astro.params.lang as Lang;
+const t = useTranslations(lang);
+
+const meta = {
+	description: t("site.description"),
+	title: t("about.title"),
+};
+---
+
+<PageLayout lang={lang} meta={meta}>
+	<h1 class="title mb-12">{t("about.title")}</h1>
+	<div class="prose prose-sm prose-cactus max-w-none">
+		{
+			lang === "zh" ? (
+				<p>厨房还在装修。先从首页、笔记和相册逛起吧。</p>
+			) : (
+				<p>The kitchen is still being fitted out. Start from Home, Notes, and Photos.</p>
+			)
+		}
+	</div>
+	<FloatingBack href={localePath(lang, "/")} label={t("back.home")} />
+</PageLayout>

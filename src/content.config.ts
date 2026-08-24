@@ -35,6 +35,43 @@ const post = defineCollection({
 				.optional()
 				.transform((str) => (str ? new Date(str) : undefined)),
 			pinned: z.boolean().default(false),
+			/**
+			 * Post-scoped music player (not global).
+			 * - true: full playlist from music.json
+			 * - { id }: one catalog track (id in music.json)
+			 * - { src, title?, artist? }: one-off external URL
+			 * - array: several of the above
+			 * - false / omit: no player
+			 */
+			music: z
+				.union([
+					z.boolean(),
+					z
+						.object({
+							id: z.string().optional(),
+							src: z.string().optional(),
+							title: z.string().optional(),
+							artist: z.string().optional(),
+						})
+						.refine((v) => Boolean(v.id || v.src), {
+							message: "music needs `id` (from music.json) or `src` (URL)",
+						}),
+					z
+						.array(
+							z
+								.object({
+									id: z.string().optional(),
+									src: z.string().optional(),
+									title: z.string().optional(),
+									artist: z.string().optional(),
+								})
+								.refine((v) => Boolean(v.id || v.src), {
+									message: "each music item needs `id` or `src`",
+								}),
+						)
+						.min(1),
+				])
+				.default(false),
 		}),
 });
 
@@ -42,6 +79,7 @@ const note = defineCollection({
 	loader: glob({ base: "./src/content/note", pattern: "**/*.{md,mdx}" }),
 	schema: baseSchema.extend({
 		description: z.string().optional(),
+		draft: z.boolean().default(false),
 		publishDate: z.iso
 			.datetime({ offset: true }) // Ensures ISO 8601 format with offsets allowed (e.g. "2024-01-01T00:00:00Z" and "2024-01-01T00:00:00+02:00")
 			.transform((val) => new Date(val)),

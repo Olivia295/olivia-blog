@@ -1,49 +1,48 @@
 ---
+import LanguageSwitcher from "@/components/LanguageSwitcher.astro";
 import Search from "@/components/Search.astro";
 import ThemeToggle from "@/components/ThemeToggle.astro";
-import { menuLinks } from "@/site.config";
-import { siteConfig } from "../../site.config";
+import type { Lang } from "@/i18n/config";
+import { localePath, useTranslations } from "@/i18n/utils";
+import { menuLinkDefs, siteConfig } from "@/site.config";
+
+interface Props {
+	lang: Lang;
+}
+
+const { lang } = Astro.props;
+const t = useTranslations(lang);
+const homeHref = localePath(lang, "/");
+const menuLinks = menuLinkDefs.map((link) => ({
+	path: localePath(lang, link.path),
+	title: t(link.titleKey),
+}));
 ---
 
-<header class="group relative mb-28 flex items-center sm:ps-18" id="main-header">
-	<div class="flex sm:flex-col">
+<header class="site-header group relative mb-14 flex w-full min-w-0 items-center gap-2 sm:mb-28 sm:ps-18" id="main-header">
+	<div class="header-brand min-w-0 flex-1 sm:flex sm:flex-col">
 		<a
-			aria-current={Astro.url.pathname === "/" ? "page" : false}
-			class="inline-flex items-center sm:relative sm:inline-block sm:grayscale sm:hover:filter-none"
-			href="/"
+			aria-current={Astro.url.pathname === homeHref || Astro.url.pathname === `/${lang}` ? "page" : false}
+			class="site-logo inline-flex max-w-full items-center sm:relative sm:inline-block sm:grayscale sm:hover:filter-none"
+			href={homeHref}
 		>
-			<svg
-				aria-hidden="true"
-				class="me-3 h-10 w-6 sm:absolute sm:-start-18 sm:me-0 sm:h-20 sm:w-12"
-				fill="none"
-				focusable="false"
-				viewBox="0 0 272 480"
-				xmlns="http://www.w3.org/2000/svg"
-			>
-				<title>Astro Cactus Logo</title>
-				<path
-					fill="#cdffb8"
-					d="M181.334 93.333v-40L226.667 80v40zM136.001 53.333 90.667 26.667v426.666L136.001 480zM45.333 220 0 193.334v140L45.333 360z"
-				></path><path
-					fill="#d482ab"
-					d="M90.667 26.667 136.001 0l45.333 26.667-45.333 26.666zM181.334 53.33l45.333-26.72L272 53.33 226.667 80zM136 240l-45.333-26.67v53.34zM0 193.33l45.333-26.72 45.334 26.72L45.333 220zM181.334 93.277 226.667 120l-45.333 26.67z"
-				></path><path
-					fill="#2abc89"
-					d="m136 53.333 45.333-26.666v120L226.667 120V80L272 53.333V160l-90.667 53.333v240L136 480V306.667L45.334 360V220l45.333-26.667v73.334L136 240z"
-				></path>
-			</svg>
-			<span class="text-xl font-bold sm:text-2xl">{siteConfig.title}</span>
+			<span class="truncate text-lg font-bold sm:text-2xl">{siteConfig.title}</span>
 		</a>
 		<nav
-			aria-label="Main menu"
-			class="bg-global-bg absolute -inset-x-4 top-12 hidden flex-col divide-y px-2 py-4 group-[.menu-open]:z-50 group-[.menu-open]:flex sm:static sm:z-auto sm:-ms-4 sm:mt-1 sm:flex sm:flex-row sm:divide-x sm:divide-y-0 sm:bg-transparent sm:p-0"
+			aria-label={t("nav.main")}
+			class="site-nav"
 			id="navigation-menu"
 		>
 			{
 				menuLinks.map((link) => (
 					<a
-						aria-current={Astro.url.pathname === link.path ? "page" : false}
-						class="text-accent px-2 py-4 font-semibold sm:px-4 sm:py-0 sm:underline-offset-2 sm:hover:underline"
+						aria-current={
+							Astro.url.pathname === link.path ||
+							Astro.url.pathname === `${link.path}`.replace(/\/$/, "")
+								? "page"
+								: false
+						}
+						class="site-nav__link"
 						href={link.path}
 					>
 						{link.title}
@@ -52,38 +51,39 @@ import { siteConfig } from "../../site.config";
 			}
 		</nav>
 	</div>
-	<Search />
-	<ThemeToggle />
-	<mobile-button>
+
+	<div class="header-tools flex shrink-0 items-center">
+		<div class="header-tools__desktop flex items-center">
+			<Search lang={lang} />
+			<LanguageSwitcher lang={lang} />
+			<ThemeToggle lang={lang} />
+		</div>
 		<button
 			aria-expanded="false"
 			aria-haspopup="menu"
-			class="group relative ms-4 h-7 w-7 sm:invisible sm:hidden"
+			aria-controls="navigation-menu"
+			class="menu-toggle"
 			id="toggle-navigation-menu"
 			type="button"
 		>
-			<span class="sr-only">Open main menu</span>
+			<span class="sr-only">{t("nav.openMenu")}</span>
 			<svg
 				aria-hidden="true"
-				class="absolute start-1/2 top-1/2 h-full w-full -translate-x-1/2 -translate-y-1/2 transition-all group-aria-expanded:scale-0 group-aria-expanded:opacity-0"
+				class="menu-toggle__icon menu-toggle__icon--open"
 				fill="none"
 				focusable="false"
-				id="line-svg"
 				stroke="currentColor"
 				stroke-width="1.5"
 				viewBox="0 0 24 24"
 				xmlns="http://www.w3.org/2000/svg"
 			>
-				<path d="M3.75 9h16.5m-16.5 6.75h16.5" stroke-linecap="round" stroke-linejoin="round"
-				></path>
+				<path d="M3.75 9h16.5m-16.5 6.75h16.5" stroke-linecap="round" stroke-linejoin="round"></path>
 			</svg>
 			<svg
 				aria-hidden="true"
-				class="text-accent absolute start-1/2 top-1/2 h-full w-full -translate-x-1/2 -translate-y-1/2 scale-0 opacity-0 transition-all group-aria-expanded:scale-100 group-aria-expanded:opacity-100"
-				class="text-accent"
+				class="menu-toggle__icon menu-toggle__icon--close"
 				fill="none"
 				focusable="false"
-				id="cross-svg"
 				stroke="currentColor"
 				stroke-width="1.5"
 				viewBox="0 0 24 24"
@@ -92,26 +92,209 @@ import { siteConfig } from "../../site.config";
 				<path d="M6 18L18 6M6 6l12 12" stroke-linecap="round" stroke-linejoin="round"></path>
 			</svg>
 		</button>
-	</mobile-button>
+	</div>
 </header>
 
+<div class="nav-backdrop" id="nav-backdrop" hidden></div>
+
 <script>
-	import { toggleClass } from "@/utils/domElement";
+	const headerEl = document.getElementById("main-header");
+	const toggleBtn = document.getElementById("toggle-navigation-menu") as HTMLButtonElement | null;
+	const backdrop = document.getElementById("nav-backdrop");
+	const nav = document.getElementById("navigation-menu");
 
-	class MobileNavBtn extends HTMLElement {
-		#menuOpen: boolean = false;
+	function setOpen(open: boolean) {
+		headerEl?.classList.toggle("menu-open", open);
+		toggleBtn?.setAttribute("aria-expanded", String(open));
+		if (backdrop) {
+			backdrop.hidden = !open;
+			backdrop.classList.toggle("is-open", open);
+		}
+		document.body.classList.toggle("nav-locked", open);
+	}
 
-		connectedCallback() {
-			const headerEl = document.getElementById("main-header")!;
-			const mobileButtonEl = this.querySelector<HTMLButtonElement>("button");
+	toggleBtn?.addEventListener("click", () => {
+		const open = !headerEl?.classList.contains("menu-open");
+		setOpen(open);
+	});
 
-			mobileButtonEl?.addEventListener("click", () => {
-				if (headerEl) toggleClass(headerEl, "menu-open");
-				this.#menuOpen = !this.#menuOpen;
-				mobileButtonEl.setAttribute("aria-expanded", this.#menuOpen.toString());
-			});
+	backdrop?.addEventListener("click", () => setOpen(false));
+
+	nav?.querySelectorAll("a").forEach((link) => {
+		link.addEventListener("click", () => {
+			if (window.matchMedia("(max-width: 639px)").matches) setOpen(false);
+		});
+	});
+
+	window.addEventListener("resize", () => {
+		if (window.matchMedia("(min-width: 640px)").matches) setOpen(false);
+	});
+</script>
+
+<style>
+	.site-header {
+		animation: kitchen-fade-up 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+		z-index: 50;
+	}
+
+	.site-logo:active {
+		opacity: 0.75;
+	}
+
+	/* —— Desktop nav (default open as row) —— */
+	.site-nav {
+		display: none;
+		flex-direction: column;
+	}
+
+	.site-nav__link {
+		display: block;
+		padding: 0.9rem 1rem;
+		font-size: 1rem;
+		font-weight: 600;
+		color: var(--color-accent);
+		text-decoration: none;
+		border-bottom: 1px solid color-mix(in oklch, var(--color-global-text) 10%, transparent);
+		transition: background 0.15s ease;
+	}
+
+	.site-nav__link:last-child {
+		border-bottom: none;
+	}
+
+	.site-nav__link:active {
+		background: color-mix(in oklch, var(--color-accent) 10%, transparent);
+	}
+
+	.menu-toggle {
+		position: relative;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 2.75rem;
+		height: 2.75rem;
+		margin-inline-start: 0.15rem;
+		border: none;
+		border-radius: 0.5rem;
+		background: transparent;
+		color: inherit;
+		cursor: pointer;
+		flex-shrink: 0;
+	}
+
+	.menu-toggle__icon {
+		position: absolute;
+		width: 1.65rem;
+		height: 1.65rem;
+		transition:
+			opacity 0.2s ease,
+			transform 0.2s ease;
+	}
+
+	.menu-toggle__icon--close {
+		opacity: 0;
+		transform: scale(0.6);
+		color: var(--color-accent);
+	}
+
+	:global(#main-header.menu-open) .menu-toggle__icon--open {
+		opacity: 0;
+		transform: scale(0.6);
+	}
+
+	:global(#main-header.menu-open) .menu-toggle__icon--close {
+		opacity: 1;
+		transform: scale(1);
+	}
+
+	/* Mobile open panel */
+	@media (max-width: 639px) {
+		:global(#main-header.menu-open) .site-nav {
+			display: flex;
+			position: absolute;
+			left: -1rem;
+			right: -1rem;
+			top: calc(100% + 0.35rem);
+			z-index: 60;
+			background: var(--color-global-bg);
+			border-radius: 0 0 1rem 1rem;
+			border-bottom: 1px solid color-mix(in oklch, var(--color-global-text) 12%, transparent);
+			box-shadow: 0 16px 40px color-mix(in oklch, var(--color-global-text) 12%, transparent);
+			max-height: min(70vh, 22rem);
+			overflow-y: auto;
+			animation: kitchen-fade-up 0.25s cubic-bezier(0.22, 1, 0.36, 1) both;
+		}
+
+		:global(body.nav-locked) {
+			overflow: hidden;
+		}
+
+	}
+
+	/* Desktop: always show horizontal nav, hide hamburger */
+	@media (min-width: 640px) {
+		.menu-toggle {
+			display: none;
+		}
+
+		.site-nav {
+			display: flex;
+			flex-direction: row;
+			position: static;
+			margin-top: 0.35rem;
+			margin-inline-start: -1rem;
+			background: transparent;
+			box-shadow: none;
+			border: none;
+			max-height: none;
+			overflow: visible;
+			animation: none;
+		}
+
+		.site-nav__link {
+			padding: 0 1rem;
+			font-size: 0.875rem;
+			border-bottom: none;
+			border-inline-end: 1px solid color-mix(in oklch, var(--color-global-text) 14%, transparent);
+		}
+
+		.site-nav__link:last-child {
+			border-inline-end: none;
+		}
+
+		.site-nav__link:hover {
+			text-decoration: underline;
+			text-underline-offset: 2px;
 		}
 	}
 
-	customElements.define("mobile-button", MobileNavBtn);
-</script>
+	.nav-backdrop {
+		position: fixed;
+		inset: 0;
+		z-index: 40;
+		background: color-mix(in oklch, var(--color-global-text) 18%, transparent);
+		backdrop-filter: blur(3px);
+		-webkit-backdrop-filter: blur(3px);
+		opacity: 0;
+		pointer-events: none;
+		transition: opacity 0.25s ease;
+	}
+
+	.nav-backdrop.is-open {
+		opacity: 1;
+		pointer-events: auto;
+	}
+
+	@media (min-width: 640px) {
+		.nav-backdrop {
+			display: none !important;
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.site-header,
+		.site-nav {
+			animation: none !important;
+		}
+	}
+</style>

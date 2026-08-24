@@ -1,0 +1,144 @@
+---
+/**
+ * Floating back control for secondary pages.
+ * Hidden at the top; appears after scrolling down a bit.
+ */
+interface Props {
+	href: string;
+	label: string;
+}
+
+const { href, label } = Astro.props;
+---
+
+<a
+	id="floating-back"
+	class="floating-back"
+	href={href}
+	data-show="false"
+	aria-label={label}
+	title={label}
+>
+	<svg
+		aria-hidden="true"
+		class="floating-back__icon"
+		fill="none"
+		focusable="false"
+		stroke="currentColor"
+		stroke-width="2"
+		viewBox="0 0 24 24"
+		xmlns="http://www.w3.org/2000/svg"
+	>
+		<path d="M15.75 19.5 8.25 12l7.5-7.5" stroke-linecap="round" stroke-linejoin="round"></path>
+	</svg>
+	<span class="floating-back__label">{label}</span>
+</a>
+
+<script>
+	const btn = document.getElementById("floating-back");
+	if (btn) {
+		const threshold = 64;
+		let shortPageReady = false;
+
+		const update = () => {
+			const overflow = document.documentElement.scrollHeight - window.innerHeight;
+			const shortPage = overflow < 96;
+			const scrolled = window.scrollY > threshold;
+			// Long pages: show after scroll. Short pages: show shortly after load (still not "at first paint").
+			btn.dataset.show = (scrolled || (shortPage && shortPageReady)).toString();
+		};
+
+		update();
+		window.addEventListener("scroll", update, { passive: true });
+		window.addEventListener("resize", update, { passive: true });
+		window.setTimeout(() => {
+			shortPageReady = true;
+			update();
+		}, 450);
+	}
+</script>
+
+<style>
+	.floating-back {
+		position: fixed;
+		left: max(0.75rem, env(safe-area-inset-left));
+		bottom: max(1rem, calc(0.75rem + env(safe-area-inset-bottom)));
+		z-index: 90;
+		display: inline-flex;
+		align-items: center;
+		gap: 0.35rem;
+		max-width: min(14rem, calc(100vw - 5rem));
+		min-height: 2.75rem;
+		height: auto;
+		padding: 0.55rem 0.9rem 0.55rem 0.7rem;
+		border-radius: 999px;
+		border: 2px solid transparent;
+		background: color-mix(in oklch, var(--color-global-bg) 88%, var(--color-global-text));
+		box-shadow: 0 8px 24px color-mix(in oklch, var(--color-global-text) 12%, transparent);
+		backdrop-filter: blur(10px);
+		-webkit-backdrop-filter: blur(10px);
+		color: inherit;
+		text-decoration: none;
+		font-size: 0.8rem;
+		font-weight: 600;
+		font-family: inherit;
+		line-height: 1.2;
+		opacity: 0;
+		pointer-events: none;
+		transform: translateY(1.75rem);
+		transition:
+			opacity 0.3s ease,
+			transform 0.3s ease,
+			border-color 0.2s ease,
+			box-shadow 0.2s ease;
+	}
+
+	@media (min-width: 640px) {
+		.floating-back {
+			left: max(2rem, env(safe-area-inset-left));
+			bottom: max(2rem, calc(1.25rem + env(safe-area-inset-bottom)));
+			max-width: 16rem;
+			min-height: 2.75rem;
+			padding: 0.6rem 1rem 0.6rem 0.75rem;
+			font-size: 0.85rem;
+		}
+	}
+
+	.floating-back:active {
+		transform: translateY(0) scale(0.98);
+	}
+
+	:global(html[data-theme="dark"]) .floating-back {
+		background: color-mix(in oklch, var(--color-global-bg) 82%, white);
+		box-shadow: 0 8px 28px rgba(0, 0, 0, 0.35);
+	}
+
+	.floating-back:hover {
+		border-color: var(--color-link);
+	}
+
+	.floating-back[data-show="true"] {
+		opacity: 1;
+		pointer-events: auto;
+		transform: translateY(0);
+	}
+
+	.floating-back__icon {
+		width: 1.15rem;
+		height: 1.15rem;
+		flex-shrink: 0;
+	}
+
+	.floating-back__label {
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.floating-back {
+			transition: opacity 0.15s ease;
+			transform: none;
+		}
+	}
+</style>

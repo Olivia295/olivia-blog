@@ -1,0 +1,17 @@
+{
+	"cleanUrls": true,
+	"trailingSlash": true,
+	"redirects": [
+		{ "source": "/posts", "destination": "/zh/posts/", "permanent": false },
+		{ "source": "/posts/:path*", "destination": "/zh/posts/:path*", "permanent": false },
+		{ "source": "/notes", "destination": "/zh/notes/", "permanent": false },
+		{ "source": "/notes/rss.xml", "destination": "/zh/notes/rss.xml", "permanent": false },
+		{ "source": "/notes/:slug", "destination": "/zh/notes/#note-:slug", "permanent": false },
+		{ "source": "/photos", "destination": "/zh/photos/", "permanent": false },
+		{ "source": "/photos/:path*", "destination": "/zh/photos/:path*", "permanent": false },
+		{ "source": "/tags", "destination": "/zh/tags/", "permanent": false },
+		{ "source": "/tags/:path*", "destination": "/zh/tags/:path*", "permanent": false },
+		{ "source": "/about", "destination": "/zh/about/", "permanent": false },
+		{ "source": "/rss.xml", "destination": "/zh/rss.xml", "permanent": false }
+	]
+}

@@ -23,18 +23,32 @@ import { expressiveCodeOptions, siteConfig } from "./src/site.config";
 export default defineConfig({
 	site: siteConfig.url,
 	image: {
-		domains: ["webmention.io"],
+		domains: [
+			"webmention.io",
+			"images.unsplash.com",
+			"www.soundhelix.com",
+			"public.blob.vercel-storage.com",
+		],
+		remotePatterns: [
+			{
+				protocol: "https",
+				hostname: "**.public.blob.vercel-storage.com",
+			},
+		],
 	},
 	integrations: [
 		expressiveCode(expressiveCodeOptions),
 		icon(),
 		sitemap(),
 		mdx(),
-		robotsTxt(),
+		robotsTxt({
+			policy: [{ userAgent: "*", disallow: "/" }],
+			sitemap: false,
+		}),
 		webmanifest({
 			// See: https://github.com/alextim/astro-lib/blob/main/packages/astro-webmanifest/README.md
 			name: siteConfig.title,
-			short_name: "Astro_Cactus", // optional
+			short_name: "95 kitchen",
 			description: siteConfig.description,
 			lang: siteConfig.lang,
 			icon: "public/icon.svg", // the source for generating favicon & icons

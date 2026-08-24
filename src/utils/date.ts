@@ -1,15 +1,17 @@
 import type { CollectionEntry } from "astro:content";
+import { dateLocale, defaultLang, type Lang } from "@/i18n/config";
 import { siteConfig } from "@/site.config";
 
 export function getFormattedDate(
 	date: Date | undefined,
 	options?: Intl.DateTimeFormatOptions,
+	lang: Lang = defaultLang,
 ): string {
 	if (date === undefined) {
 		return "Invalid Date";
 	}
 
-	return new Intl.DateTimeFormat(siteConfig.date.locale, {
+	return new Intl.DateTimeFormat(dateLocale[lang] ?? siteConfig.date.locale, {
 		...(siteConfig.date.options as Intl.DateTimeFormatOptions),
 		...options,
 	}).format(date);

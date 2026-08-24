@@ -4,32 +4,43 @@ import Footer from "@/components/layout/Footer.astro";
 import Header from "@/components/layout/Header.astro";
 import SkipLink from "@/components/SkipLink.astro";
 import ThemeProvider from "@/components/ThemeProvider.astro";
-import { siteConfig } from "@/site.config";
+import { defaultLang, htmlLang, type Lang } from "@/i18n/config";
+import { getLangFromUrl, useTranslations } from "@/i18n/utils";
 import type { SiteMeta } from "@/types";
 
 interface Props {
 	meta: SiteMeta;
+	lang?: Lang;
 }
 
+const lang = Astro.props.lang ?? getLangFromUrl(Astro.url) ?? defaultLang;
+const t = useTranslations(lang);
+
 const {
-	meta: { articleDate, description = siteConfig.description, ogImage, title },
+	meta: { articleDate, description = t("site.description"), ogImage, title },
 } = Astro.props;
 ---
 
-<html class="scroll-smooth" lang={siteConfig.lang}>
+<html class="scroll-smooth" lang={htmlLang[lang]}>
 	<head>
-		<BaseHead articleDate={articleDate} description={description} ogImage={ogImage} title={title} />
+		<BaseHead
+			articleDate={articleDate}
+			description={description}
+			ogImage={ogImage}
+			title={title}
+			lang={lang}
+		/>
 		<ThemeProvider />
 	</head>
 	<body
-		class="bg-global-bg text-global-text mx-auto flex min-h-screen max-w-3xl flex-col px-4 pt-16 font-mono text-sm font-normal antialiased sm:px-8"
+		class="bg-global-bg text-global-text mx-auto flex min-h-screen w-full max-w-3xl flex-col overflow-x-clip px-4 pt-12 pb-28 font-mono text-sm font-normal antialiased sm:px-8 sm:pt-16 sm:pb-10"
 	>
-		<SkipLink />
-		<Header />
+		<SkipLink lang={lang} />
+		<Header lang={lang} />
 		<main id="main">
 			<slot />
 		</main>
-		<Footer />
+		<Footer lang={lang} />
 		<script is:inline type="speculationrules">
 			{
 				"prefetch": [

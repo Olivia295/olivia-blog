@@ -1,15 +1,19 @@
 ---
 import type { HTMLAttributes } from "astro/types";
+import { defaultLang, type Lang } from "@/i18n/config";
+import { getLangFromUrl } from "@/i18n/utils";
 import { getFormattedDate } from "@/utils/date";
 
 type Props = HTMLAttributes<"time"> & {
 	date: Date;
 	dateTimeOptions?: Intl.DateTimeFormatOptions;
+	lang?: Lang;
 };
 
-const { date, dateTimeOptions, ...attrs } = Astro.props;
+const { date, dateTimeOptions, lang: langProp, ...attrs } = Astro.props;
+const lang = langProp ?? getLangFromUrl(Astro.url) ?? defaultLang;
 
-const postDate = getFormattedDate(date, dateTimeOptions);
+const postDate = getFormattedDate(date, dateTimeOptions, lang);
 const ISO = date.toISOString();
 ---
 

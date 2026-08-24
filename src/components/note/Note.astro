@@ -2,45 +2,110 @@
 import { type CollectionEntry, render } from "astro:content";
 import type { HTMLTag, Polymorphic } from "astro/types";
 import FormattedDate from "@/components/FormattedDate.astro";
+import { defaultLang, type Lang } from "@/i18n/config";
+import { getLangFromUrl } from "@/i18n/utils";
 
 type Props<Tag extends HTMLTag> = Polymorphic<{ as: Tag }> & {
 	note: CollectionEntry<"note">;
-	isPreview?: boolean | undefined;
+	lang?: Lang;
 };
 
-const { as: Tag = "div", note, isPreview = false } = Astro.props;
+const { as: Tag = "h2", note, lang: langProp } = Astro.props;
+const lang = langProp ?? getLangFromUrl(Astro.url) ?? defaultLang;
 const { Content } = await render(note);
 ---
 
-<article
-	class:list={[isPreview && "bg-global-text/5 inline-grid rounded-md px-4 py-3"]}
-	data-pagefind-body={isPreview ? false : true}
->
-	<Tag class="title" class:list={{ "text-base": isPreview }}>
-		{
-			isPreview ? (
-				<a class="cactus-link" href={`/notes/${note.id}/`}>
-					{note.data.title}
-				</a>
-			) : (
-				<>{note.data.title}</>
-			)
-		}
-	</Tag>
-	<FormattedDate
-		dateTimeOptions={{
-			hour: "2-digit",
-			minute: "2-digit",
-			year: "2-digit",
-			month: "2-digit",
-			day: "2-digit",
-		}}
-		date={note.data.publishDate}
-	/>
-	<div
-		class="prose prose-sm prose-cactus mt-4 max-w-none [&>p:last-of-type]:mb-0"
-		class:list={{ "line-clamp-6": isPreview }}
-	>
+<article class="note-card" id={`note-${note.id}`} data-pagefind-body>
+	<header class="note-card__header">
+		<Tag class="note-card__title">{note.data.title}</Tag>
+		<FormattedDate
+			class="note-card__date"
+			dateTimeOptions={{
+				hour: "2-digit",
+				minute: "2-digit",
+				year: "numeric",
+				month: "short",
+				day: "numeric",
+			}}
+			date={note.data.publishDate}
+			lang={lang}
+		/>
+	</header>
+	<div class="note-card__body prose prose-sm prose-cactus max-w-none">
 		<Content />
 	</div>
 </article>
+
+<style>
+	.note-card {
+		display: grid;
+		gap: 0.75rem;
+		padding: 1rem 1rem 1.15rem;
+		border-radius: 1rem;
+		background: color-mix(in oklch, var(--color-global-text) 5%, transparent);
+		border: 1px solid color-mix(in oklch, var(--color-global-text) 8%, transparent);
+		transition:
+			transform 0.25s cubic-bezier(0.22, 1, 0.36, 1),
+			box-shadow 0.25s ease,
+			border-color 0.25s ease;
+	}
+
+	@media (min-width: 640px) {
+		.note-card {
+			padding: 1.1rem 1.15rem 1.25rem;
+		}
+		.note-card:hover {
+			transform: translateY(-2px);
+			border-color: color-mix(in oklch, var(--color-accent) 28%, transparent);
+			box-shadow: 0 10px 28px color-mix(in oklch, var(--color-global-text) 8%, transparent);
+		}
+	}
+
+	.note-card:active {
+		transform: scale(0.995);
+	}
+
+	.note-card__header {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: baseline;
+		justify-content: space-between;
+		gap: 0.35rem 1rem;
+	}
+
+	.note-card__title {
+		margin: 0;
+		font-size: 1.05rem;
+		font-weight: 700;
+		line-height: 1.35;
+	}
+
+	.note-card__date {
+		font-size: 0.75rem;
+		opacity: 0.6;
+		font-weight: 600;
+	}
+
+	.note-card__body {
+		min-width: 0;
+	}
+
+	/* Inline media: full width inside the card */
+	.note-card__body :global(img) {
+		display: block;
+		width: 100%;
+		max-width: 100%;
+		height: auto;
+		margin: 0.75rem 0;
+		border-radius: 0.75rem;
+		object-fit: cover;
+	}
+
+	.note-card__body :global(p:last-child) {
+		margin-bottom: 0;
+	}
+
+	.note-card__body :global(a) {
+		color: var(--color-link);
+	}
+</style>

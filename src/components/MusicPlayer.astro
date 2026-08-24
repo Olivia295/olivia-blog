@@ -1,0 +1,212 @@
+---
+import { getSongs, type Song } from "@/data/music";
+import { defaultLang, type Lang } from "@/i18n/config";
+import { getLangFromUrl, useTranslations } from "@/i18n/utils";
+
+/**
+ * Page-scoped player only. Do not mount in Base layout —
+ * multi-page navigations remount the document and kill <audio>.
+ */
+interface Props {
+	/** Override catalog; omit to use full music.json list. */
+	songs?: Song[];
+	lang?: Lang;
+}
+
+const { songs: songsProp, lang: langProp } = Astro.props;
+const lang = langProp ?? getLangFromUrl(Astro.url) ?? defaultLang;
+const t = useTranslations(lang);
+const songs = songsProp ?? getSongs();
+const hasSongs = songs.length > 0;
+const singleTrack = songs.length === 1;
+---
+
+{
+	hasSongs ? (
+		<div id="music-player" class="music-player" data-single={singleTrack ? "true" : "false"}>
+			<div class="now-playing">
+				<p class="label">{singleTrack ? t("music.trackForPost") : t("music.nowPlaying")}</p>
+				<p id="current-title" class="current-title">
+					{songs[0]?.title}
+				</p>
+				<p id="current-artist" class="current-artist">
+					{songs[0]?.artist}
+				</p>
+			</div>
+
+			<audio id="audio-player" controls preload="metadata">
+				<source id="audio-source" src={songs[0]?.src} type="audio/mpeg" />
+			</audio>
+
+			{
+				!singleTrack && (
+					<ul class="playlist" role="list">
+						{songs.map((song, index) => (
+							<li>
+								<button
+									type="button"
+									class={index === 0 ? "active" : ""}
+									data-index={index}
+									data-src={song.src}
+									data-title={song.title}
+									data-artist={song.artist}
+								>
+									<span class="song-title">{song.title}</span>
+									<span class="song-artist">{song.artist}</span>
+								</button>
+							</li>
+						))}
+					</ul>
+				)
+			}
+		</div>
+	) : (
+		<p class="empty">{t("music.empty")}</p>
+	)
+}
+
+<script>
+	const root = document.getElementById("music-player");
+	if (root && root.dataset.single !== "true") {
+		const audio = document.getElementById("audio-player") as HTMLAudioElement;
+		const source = document.getElementById("audio-source") as HTMLSourceElement;
+		const buttons = Array.from(document.querySelectorAll<HTMLButtonElement>(".playlist button"));
+		const currentTitle = document.getElementById("current-title") as HTMLParagraphElement;
+		const currentArtist = document.getElementById("current-artist") as HTMLParagraphElement;
+
+		let currentIndex = 0;
+
+		function playSong(index: number) {
+			const button = buttons[index];
+			if (!button) return;
+
+			const src = button.dataset.src;
+			const title = button.dataset.title;
+			const artist = button.dataset.artist;
+			if (!src) return;
+
+			currentIndex = index;
+			source.src = src;
+			audio.load();
+			void audio.play().catch(() => {});
+
+			if (title) currentTitle.textContent = title;
+			if (artist) currentArtist.textContent = artist;
+
+			buttons.forEach((btn) => btn.classList.remove("active"));
+			button.classList.add("active");
+		}
+
+		buttons.forEach((button) => {
+			button.addEventListener("click", () => {
+				playSong(Number(button.dataset.index));
+			});
+		});
+
+		audio.addEventListener("ended", () => {
+			const nextIndex = (currentIndex + 1) % buttons.length;
+			playSong(nextIndex);
+		});
+	}
+</script>
+
+<style>
+	.music-player {
+		width: 100%;
+		max-width: 28rem;
+		padding: 1.25rem;
+		border-radius: 1rem;
+		background: color-mix(in oklch, var(--color-global-text) 4%, transparent);
+		border: 1px solid color-mix(in oklch, var(--color-global-text) 10%, transparent);
+	}
+
+	.now-playing {
+		margin-bottom: 1rem;
+	}
+
+	.label {
+		margin: 0 0 0.5rem;
+		font-size: 0.7rem;
+		letter-spacing: 0.12em;
+		text-transform: uppercase;
+		opacity: 0.55;
+	}
+
+	.current-title {
+		margin: 0;
+		font-size: 1.05rem;
+		font-weight: 700;
+		line-height: 1.35;
+	}
+
+	.current-artist {
+		margin: 0.25rem 0 0;
+		font-size: 0.85rem;
+		opacity: 0.65;
+	}
+
+	audio {
+		width: 100%;
+		height: 2.25rem;
+	}
+
+	.playlist {
+		list-style: none;
+		padding: 0;
+		margin: 1rem 0 0;
+		max-height: 20rem;
+		overflow-y: auto;
+	}
+
+	.playlist li {
+		margin-bottom: 0.3rem;
+	}
+
+	.playlist button {
+		width: 100%;
+		border: none;
+		background: transparent;
+		padding: 0.65rem 0.75rem;
+		border-radius: 0.65rem;
+		cursor: pointer;
+		text-align: left;
+		font-family: inherit;
+		color: inherit;
+		transition: background 0.15s ease;
+	}
+
+	.playlist button:hover,
+	.playlist button.active {
+		background: color-mix(in oklch, var(--color-global-text) 8%, transparent);
+	}
+
+	.playlist button.active {
+		box-shadow: inset 2px 0 0 var(--color-accent);
+	}
+
+	.song-title {
+		display: block;
+		font-size: 0.85rem;
+		font-weight: 600;
+	}
+
+	.song-artist {
+		display: block;
+		margin-top: 0.15rem;
+		font-size: 0.75rem;
+		opacity: 0.6;
+	}
+
+	.empty {
+		opacity: 0.75;
+	}
+
+	.playlist::-webkit-scrollbar {
+		width: 6px;
+	}
+
+	.playlist::-webkit-scrollbar-thumb {
+		background: color-mix(in oklch, var(--color-global-text) 25%, transparent);
+		border-radius: 999px;
+	}
+</style>

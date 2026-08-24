@@ -1,0 +1,40 @@
+---
+import PageLayout from "@/layouts/Base.astro";
+import type { Lang } from "@/i18n/config";
+import { getStaticLangPaths, useTranslations } from "@/i18n/utils";
+import { siteConfig } from "@/site.config";
+
+export function getStaticPaths() {
+	return getStaticLangPaths();
+}
+
+const lang = Astro.params.lang as Lang;
+const t = useTranslations(lang);
+---
+
+<PageLayout lang={lang} meta={{ title: t("home.title"), description: t("site.description") }}>
+	<section class="foyer">
+		<h1 class="title foyer-title">{siteConfig.title}</h1>
+		<p class="foyer-tagline">{t("home.tagline")}</p>
+	</section>
+</PageLayout>
+
+<style>
+	.foyer {
+		padding: 2.5rem 0 4rem;
+	}
+
+	.foyer-title {
+		margin-bottom: 0.85rem;
+		font-size: clamp(2rem, 5vw, 2.75rem);
+		line-height: 1.15;
+	}
+
+	.foyer-tagline {
+		margin: 0;
+		max-width: 22rem;
+		font-size: 1.05rem;
+		line-height: 1.7;
+		opacity: 0.78;
+	}
+</style>

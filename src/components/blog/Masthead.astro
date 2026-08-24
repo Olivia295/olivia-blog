@@ -2,16 +2,25 @@
 import { Image } from "astro:assets";
 import type { CollectionEntry } from "astro:content";
 import FormattedDate from "@/components/FormattedDate.astro";
+import { defaultLang, type Lang } from "@/i18n/config";
+import { getLangFromUrl, localePath, useTranslations } from "@/i18n/utils";
 
 interface Props {
 	content: CollectionEntry<"post">;
-	readingTime: string;
+	/** Whole minutes, from remark plugin */
+	readingTimeMinutes: number;
+	lang?: Lang;
 }
 
 const {
 	content: { data },
-	readingTime,
+	readingTimeMinutes,
+	lang: langProp,
 } = Astro.props;
+
+const lang = langProp ?? getLangFromUrl(Astro.url) ?? defaultLang;
+const t = useTranslations(lang);
+const readingTimeLabel = t("post.readingTime", { n: readingTimeMinutes });
 
 const dateTimeOptions: Intl.DateTimeFormatOptions = {
 	month: "long",
@@ -32,20 +41,25 @@ const dateTimeOptions: Intl.DateTimeFormatOptions = {
 		</div>
 	)
 }
-{data.draft ? <span class="text-base text-red-500">(Draft)</span> : null}
+{data.draft ? <span class="text-base text-red-500">({t("post.draft")})</span> : null}
 <h1 class="title">
 	{data.title}
 </h1>
 <div class="flex flex-wrap items-center gap-x-3 gap-y-2">
 	<p class="font-semibold">
-		<FormattedDate date={data.publishDate} dateTimeOptions={dateTimeOptions} /> /{" "}
-		{readingTime}
+		<FormattedDate date={data.publishDate} dateTimeOptions={dateTimeOptions} lang={lang} /> /{" "}
+		{readingTimeLabel}
 	</p>
 	{
 		data.updatedDate && (
 			<span class="bg-quote/5 text-quote rounded-lg px-2 py-1">
-				Updated:
-				<FormattedDate class="ms-1" date={data.updatedDate} dateTimeOptions={dateTimeOptions} />
+				{t("post.updated")}:
+				<FormattedDate
+					class="ms-1"
+					date={data.updatedDate}
+					dateTimeOptions={dateTimeOptions}
+					lang={lang}
+				/>
 			</span>
 		)
 	}
@@ -74,7 +88,7 @@ const dateTimeOptions: Intl.DateTimeFormatOptions = {
 				<>
 					{/* prettier-ignore */}
 					<span class="contents">
-						<a class="cactus-link inline-block before:content-['#']" data-pagefind-filter={`tag:${tag}`} href={`/tags/${tag}/`}><span class="sr-only">View more blogs with the tag&nbsp;</span>{tag}
+						<a class="cactus-link inline-block before:content-['#']" data-pagefind-filter={`tag:${tag}`} href={localePath(lang, `/tags/${tag}/`)}><span class="sr-only">{t("post.tagView")}&nbsp;</span>{tag}
 						</a>{i < data.tags.length - 1 && ", "}
 					</span>
 				</>

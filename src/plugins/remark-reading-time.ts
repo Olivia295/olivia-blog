@@ -6,6 +6,7 @@ export function remarkReadingTime() {
 	return (tree, { data }) => {
 		const textOnPage = mdastToString(tree);
 		const readingTime = getReadingTime(textOnPage);
-		data.astro.frontmatter.readingTime = readingTime.text;
+		// Store minutes only; UI formats by locale (avoid hardcoded "X min read").
+		data.astro.frontmatter.readingTimeMinutes = Math.max(1, Math.ceil(readingTime.minutes));
 	};
 }

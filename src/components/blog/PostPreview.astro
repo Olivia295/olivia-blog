@@ -2,19 +2,24 @@
 import type { CollectionEntry } from "astro:content";
 import type { HTMLTag, Polymorphic } from "astro/types";
 import FormattedDate from "@/components/FormattedDate.astro";
+import { defaultLang, type Lang } from "@/i18n/config";
+import { getLangFromUrl, localePath } from "@/i18n/utils";
 
 type Props<Tag extends HTMLTag> = Polymorphic<{ as: Tag }> & {
 	post: CollectionEntry<"post">;
 	withDesc?: boolean;
+	lang?: Lang;
 };
 
-const { as: Tag = "div", post, withDesc = false } = Astro.props;
+const { as: Tag = "div", post, withDesc = false, lang: langProp } = Astro.props;
+const lang = langProp ?? getLangFromUrl(Astro.url) ?? defaultLang;
+const href = localePath(lang, `/posts/${post.id}/`);
 ---
 
-<FormattedDate class="text-muted min-w-30 font-semibold" date={post.data.publishDate} />
+<FormattedDate class="text-muted min-w-30 font-semibold" date={post.data.publishDate} lang={lang} />
 <Tag>
 	{post.data.draft && <span class="text-red-500">(Draft) </span>}
-	<a class="cactus-link" href={`/posts/${post.id}/`}>
+	<a class="cactus-link" href={href}>
 		{post.data.title}
 	</a>
 </Tag>
