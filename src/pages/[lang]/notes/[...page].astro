@@ -1,88 +1,11 @@
 ---
-import type { CollectionEntry } from "astro:content";
-import type { GetStaticPaths, Page } from "astro";
-import { Icon } from "astro-icon/components";
-import FloatingBack from "@/components/FloatingBack.astro";
-import Note from "@/components/note/Note.astro";
-import Pagination from "@/components/Paginator.astro";
-import { getAllNotes } from "@/data/note";
-import { languages, type Lang } from "@/i18n/config";
-import { localePath, useTranslations } from "@/i18n/utils";
-import PageLayout from "@/layouts/Base.astro";
-import { collectionDateSort } from "@/utils/date";
+import { getStaticLangPaths, localePath } from "@/i18n/utils";
+import type { Lang } from "@/i18n/config";
 
-export const getStaticPaths = (async ({ paginate }) => {
-	const MAX_NOTES_PER_PAGE = 10;
-	const allNotes = await getAllNotes();
-	const sorted = allNotes.sort(collectionDateSort);
-	return languages.flatMap((lang) =>
-		paginate(sorted, {
-			params: { lang },
-			pageSize: MAX_NOTES_PER_PAGE,
-		}),
-	);
-}) satisfies GetStaticPaths;
-
-interface Props {
-	page: Page<CollectionEntry<"note">>;
+export function getStaticPaths() {
+	return getStaticLangPaths();
 }
 
 const lang = Astro.params.lang as Lang;
-const t = useTranslations(lang);
-const { page } = Astro.props;
-
-const meta = {
-	description: t("notes.description"),
-	title: t("notes.title"),
-};
-
-const paginationProps = {
-	...(page.url.prev && {
-		prevUrl: {
-			text: t("pagination.prev"),
-			url: page.url.prev,
-		},
-	}),
-	...(page.url.next && {
-		nextUrl: {
-			text: t("pagination.next"),
-			url: page.url.next,
-		},
-	}),
-	pages: Array.from({ length: page.lastPage }, (_, i) => {
-		const n = i + 1;
-		return {
-			number: n,
-			current: n === page.currentPage,
-			href: n === 1 ? localePath(lang, "/notes/") : localePath(lang, `/notes/${n}/`),
-		};
-	}),
-};
+return Astro.redirect(localePath(lang, "/posts/"), 301);
 ---
-
-<PageLayout lang={lang} meta={meta}>
-	<section>
-		<h1 class="title mb-12 flex items-center gap-3">
-			{t("notes.title")}
-			<a class="text-accent" href={localePath(lang, "/notes/rss.xml")} target="_blank">
-				<span class="sr-only">{t("rss.label")}</span>
-				<Icon aria-hidden="true" class="h-6 w-6" focusable="false" name="mdi:rss" />
-			</a>
-		</h1>
-		{
-			page.data.length === 0 ? (
-				<p class="text-muted">{t("notes.empty")}</p>
-			) : (
-				<ul class="note-feed motion-stagger mt-2 space-y-6 text-start" role="list">
-					{page.data.map((note) => (
-						<li>
-							<Note note={note} as="h2" lang={lang} />
-						</li>
-					))}
-				</ul>
-			)
-		}
-		<Pagination {...paginationProps} />
-	</section>
-	<FloatingBack />
-</PageLayout>

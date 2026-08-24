@@ -1,6 +1,6 @@
 import type { APIRoute } from "astro";
 import rss from "@astrojs/rss";
-import { getAllPosts } from "@/data/post";
+import { getAllBlogs } from "@/data/blog";
 import { isLang } from "@/i18n/config";
 import { languages } from "@/i18n/config";
 import { useTranslations } from "@/i18n/utils";
@@ -16,7 +16,7 @@ export const GET: APIRoute = async ({ params }) => {
 		return new Response("Not found", { status: 404 });
 	}
 	const t = useTranslations(lang);
-	const posts = await getAllPosts();
+	const posts = await getAllBlogs();
 
 	return rss({
 		title: siteConfig.title,
@@ -26,7 +26,7 @@ export const GET: APIRoute = async ({ params }) => {
 			title: post.data.title,
 			description: post.data.description,
 			pubDate: post.data.publishDate,
-			link: `${lang}/posts/${post.id}/`,
+			link: `${lang}/blogs/${post.id}/`,
 		})),
 	});
 };

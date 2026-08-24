@@ -5,7 +5,7 @@ import {
 	getPhoto,
 	getPhotoAlbums,
 	photoFullUrl,
-} from "@/data/photos";
+} from "@/data/gallery";
 import { languages, type Lang } from "@/i18n/config";
 import { localePath, useTranslations } from "@/i18n/utils";
 import PageLayout from "@/layouts/Base.astro";
@@ -42,7 +42,7 @@ const meta = {
 <PageLayout lang={lang} meta={meta}>
 	<article class="photo-detail">
 		<p class="crumb">
-			<a href={localePath(lang, "/photos/")}>{t("photos.back")}</a>
+			<a href={localePath(lang, "/photos/")}>{t("gallery.back")}</a>
 			<span aria-hidden="true"> / </span>
 			<span>{album.title}</span>
 		</p>
@@ -66,19 +66,19 @@ const meta = {
 			{
 				prev ? (
 					<a href={localePath(lang, `/photos/${album.slug}/${prev.slug}/`)}>
-						← {t("photos.prev")}
+						← {t("gallery.prev")}
 					</a>
 				) : (
-					<span class="disabled">← {t("photos.prev")}</span>
+					<span class="disabled">← {t("gallery.prev")}</span>
 				)
 			}
 			{
 				next ? (
 					<a href={localePath(lang, `/photos/${album.slug}/${next.slug}/`)}>
-						{t("photos.next")} →
+						{t("gallery.next")} →
 					</a>
 				) : (
-					<span class="disabled">{t("photos.next")} →</span>
+					<span class="disabled">{t("gallery.next")} →</span>
 				)
 			}
 		</nav>

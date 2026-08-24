@@ -6,7 +6,7 @@ import { defaultLang, type Lang } from "@/i18n/config";
 import { getLangFromUrl, localePath } from "@/i18n/utils";
 
 type Props<Tag extends HTMLTag> = Polymorphic<{ as: Tag }> & {
-	post: CollectionEntry<"post">;
+	post: CollectionEntry<"blog">;
 	withDesc?: boolean;
 	lang?: Lang;
 	omitYear?: boolean;
@@ -14,7 +14,7 @@ type Props<Tag extends HTMLTag> = Polymorphic<{ as: Tag }> & {
 
 const { as: Tag = "div", post, withDesc = false, lang: langProp, omitYear = false } = Astro.props;
 const lang = langProp ?? getLangFromUrl(Astro.url) ?? defaultLang;
-const href = localePath(lang, `/posts/${post.id}/`);
+const href = localePath(lang, `/blogs/${post.id}/`);
 ---
 
 <FormattedDate

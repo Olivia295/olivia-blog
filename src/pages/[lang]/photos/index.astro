@@ -4,7 +4,7 @@ import {
 	buildPhotoSrcSet,
 	getPhotoAlbums,
 	photoThumbUrl,
-} from "@/data/photos";
+} from "@/data/gallery";
 import { getStaticLangPaths, localePath, useTranslations } from "@/i18n/utils";
 import type { Lang } from "@/i18n/config";
 import PageLayout from "@/layouts/Base.astro";
@@ -18,19 +18,19 @@ const t = useTranslations(lang);
 const albums = getPhotoAlbums();
 
 const meta = {
-	title: t("photos.title"),
-	description: t("photos.description"),
+	title: t("gallery.title"),
+	description: t("gallery.description"),
 };
 ---
 
 <PageLayout lang={lang} meta={meta}>
 	<section class="photos-page motion-fade-up">
-		<h1 class="title mb-2">{t("photos.title")}</h1>
-		<p class="intro">{t("photos.intro")}</p>
+		<h1 class="title mb-2">{t("gallery.title")}</h1>
+		<p class="intro">{t("gallery.intro")}</p>
 
 		{
 			albums.length === 0 ? (
-				<p class="empty">{t("photos.empty")}</p>
+				<p class="empty">{t("gallery.empty")}</p>
 			) : (
 				albums.map((album) => (
 					<section class="collection">

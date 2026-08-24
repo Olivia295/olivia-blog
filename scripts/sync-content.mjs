@@ -17,8 +17,8 @@ import os from "node:os";
 import path from "node:path";
 
 const root = process.cwd();
+const blogDir = path.join(root, "src/content/blog");
 const postDir = path.join(root, "src/content/post");
-const noteDir = path.join(root, "src/content/note");
 const photosJson = path.join(root, "src/data/photos.json");
 
 async function hasMarkdown(dir) {
@@ -63,7 +63,7 @@ async function cloneRepo(repo, dest) {
 	execSync(`git clone --depth 1 "${url}" "${dest}"`, { env, stdio: "inherit" });
 }
 
-const hasLocalWriting = (await hasMarkdown(postDir)) || (await hasMarkdown(noteDir));
+const hasLocalWriting = (await hasMarkdown(blogDir)) || (await hasMarkdown(postDir));
 const hasLocalGallery = existsSync(photosJson);
 const contentDir = process.env.CONTENT_DIR;
 const repo = process.env.CONTENT_REPO;
@@ -93,8 +93,13 @@ if (!source) {
 }
 
 if (!hasLocalWriting) {
-	await copyIfPresent(path.join(source, "post"), postDir);
-	await copyIfPresent(path.join(source, "note"), noteDir);
+	if (existsSync(path.join(source, "blog"))) {
+		await copyIfPresent(path.join(source, "blog"), blogDir);
+		await copyIfPresent(path.join(source, "post"), postDir);
+	} else {
+		await copyIfPresent(path.join(source, "post"), blogDir);
+		await copyIfPresent(path.join(source, "note"), postDir);
+	}
 	await copyIfPresent(path.join(source, "notes-images"), path.join(root, "public/notes"));
 }
 

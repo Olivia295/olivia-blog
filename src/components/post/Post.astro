@@ -1,24 +1,22 @@
 ---
 import { type CollectionEntry, render } from "astro:content";
-import type { HTMLTag, Polymorphic } from "astro/types";
 import FormattedDate from "@/components/FormattedDate.astro";
 import { defaultLang, type Lang } from "@/i18n/config";
 import { getLangFromUrl } from "@/i18n/utils";
 
-type Props<Tag extends HTMLTag> = Polymorphic<{ as: Tag }> & {
-	note: CollectionEntry<"note">;
+type Props = {
+	post: CollectionEntry<"post">;
 	lang?: Lang;
 	plain?: boolean;
 };
 
-const { as: Tag = "h2", note, lang: langProp, plain = false } = Astro.props;
+const { post, lang: langProp, plain = false } = Astro.props;
 const lang = langProp ?? getLangFromUrl(Astro.url) ?? defaultLang;
-const { Content } = await render(note);
+const { Content } = await render(post);
 ---
 
-<article class:list={["note-card", { "note-card--plain": plain }]} id={`note-${note.id}`} data-pagefind-body>
+<article class:list={["note-card", { "note-card--plain": plain }]} id={`post-${post.id}`} data-pagefind-body>
 	<header class="note-card__header">
-		<Tag class="note-card__title">{note.data.title}</Tag>
 		<FormattedDate
 			class="note-card__date"
 			dateTimeOptions={{
@@ -28,7 +26,7 @@ const { Content } = await render(note);
 				month: "short",
 				day: "numeric",
 			}}
-			date={note.data.publishDate}
+			date={post.data.publishDate}
 			lang={lang}
 		/>
 	</header>

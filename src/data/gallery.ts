@@ -1,5 +1,6 @@
 import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
+import { isBarePreview } from "@/data/bare";
 import { resolveMediaUrl } from "@/utils/media";
 
 export type Photo = {
@@ -27,6 +28,7 @@ function loadPhotosManifest(): PhotosFile {
 }
 
 export function getPhotoAlbums(): PhotoAlbum[] {
+	if (isBarePreview()) return [];
 	return loadPhotosManifest().albums.map((album) => ({
 		slug: album.slug,
 		title: album.title,

@@ -1,7 +1,7 @@
 ---
 import { WEBMENTION_PINGBACK, WEBMENTION_URL } from "astro:env/client";
 import { defaultLang, ogLocale, type Lang } from "@/i18n/config";
-import { localePath } from "@/i18n/utils";
+import { localePath, useTranslations } from "@/i18n/utils";
 import { siteConfig } from "@/site.config";
 import type { SiteMeta } from "@/types";
 import "@/styles/global.css";
@@ -14,8 +14,9 @@ const titleSeparator = "•";
 const siteTitle = `${title} ${titleSeparator} ${siteConfig.title}`;
 const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 const socialImageURL = new URL(ogImage ? ogImage : "/social-card.png", Astro.url).href;
-const postsRss = localePath(lang, "/rss.xml");
-const notesRss = localePath(lang, "/notes/rss.xml");
+const t = useTranslations(lang);
+const blogsRss = localePath(lang, "/rss.xml");
+const postsRss = localePath(lang, "/posts/rss.xml");
 ---
 
 <meta charset="utf-8" />
@@ -77,8 +78,8 @@ const notesRss = localePath(lang, "/notes/rss.xml");
 <link href="/sitemap-index.xml" rel="sitemap" />
 
 {/* RSS auto-discovery */}
-<link href={postsRss} title="Blogs" rel="alternate" type="application/rss+xml" />
-<link href={notesRss} title="Posts" rel="alternate" type="application/rss+xml" />
+<link href={blogsRss} title={t("blogs.title")} rel="alternate" type="application/rss+xml" />
+<link href={postsRss} title={t("posts.title")} rel="alternate" type="application/rss+xml" />
 
 {/* Webmentions */}
 {

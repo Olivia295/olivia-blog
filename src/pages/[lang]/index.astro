@@ -1,10 +1,10 @@
 ---
 import FormattedDate from "@/components/FormattedDate.astro";
-import Note from "@/components/note/Note.astro";
+import Post from "@/components/post/Post.astro";
 import PageLayout from "@/layouts/Base.astro";
 import type { Lang } from "@/i18n/config";
 import { getStaticLangPaths, localePath, useTranslations } from "@/i18n/utils";
-import { getAllNotes } from "@/data/note";
+import { getAllBlogs } from "@/data/blog";
 import { getAllPosts } from "@/data/post";
 import { siteConfig } from "@/site.config";
 import { collectionDateSort } from "@/utils/date";
@@ -16,18 +16,18 @@ export function getStaticPaths() {
 const lang = Astro.params.lang as Lang;
 const t = useTranslations(lang);
 
+const RECENT_BLOGS = 3;
 const RECENT_POSTS = 3;
-const RECENT_NOTES = 3;
+
+const recentBlogs = (await getAllBlogs())
+	.filter((blog) => !blog.data.draft)
+	.sort(collectionDateSort)
+	.slice(0, RECENT_BLOGS);
 
 const recentPosts = (await getAllPosts())
 	.filter((post) => !post.data.draft)
 	.sort(collectionDateSort)
 	.slice(0, RECENT_POSTS);
-
-const recentNotes = (await getAllNotes())
-	.filter((note) => !note.data.draft)
-	.sort(collectionDateSort)
-	.slice(0, RECENT_NOTES);
 ---
 
 <PageLayout
@@ -55,38 +55,38 @@ const recentNotes = (await getAllNotes())
 		</section>
 
 		<div class="home-columns">
-		<section class="home-feed home-feed--notes" aria-labelledby="home-notes-heading">
-			<h2 id="home-notes-heading" class="home-heading">{t("home.recentNotes")}</h2>
-			{
-				recentNotes.length === 0 ? (
-					<p class="home-empty">{t("notes.empty")}</p>
-				) : (
-					<ul class="home-notes" role="list">
-						{recentNotes.map((note) => (
-							<li>
-								<Note note={note} as="h3" lang={lang} plain />
-							</li>
-						))}
-					</ul>
-				)
-			}
-			<a class="home-more" href={localePath(lang, "/notes/")}>
-				{t("home.viewAllNotes")}
-				<span aria-hidden="true">→</span>
-			</a>
-		</section>
-
 		<section class="home-feed home-feed--posts" aria-labelledby="home-posts-heading">
 			<h2 id="home-posts-heading" class="home-heading">{t("home.recentPosts")}</h2>
 			{
 				recentPosts.length === 0 ? (
 					<p class="home-empty">{t("posts.empty")}</p>
 				) : (
-					<ul class="home-posts" role="list">
+					<ul class="home-notes" role="list">
 						{recentPosts.map((post) => (
 							<li>
+								<Post post={post} as="h3" lang={lang} plain />
+							</li>
+						))}
+					</ul>
+				)
+			}
+			<a class="home-more" href={localePath(lang, "/posts/")}>
+				{t("home.viewAllPosts")}
+				<span aria-hidden="true">→</span>
+			</a>
+		</section>
+
+		<section class="home-feed home-feed--blogs" aria-labelledby="home-blogs-heading">
+			<h2 id="home-blogs-heading" class="home-heading">{t("home.recentBlogs")}</h2>
+			{
+				recentBlogs.length === 0 ? (
+					<p class="home-empty">{t("blogs.empty")}</p>
+				) : (
+					<ul class="home-posts" role="list">
+						{recentBlogs.map((post) => (
+							<li>
 								<article class="home-post">
-									<a class="home-post__hit" href={localePath(lang, `/posts/${post.id}/`)}>
+									<a class="home-post__hit" href={localePath(lang, `/blogs/${post.id}/`)}>
 										<span class="home-post__title">{post.data.title}</span>
 										<FormattedDate
 											class="home-post__date"
@@ -99,7 +99,7 @@ const recentNotes = (await getAllNotes())
 											<ul class="home-post__tags" role="list">
 												{post.data.tags.map((tag) => (
 													<li>
-														<a class="home-post__tag" href={localePath(lang, `/posts/tags/${tag}/`)}>
+														<a class="home-post__tag" href={localePath(lang, `/blogs/tags/${tag}/`)}>
 															#{tag}
 														</a>
 													</li>
@@ -113,8 +113,8 @@ const recentNotes = (await getAllNotes())
 					</ul>
 				)
 			}
-			<a class="home-more" href={localePath(lang, "/posts/")}>
-				{t("home.viewAllPosts")}
+			<a class="home-more" href={localePath(lang, "/blogs/")}>
+				{t("home.viewAllBlogs")}
 				<span aria-hidden="true">→</span>
 			</a>
 		</section>

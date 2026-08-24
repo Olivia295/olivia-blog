@@ -6,7 +6,7 @@ import { defaultLang, type Lang } from "@/i18n/config";
 import { getLangFromUrl, localePath, useTranslations } from "@/i18n/utils";
 
 interface Props {
-	content: CollectionEntry<"post">;
+	content: CollectionEntry<"blog">;
 	/** Whole minutes, from remark plugin */
 	readingTimeMinutes: number;
 	lang?: Lang;
@@ -20,7 +20,7 @@ const {
 
 const lang = langProp ?? getLangFromUrl(Astro.url) ?? defaultLang;
 const t = useTranslations(lang);
-const readingTimeLabel = t("post.readingTime", { n: readingTimeMinutes });
+const readingTimeLabel = t("blog.readingTime", { n: readingTimeMinutes });
 
 const dateTimeOptions: Intl.DateTimeFormatOptions = {
 	month: "long",
@@ -41,7 +41,7 @@ const dateTimeOptions: Intl.DateTimeFormatOptions = {
 		</div>
 	)
 }
-{data.draft ? <span class="text-base text-red-500">({t("post.draft")})</span> : null}
+{data.draft ? <span class="text-base text-red-500">({t("blog.draft")})</span> : null}
 <h1 class="title">
 	{data.title}
 </h1>
@@ -53,7 +53,7 @@ const dateTimeOptions: Intl.DateTimeFormatOptions = {
 	{
 		data.updatedDate && (
 			<span class="bg-quote/5 text-quote rounded-lg px-2 py-1">
-				{t("post.updated")}:
+				{t("blog.updated")}:
 				<FormattedDate
 					class="ms-1"
 					date={data.updatedDate}
@@ -88,7 +88,7 @@ const dateTimeOptions: Intl.DateTimeFormatOptions = {
 				<>
 					{/* prettier-ignore */}
 					<span class="contents">
-						<a class="cactus-link inline-block before:content-['#']" data-pagefind-filter={`tag:${tag}`} href={localePath(lang, `/posts/tags/${tag}/`)}><span class="sr-only">{t("post.tagView")}&nbsp;</span>{tag}
+						<a class="cactus-link inline-block before:content-['#']" data-pagefind-filter={`tag:${tag}`} href={localePath(lang, `/blogs/tags/${tag}/`)}><span class="sr-only">{t("blog.tagView")}&nbsp;</span>{tag}
 						</a>{i < data.tags.length - 1 && ", "}
 					</span>
 				</>

@@ -1,5 +1,5 @@
 ---
-import { getAllPosts, getUniqueTagsWithCount } from "@/data/post";
+import { getAllBlogs, getUniqueTagsWithCount } from "@/data/blog";
 import type { Lang } from "@/i18n/config";
 import { localePath, useTranslations } from "@/i18n/utils";
 
@@ -10,7 +10,7 @@ interface Props {
 
 const { lang, current } = Astro.props;
 const t = useTranslations(lang);
-const tags = getUniqueTagsWithCount(await getAllPosts());
+const tags = getUniqueTagsWithCount(await getAllBlogs());
 ---
 
 {
@@ -35,7 +35,7 @@ const tags = getUniqueTagsWithCount(await getAllPosts());
 							<li>
 								<a
 									class:list={["tag-picker__link", { "is-current": current === tag }]}
-									href={localePath(lang, `/posts/tags/${tag}/`)}
+									href={localePath(lang, `/blogs/tags/${tag}/`)}
 								>
 									<span>#{tag}</span>
 									<span class="tag-picker__count">

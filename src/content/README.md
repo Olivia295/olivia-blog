@@ -6,12 +6,22 @@
 目录约定：
 
 ```
-src/content/post/     长文，对应 /posts
-src/content/note/     短记，对应 /notes
+src/content/blog/     文章 / Blogs，对应 /blogs
+src/content/post/     短记 / Posts，对应 /posts
 src/data/photos.json  画廊合集清单
 public/media/gallery/ 画廊本地图片
 public/notes/         短记配图
 ```
+
+## 看毛胚（没有文章 / 短记 / 画廊）
+
+本地另开一个预览，不读私有内容：
+
+```bash
+npm run dev:bare
+```
+
+还是 `http://localhost:4321`。看完关掉，再 `npm run dev` 就回到有文章的样子。
 
 ## 日常（本地）
 
@@ -44,8 +54,8 @@ olivia-blog-content/
 
 ```bash
 mkdir -p ../olivia-blog-content/gallery/images
+cp -R src/content/blog ../olivia-blog-content/
 cp -R src/content/post ../olivia-blog-content/
-cp -R src/content/note ../olivia-blog-content/
 mkdir -p ../olivia-blog-content/notes-images
 cp -R public/notes/. ../olivia-blog-content/notes-images/ 2>/dev/null || true
 cp src/data/photos.json ../olivia-blog-content/gallery/photos.json

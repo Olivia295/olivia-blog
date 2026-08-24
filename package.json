@@ -6,6 +6,7 @@
 	"scripts": {
 		"postinstall": "npm rebuild sharp --force",
 		"dev": "astro dev",
+		"dev:bare": "BARE=1 astro dev",
 		"start": "astro dev",
 		"content:sync": "node scripts/sync-content.mjs",
 		"build": "node scripts/sync-content.mjs && astro build",

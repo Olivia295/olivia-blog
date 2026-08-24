@@ -3,47 +3,33 @@ import type { CollectionEntry } from "astro:content";
 import type { GetStaticPaths, Page } from "astro";
 import { Icon } from "astro-icon/components";
 import FloatingBack from "@/components/FloatingBack.astro";
-import PostPreview from "@/components/blog/PostPreview.astro";
+import Post from "@/components/post/Post.astro";
 import Pagination from "@/components/Paginator.astro";
-import TagPicker from "@/components/blog/TagPicker.astro";
-import { getAllPosts, getUniqueTags, groupPostsBySeries, groupPostsByYear } from "@/data/post";
+import { getAllPosts } from "@/data/post";
 import { languages, type Lang } from "@/i18n/config";
 import { localePath, useTranslations } from "@/i18n/utils";
 import PageLayout from "@/layouts/Base.astro";
 import { collectionDateSort } from "@/utils/date";
 
 export const getStaticPaths = (async ({ paginate }) => {
-	const MAX_POSTS_PER_PAGE = 10;
-	const MAX_TAGS = 7;
-	const MAX_PINNED_POSTS = 3;
-	const allPosts = await getAllPosts();
-	const allPostsByDate = allPosts.sort(collectionDateSort);
-	const uniqueTags = getUniqueTags(allPosts).slice(0, MAX_TAGS);
-	const pinnedPosts = allPostsByDate
-		.values()
-		.filter((p) => p.data.pinned)
-		.take(MAX_PINNED_POSTS)
-		.toArray();
-
+	const MAX_NOTES_PER_PAGE = 10;
+	const allNotes = await getAllPosts();
+	const sorted = allNotes.sort(collectionDateSort);
 	return languages.flatMap((lang) =>
-		paginate(allPostsByDate, {
+		paginate(sorted, {
 			params: { lang },
-			pageSize: MAX_POSTS_PER_PAGE,
-			props: { uniqueTags, pinnedPosts, allPostsByDate },
+			pageSize: MAX_NOTES_PER_PAGE,
 		}),
 	);
 }) satisfies GetStaticPaths;
 
 interface Props {
 	page: Page<CollectionEntry<"post">>;
-	uniqueTags: string[];
-	pinnedPosts: CollectionEntry<"post">[];
-	allPostsByDate: CollectionEntry<"post">[];
 }
 
 const lang = Astro.params.lang as Lang;
 const t = useTranslations(lang);
-const { page, uniqueTags, pinnedPosts, allPostsByDate } = Astro.props;
+const { page } = Astro.props;
 
 const meta = {
 	description: t("posts.description"),
@@ -63,173 +49,40 @@ const paginationProps = {
 			url: page.url.next,
 		},
 	}),
+	pages: Array.from({ length: page.lastPage }, (_, i) => {
+		const n = i + 1;
+		return {
+			number: n,
+			current: n === page.currentPage,
+			href: n === 1 ? localePath(lang, "/posts/") : localePath(lang, `/posts/${n}/`),
+		};
+	}),
 };
-
-const groupedByYear = groupPostsByYear(page.data);
-const descYearKeys = Object.keys(groupedByYear).sort((a, b) => +b - +a);
-const groupedBySeries = groupPostsBySeries(allPostsByDate, t("posts.uncategorized"));
-const seriesKeys = Object.keys(groupedBySeries).sort((a, b) => {
-	if (a === t("posts.uncategorized")) return 1;
-	if (b === t("posts.uncategorized")) return -1;
-	return a.localeCompare(b, lang);
-});
 ---
 
 <PageLayout lang={lang} meta={meta}>
-	<div class="mb-12 flex items-center gap-3">
-		<h1 class="title">{t("posts.title")}</h1>
-		<a class="text-accent" href={localePath(lang, "/rss.xml")} target="_blank">
-			<span class="sr-only">{t("rss.label")}</span>
-			<Icon aria-hidden="true" class="h-6 w-6" focusable="false" name="mdi:rss" />
-		</a>
-	</div>
-	<div class="grid sm:grid-cols-[3fr_1fr] sm:gap-x-8 sm:gap-y-16">
-		<div class="posts-board" data-view="time">
-			<div class="posts-switch" role="tablist" aria-label={t("posts.title")}>
-				<button type="button" class="posts-switch__btn" data-view="time" aria-pressed="true">
-					{t("posts.byTime")}
-				</button>
-				<button type="button" class="posts-switch__btn" data-view="series" aria-pressed="false">
-					{t("posts.bySeries")}
-				</button>
-			</div>
-			{
-				pinnedPosts.length > 0 && (
-					<section class="mb-16" data-panel="time">
-						<h2 class="title mb-6 text-xl">{t("posts.pinned")}</h2>
-						<ul class="space-y-4" role="list">
-							{pinnedPosts.map((p) => (
-								<li class="grid gap-1 sm:grid-cols-[auto_1fr]">
-									<PostPreview post={p} lang={lang} />
-								</li>
-							))}
-						</ul>
-					</section>
-				)
-			}
-			{
-				descYearKeys.length === 0 && pinnedPosts.length === 0 && (
-					<p class="text-muted mb-8">{t("posts.empty")}</p>
-				)
-			}
-			<div data-panel="time">
-				{
-					descYearKeys.map((yearKey) => (
-						<section class="mb-16">
-							<h2 id={`year-${yearKey}`} class="title text-lg">
-								<span class="sr-only">{t("posts.year")}</span>
-								{yearKey}
-							</h2>
-							<ul class="mt-5 space-y-4 text-start">
-								{groupedByYear[yearKey]?.map((p) => (
-									<li class="grid gap-1 sm:grid-cols-[auto_1fr] sm:[&_q]:col-start-2">
-										<PostPreview post={p} lang={lang} omitYear />
-									</li>
-								))}
-							</ul>
-						</section>
-					))
-				}
-				<Pagination {...paginationProps} />
-			</div>
-			<div data-panel="series" hidden>
-				{
-					seriesKeys.map((seriesKey) => (
-						<section class="mb-16">
-							<h2 class="title text-lg">{seriesKey}</h2>
-							<ul class="mt-5 space-y-4 text-start">
-								{groupedBySeries[seriesKey]?.map((p) => (
-									<li class="grid gap-1 sm:grid-cols-[auto_1fr] sm:[&_q]:col-start-2">
-										<PostPreview post={p} lang={lang} />
-									</li>
-								))}
-							</ul>
-						</section>
-					))
-				}
-			</div>
-		</div>
+	<section>
+		<h1 class="title mb-12 flex items-center gap-3">
+			{t("posts.title")}
+			<a class="text-accent" href={localePath(lang, "/posts/rss.xml")} target="_blank">
+				<span class="sr-only">{t("rss.label")}</span>
+				<Icon aria-hidden="true" class="h-6 w-6" focusable="false" name="mdi:rss" />
+			</a>
+		</h1>
 		{
-			!!uniqueTags.length && (
-				<aside>
-					<h2 class="title mb-4 flex items-center gap-1 text-lg">
-						<svg
-							aria-hidden="true"
-							class="h-6 w-6"
-							fill="none"
-							stroke="var(--color-muted)"
-							stroke-linecap="round"
-							stroke-linejoin="round"
-							stroke-width="1.5"
-							viewBox="0 0 24 24"
-							xmlns="http://www.w3.org/2000/svg"
-						>
-							<path d="M0 0h24v24H0z" fill="none" stroke="none" />
-							<path d="M7.859 6h-2.834a2.025 2.025 0 0 0 -2.025 2.025v2.834c0 .537 .213 1.052 .593 1.432l6.116 6.116a2.025 2.025 0 0 0 2.864 0l2.834 -2.834a2.025 2.025 0 0 0 0 -2.864l-6.117 -6.116a2.025 2.025 0 0 0 -1.431 -.593z" />
-							<path d="M17.573 18.407l2.834 -2.834a2.025 2.025 0 0 0 0 -2.864l-7.117 -7.116" />
-							<path d="M6 9h-.01" />
-						</svg>
-						{t("posts.tags")}
-					</h2>
-					<ul class="flex flex-wrap gap-2">
-						{uniqueTags.map((tag) => (
-							<li>
-								<a
-									class="cactus-link flex items-center justify-center"
-									href={localePath(lang, `/posts/tags/${tag}/`)}
-								>
-									<span aria-hidden="true">#</span>
-									{tag}
-								</a>
-							</li>
-						))}
-					</ul>
-					<TagPicker lang={lang} />
-				</aside>
+			page.data.length === 0 ? (
+				<p class="text-muted">{t("posts.empty")}</p>
+			) : (
+				<ul class="note-feed motion-stagger mt-2 space-y-6 text-start" role="list">
+					{page.data.map((entry) => (
+						<li>
+							<Post post={entry} lang={lang} />
+						</li>
+					))}
+				</ul>
 			)
 		}
-	</div>
+		<Pagination {...paginationProps} />
+	</section>
 	<FloatingBack />
 </PageLayout>
-
-<script>
-	const board = document.querySelector(".posts-board");
-	if (board) {
-		const buttons = board.querySelectorAll<HTMLButtonElement>(".posts-switch__btn");
-		const setView = (view: string) => {
-			board.setAttribute("data-view", view);
-			buttons.forEach((btn) => {
-				btn.setAttribute("aria-pressed", String(btn.dataset.view === view));
-			});
-			board.querySelectorAll<HTMLElement>("[data-panel]").forEach((panel) => {
-				panel.hidden = panel.dataset.panel !== view;
-			});
-		};
-		buttons.forEach((btn) => {
-			btn.addEventListener("click", () => setView(btn.dataset.view || "time"));
-		});
-	}
-</script>
-
-<style>
-	.posts-switch {
-		display: flex;
-		gap: 0.5rem;
-		margin-bottom: 1.75rem;
-	}
-
-	.posts-switch__btn {
-		padding: 0.25rem 0.15rem;
-		border: none;
-		background: transparent;
-		color: var(--color-muted);
-		cursor: pointer;
-		font: inherit;
-		font-weight: 700;
-	}
-
-	.posts-switch__btn[aria-pressed="true"] {
-		color: var(--color-brand);
-		box-shadow: inset 0 -2px 0 var(--color-brand);
-	}
-</style>

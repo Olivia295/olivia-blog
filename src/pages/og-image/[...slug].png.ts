@@ -3,7 +3,7 @@ import type { APIContext, InferGetStaticPropsType } from "astro";
 import satori, { type SatoriOptions } from "satori";
 import RobotoMonoBold from "@/assets/roboto-mono-700.ttf";
 import RobotoMono from "@/assets/roboto-mono-regular.ttf";
-import { getAllPosts } from "@/data/post";
+import { getAllBlogs } from "@/data/blog";
 import { getFormattedDate } from "@/utils/date";
 import { ogMarkup } from "./_ogMarkup";
 
@@ -48,7 +48,7 @@ export async function GET(context: APIContext) {
 }
 
 export async function getStaticPaths() {
-	const posts = await getAllPosts();
+	const posts = await getAllBlogs();
 	return posts
 		.values()
 		.filter(({ data }) => !data.ogImage)

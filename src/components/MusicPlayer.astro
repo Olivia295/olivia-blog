@@ -25,7 +25,7 @@ const singleTrack = songs.length === 1;
 	hasSongs ? (
 		<div id="music-player" class="music-player" data-single={singleTrack ? "true" : "false"}>
 			<div class="now-playing">
-				<p class="label">{singleTrack ? t("music.trackForPost") : t("music.nowPlaying")}</p>
+				<p class="label">{singleTrack ? t("music.trackForBlog") : t("music.nowPlaying")}</p>
 				<p id="current-title" class="current-title">
 					{songs[0]?.title}
 				</p>

@@ -14,8 +14,8 @@ const meta = {
 
 const homeZh = localePath("zh", "/");
 const homeEn = localePath("en", "/");
+const blogsZh = localePath("zh", "/blogs/");
 const postsZh = localePath("zh", "/posts/");
-const notesZh = localePath("zh", "/notes/");
 ---
 
 <PageLayout lang={lang} meta={meta}>
@@ -28,11 +28,11 @@ const notesZh = localePath("zh", "/notes/");
 			<a class="not-found__btn not-found__btn--primary motion-press" href={homeZh} data-404-home>
 				{t("404.home")}
 			</a>
+			<a class="not-found__btn motion-press" href={blogsZh} data-404-blogs>
+				{t("404.blogs")}
+			</a>
 			<a class="not-found__btn motion-press" href={postsZh} data-404-posts>
 				{t("404.posts")}
-			</a>
-			<a class="not-found__btn motion-press" href={notesZh} data-404-notes>
-				{t("404.notes")}
 			</a>
 		</div>
 
@@ -54,15 +54,15 @@ const notesZh = localePath("zh", "/notes/");
 				heading: "这里什么都没有",
 				body: "这道菜不在菜单上。回厨房看看，或者换条路。",
 				home: "回厨房首页",
-				posts: "去看文章",
-				notes: "去看笔记",
+				blogs: "去看文章",
+				posts: "去看短记",
 			},
 			en: {
 				heading: "Nothing cooking here",
 				body: "This dish isn't on the menu. Head back to the kitchen, or try another path.",
 				home: "Back to kitchen",
+				blogs: "Browse blogs",
 				posts: "Browse posts",
-				notes: "Browse notes",
 			},
 		};
 
@@ -86,8 +86,8 @@ const notesZh = localePath("zh", "/notes/");
 		const heading = root.querySelector(".not-found__heading");
 		const body = root.querySelector("[data-404-body]");
 		const home = root.querySelector("[data-404-home]");
+		const blogs = root.querySelector("[data-404-blogs]");
 		const posts = root.querySelector("[data-404-posts]");
-		const notes = root.querySelector("[data-404-notes]");
 
 		if (heading) heading.textContent = copy.heading;
 		if (body) body.textContent = copy.body;
@@ -95,13 +95,13 @@ const notesZh = localePath("zh", "/notes/");
 			home.textContent = copy.home;
 			home.setAttribute("href", "/" + lang + "/");
 		}
+		if (blogs) {
+			blogs.textContent = copy.blogs;
+			blogs.setAttribute("href", "/" + lang + "/blogs/");
+		}
 		if (posts) {
 			posts.textContent = copy.posts;
 			posts.setAttribute("href", "/" + lang + "/posts/");
-		}
-		if (notes) {
-			notes.textContent = copy.notes;
-			notes.setAttribute("href", "/" + lang + "/notes/");
 		}
 		document.documentElement.lang = lang === "zh" ? "zh-CN" : "en-GB";
 	})();

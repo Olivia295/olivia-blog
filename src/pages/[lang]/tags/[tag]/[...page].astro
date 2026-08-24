@@ -1,12 +1,12 @@
 ---
 import type { GetStaticPaths, InferGetStaticPropsType } from "astro";
-import { getAllPosts, getUniqueTags } from "@/data/post";
+import { getAllBlogs, getUniqueTags } from "@/data/blog";
 import { languages, type Lang } from "@/i18n/config";
 import { localePath } from "@/i18n/utils";
 import { collectionDateSort } from "@/utils/date";
 
 export const getStaticPaths = (async ({ paginate }) => {
-	const allPosts = await getAllPosts();
+	const allPosts = await getAllBlogs();
 	const sortedPosts = allPosts.sort(collectionDateSort);
 	const uniqueTags = getUniqueTags(sortedPosts);
 
@@ -27,6 +27,6 @@ const lang = Astro.params.lang as Lang;
 const { page } = Astro.props as Props;
 const tag = Astro.params.tag as string;
 const suffix = page.currentPage > 1 ? `${page.currentPage}/` : "";
-return Astro.redirect(localePath(lang, `/posts/tags/${tag}/${suffix}`), 301);
+return Astro.redirect(localePath(lang, `/blogs/tags/${tag}/${suffix}`), 301);
 ---
 

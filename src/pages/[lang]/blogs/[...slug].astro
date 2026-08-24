@@ -1,0 +1,27 @@
+---
+import { render } from "astro:content";
+import type { GetStaticPaths, InferGetStaticPropsType } from "astro";
+import { getAllBlogs } from "@/data/blog";
+import { languages, type Lang } from "@/i18n/config";
+import PostLayout from "@/layouts/BlogPost.astro";
+
+export const getStaticPaths = (async () => {
+	const blogEntries = await getAllBlogs();
+	return languages.flatMap((lang) =>
+		blogEntries.map((post) => ({
+			params: { lang, slug: post.id },
+			props: { post },
+		})),
+	);
+}) satisfies GetStaticPaths;
+
+type Props = InferGetStaticPropsType<typeof getStaticPaths>;
+
+const lang = Astro.params.lang as Lang;
+const { post } = Astro.props;
+const { Content } = await render(post);
+---
+
+<PostLayout post={post} lang={lang}>
+	<Content />
+</PostLayout>

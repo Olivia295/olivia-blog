@@ -30,10 +30,10 @@ media-local/**
 
 # writing: markdown stays on your machine (or a private repo)
 # see src/content/README.md
+src/content/blog/**
+!src/content/blog/.gitkeep
 src/content/post/**
 !src/content/post/.gitkeep
-src/content/note/**
-!src/content/note/.gitkeep
 src/data/photos.json
 public/notes/**
 public/gallery/**

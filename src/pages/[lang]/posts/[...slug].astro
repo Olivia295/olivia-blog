@@ -1,27 +1,18 @@
 ---
-import { render } from "astro:content";
-import type { GetStaticPaths, InferGetStaticPropsType } from "astro";
-import { getAllPosts } from "@/data/post";
+import { getAllBlogs } from "@/data/blog";
 import { languages, type Lang } from "@/i18n/config";
-import PostLayout from "@/layouts/BlogPost.astro";
+import { localePath } from "@/i18n/utils";
 
-export const getStaticPaths = (async () => {
-	const blogEntries = await getAllPosts();
+export async function getStaticPaths() {
+	const blogs = await getAllBlogs();
 	return languages.flatMap((lang) =>
-		blogEntries.map((post) => ({
-			params: { lang, slug: post.id },
-			props: { post },
+		blogs.map((blog) => ({
+			params: { lang, slug: blog.id },
 		})),
 	);
-}) satisfies GetStaticPaths;
-
-type Props = InferGetStaticPropsType<typeof getStaticPaths>;
+}
 
 const lang = Astro.params.lang as Lang;
-const { post } = Astro.props;
-const { Content } = await render(post);
+const slug = Astro.params.slug as string;
+return Astro.redirect(localePath(lang, `/blogs/${slug}/`), 301);
 ---
-
-<PostLayout post={post} lang={lang}>
-	<Content />
-</PostLayout>

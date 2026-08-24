@@ -1,6 +1,6 @@
 ---
 import FloatingBack from "@/components/FloatingBack.astro";
-import { buildPhotoSrcSet, getPhotoAlbum, getPhotoAlbums, photoFullUrl } from "@/data/photos";
+import { buildPhotoSrcSet, getPhotoAlbum, getPhotoAlbums, photoFullUrl } from "@/data/gallery";
 import { languages, type Lang } from "@/i18n/config";
 import { localePath, useTranslations } from "@/i18n/utils";
 import PageLayout from "@/layouts/Base.astro";
@@ -18,7 +18,7 @@ const t = useTranslations(lang);
 const album = getPhotoAlbum(Astro.params.album as string)!;
 
 const meta = {
-	title: `${album.title} · ${t("photos.title")}`,
+	title: `${album.title} · ${t("gallery.title")}`,
 	description: album.title,
 };
 ---
@@ -26,7 +26,7 @@ const meta = {
 <PageLayout lang={lang} meta={meta}>
 	<section class="album-page">
 		<p class="crumb">
-			<a href={localePath(lang, "/gallery/")}>{t("photos.back")}</a>
+			<a href={localePath(lang, "/gallery/")}>{t("gallery.back")}</a>
 			<span aria-hidden="true"> / </span>
 			<span>{album.title}</span>
 		</p>

@@ -31,7 +31,7 @@ function navIsCurrent(href: string, isHome = false) {
 	if (targetBare === "/gallery" && (currentBare === "/photos" || currentBare.startsWith("/photos/"))) {
 		return true;
 	}
-	if (targetBare === "/posts" && (currentBare === "/tags" || currentBare.startsWith("/tags/"))) {
+	if (targetBare === "/blogs" && (currentBare === "/tags" || currentBare.startsWith("/tags/"))) {
 		return true;
 	}
 	return false;

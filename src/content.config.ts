@@ -8,14 +8,11 @@ function removeDupsAndLowerCase(array: string[]) {
 
 const titleSchema = z.string().max(60);
 
-const baseSchema = z.object({
-	title: titleSchema,
-});
-
-const post = defineCollection({
-	loader: glob({ base: "./src/content/post", pattern: "**/*.{md,mdx}" }),
+const blog = defineCollection({
+	loader: glob({ base: "./src/content/blog", pattern: "**/*.{md,mdx}" }),
 	schema: ({ image }) =>
-		baseSchema.extend({
+		z.object({
+			title: titleSchema,
 			description: z.string(),
 			coverImage: z
 				.object({
@@ -36,14 +33,6 @@ const post = defineCollection({
 				.optional()
 				.transform((str) => (str ? new Date(str) : undefined)),
 			pinned: z.boolean().default(false),
-			/**
-			 * Post-scoped music player (not global).
-			 * - true: full playlist from music.json
-			 * - { id }: one catalog track (id in music.json)
-			 * - { src, title?, artist? }: one-off external URL
-			 * - array: several of the above
-			 * - false / omit: no player
-			 */
 			music: z
 				.union([
 					z.boolean(),
@@ -76,13 +65,14 @@ const post = defineCollection({
 		}),
 });
 
-const note = defineCollection({
-	loader: glob({ base: "./src/content/note", pattern: "**/*.{md,mdx}" }),
-	schema: baseSchema.extend({
+const post = defineCollection({
+	loader: glob({ base: "./src/content/post", pattern: "**/*.{md,mdx}" }),
+	schema: z.object({
+		title: titleSchema.optional(),
 		description: z.string().optional(),
 		draft: z.boolean().default(false),
 		publishDate: z.iso
-			.datetime({ offset: true }) // Ensures ISO 8601 format with offsets allowed (e.g. "2024-01-01T00:00:00Z" and "2024-01-01T00:00:00+02:00")
+			.datetime({ offset: true })
 			.transform((val) => new Date(val)),
 	}),
 });
@@ -95,4 +85,4 @@ const tag = defineCollection({
 	}),
 });
 
-export const collections = { post, note, tag };
+export const collections = { blog, post, tag };
