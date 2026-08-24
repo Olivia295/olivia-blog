@@ -104,7 +104,7 @@ if (!hasLocalGallery) {
 		await mkdir(path.dirname(photosJson), { recursive: true });
 		await cp(remotePhotos, photosJson);
 	}
-	await copyIfPresent(path.join(source, "gallery/images"), path.join(root, "public/gallery"));
+	await copyIfPresent(path.join(source, "gallery/images"), path.join(root, "public/media/gallery"));
 }
 
 console.log("sync-content: copied private content");

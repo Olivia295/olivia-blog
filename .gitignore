@@ -37,6 +37,7 @@ src/content/note/**
 src/data/photos.json
 public/notes/**
 public/gallery/**
+public/media/gallery/**
 .content-src/
 
 # editor junk

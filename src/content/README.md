@@ -9,7 +9,7 @@
 src/content/post/     长文，对应 /posts
 src/content/note/     短记，对应 /notes
 src/data/photos.json  画廊合集清单
-public/gallery/       画廊本地图片
+public/media/gallery/ 画廊本地图片
 public/notes/         短记配图
 ```
 
@@ -49,7 +49,7 @@ cp -R src/content/note ../olivia-blog-content/
 mkdir -p ../olivia-blog-content/notes-images
 cp -R public/notes/. ../olivia-blog-content/notes-images/ 2>/dev/null || true
 cp src/data/photos.json ../olivia-blog-content/gallery/photos.json
-cp -R public/gallery/. ../olivia-blog-content/gallery/images/ 2>/dev/null || true
+cp -R public/media/gallery/. ../olivia-blog-content/gallery/images/ 2>/dev/null || true
 ```
 
 私有仓库（可选）：
