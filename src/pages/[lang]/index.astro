@@ -36,6 +36,22 @@ const recentNotes = (await getAllNotes())
 	meta={{ title: t("home.title"), description: t("site.description") }}
 >
 	<div class="home-stage">
+		<section class="foyer">
+			<div class="foyer-copy">
+				<h1 class="title foyer-title">{siteConfig.title}</h1>
+				<p class="foyer-tagline">{t("home.tagline")}</p>
+			</div>
+			<figure class="foyer-hero">
+				<img
+					alt={t("home.heroAlt")}
+					class="foyer-hero__img"
+					height="777"
+					src="/home-hero.jpg"
+					width="1240"
+				/>
+			</figure>
+		</section>
+
 		<section class="home-feed home-feed--notes" aria-labelledby="home-notes-heading">
 			<h2 id="home-notes-heading" class="home-heading">{t("home.recentNotes")}</h2>
 			{
@@ -55,22 +71,6 @@ const recentNotes = (await getAllNotes())
 				{t("home.viewAllNotes")}
 				<span aria-hidden="true">→</span>
 			</a>
-		</section>
-
-		<section class="foyer">
-			<div class="foyer-copy">
-				<h1 class="title foyer-title">{siteConfig.title}</h1>
-				<p class="foyer-tagline">{t("home.tagline")}</p>
-			</div>
-			<figure class="foyer-hero">
-				<img
-					alt={t("home.heroAlt")}
-					class="foyer-hero__img"
-					height="777"
-					src="/home-hero.jpg"
-					width="1240"
-				/>
-			</figure>
 		</section>
 
 		<section class="home-feed home-feed--posts" aria-labelledby="home-posts-heading">
@@ -128,7 +128,6 @@ const recentNotes = (await getAllNotes())
 	.foyer {
 		display: flex;
 		flex-direction: column;
-		order: -1;
 		min-height: calc(100svh - 9.25rem);
 		padding: 0 0 1.5rem;
 	}
@@ -153,7 +152,6 @@ const recentNotes = (await getAllNotes())
 
 	.foyer-hero {
 		position: relative;
-		display: flex;
 		flex: 1 1 auto;
 		min-height: 16rem;
 		margin: 0;
@@ -167,6 +165,7 @@ const recentNotes = (await getAllNotes())
 		content: "";
 		position: absolute;
 		inset: 0;
+		z-index: 1;
 		background:
 			linear-gradient(
 				180deg,
@@ -183,7 +182,8 @@ const recentNotes = (await getAllNotes())
 	}
 
 	.foyer-hero__img {
-		display: block;
+		position: absolute;
+		inset: 0;
 		width: 100%;
 		height: 100%;
 		object-fit: cover;
@@ -309,30 +309,31 @@ const recentNotes = (await getAllNotes())
 		.home-stage {
 			display: grid;
 			grid-template-columns: minmax(16rem, 0.95fr) minmax(22rem, 1.25fr) minmax(15rem, 0.9fr);
+			grid-template-areas: "notes hero posts";
 			align-items: start;
 			gap: 2rem 2.25rem;
 			padding-top: 0.25rem;
 		}
 
 		.foyer {
-			order: 0;
+			grid-area: hero;
 			min-height: 0;
 			padding: 0;
 			position: sticky;
 			top: 1.25rem;
 		}
 
-		.home-feed {
-			padding-top: 0;
-			border-top: none;
-		}
-
 		.home-feed--notes {
-			padding-right: 0.25rem;
+			grid-area: notes;
 		}
 
 		.home-feed--posts {
-			padding-left: 0.25rem;
+			grid-area: posts;
+		}
+
+		.home-feed {
+			padding-top: 0;
+			border-top: none;
 		}
 
 		.foyer-hero {

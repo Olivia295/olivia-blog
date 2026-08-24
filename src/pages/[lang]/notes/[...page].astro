@@ -49,6 +49,14 @@ const paginationProps = {
 			url: page.url.next,
 		},
 	}),
+	pages: Array.from({ length: page.lastPage }, (_, i) => {
+		const n = i + 1;
+		return {
+			number: n,
+			current: n === page.currentPage,
+			href: n === 1 ? localePath(lang, "/notes/") : localePath(lang, `/notes/${n}/`),
+		};
+	}),
 };
 ---
 
@@ -76,5 +84,5 @@ const paginationProps = {
 		}
 		<Pagination {...paginationProps} />
 	</section>
-	<FloatingBack href={localePath(lang, "/")} label={t("back.home")} />
+	<FloatingBack />
 </PageLayout>

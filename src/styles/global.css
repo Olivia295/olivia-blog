@@ -170,7 +170,7 @@
 
 	/* Main content enter (all pages) */
 	#main {
-		animation: kitchen-fade-up 0.55s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+		animation: kitchen-fade-in 0.55s ease forwards;
 		min-width: 0;
 		max-width: 100%;
 	}
