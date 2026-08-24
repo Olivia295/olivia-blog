@@ -19,14 +19,22 @@ const menuLinks = menuLinkDefs.map((link) => ({
 }));
 ---
 
-<header class="site-header group relative mb-14 flex w-full min-w-0 items-center gap-2 sm:mb-28 sm:ps-18" id="main-header">
+<header class="site-header group relative mb-14 flex w-full min-w-0 items-center gap-2 sm:mb-28" id="main-header">
 	<div class="header-brand min-w-0 flex-1 sm:flex sm:flex-col">
 		<a
 			aria-current={Astro.url.pathname === homeHref || Astro.url.pathname === `/${lang}` ? "page" : false}
-			class="site-logo inline-flex max-w-full items-center sm:relative sm:inline-block sm:grayscale sm:hover:filter-none"
+			aria-label={siteConfig.title}
+			class="site-logo"
 			href={homeHref}
 		>
-			<span class="truncate text-lg font-bold sm:text-2xl">{siteConfig.title}</span>
+			<img
+				alt=""
+				class="site-mark"
+				height="64"
+				src="/logo.png"
+				width="64"
+			/>
+			<span class="site-wordmark">{siteConfig.title}</span>
 		</a>
 		<nav
 			aria-label={t("nav.main")}
@@ -49,12 +57,16 @@ const menuLinks = menuLinkDefs.map((link) => ({
 					</a>
 				))
 			}
+			<div class="nav-utils">
+				<LanguageSwitcher lang={lang} />
+				<ThemeToggle lang={lang} />
+			</div>
 		</nav>
 	</div>
 
 	<div class="header-tools flex shrink-0 items-center">
-		<div class="header-tools__desktop flex items-center">
-			<Search lang={lang} />
+		<Search lang={lang} />
+		<div class="header-tools__desktop">
 			<LanguageSwitcher lang={lang} />
 			<ThemeToggle lang={lang} />
 		</div>
@@ -137,11 +149,54 @@ const menuLinks = menuLinkDefs.map((link) => ({
 		z-index: 50;
 	}
 
+	.site-logo {
+		display: inline-flex;
+		min-width: 0;
+		max-width: 100%;
+		align-items: center;
+		gap: 0.55rem;
+		color: inherit;
+		text-decoration: none;
+	}
+
 	.site-logo:active {
 		opacity: 0.75;
 	}
 
-	/* —— Desktop nav (default open as row) —— */
+	.site-mark {
+		width: 2rem;
+		height: 2rem;
+		flex-shrink: 0;
+		border-radius: 0.45rem;
+		object-fit: cover;
+		background: #2b2e33;
+	}
+
+	.site-wordmark {
+		min-width: 0;
+		overflow: hidden;
+		font-size: 1.05rem;
+		font-weight: 700;
+		letter-spacing: -0.03em;
+		line-height: 1.2;
+		white-space: nowrap;
+		text-overflow: ellipsis;
+	}
+
+	.header-tools__desktop {
+		display: none;
+		align-items: center;
+	}
+
+	.nav-utils {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 0.5rem;
+		padding: 0.85rem 1rem 1rem;
+		border-top: 1px solid color-mix(in oklch, var(--color-global-text) 10%, transparent);
+	}
+
 	.site-nav {
 		display: none;
 		flex-direction: column;
@@ -158,7 +213,7 @@ const menuLinks = menuLinkDefs.map((link) => ({
 		transition: background 0.15s ease;
 	}
 
-	.site-nav__link:last-child {
+	.site-nav__link:last-of-type {
 		border-bottom: none;
 	}
 
@@ -171,9 +226,9 @@ const menuLinks = menuLinkDefs.map((link) => ({
 		display: inline-flex;
 		align-items: center;
 		justify-content: center;
-		width: 2.75rem;
-		height: 2.75rem;
-		margin-inline-start: 0.15rem;
+		width: 2.5rem;
+		height: 2.5rem;
+		margin-inline-start: 0.05rem;
 		border: none;
 		border-radius: 0.5rem;
 		background: transparent;
@@ -184,8 +239,8 @@ const menuLinks = menuLinkDefs.map((link) => ({
 
 	.menu-toggle__icon {
 		position: absolute;
-		width: 1.65rem;
-		height: 1.65rem;
+		width: 1.5rem;
+		height: 1.5rem;
 		transition:
 			opacity 0.2s ease,
 			transform 0.2s ease;
@@ -207,7 +262,6 @@ const menuLinks = menuLinkDefs.map((link) => ({
 		transform: scale(1);
 	}
 
-	/* Mobile open panel */
 	@media (max-width: 639px) {
 		:global(#main-header.menu-open) .site-nav {
 			display: flex;
@@ -220,7 +274,7 @@ const menuLinks = menuLinkDefs.map((link) => ({
 			border-radius: 0 0 1rem 1rem;
 			border-bottom: 1px solid color-mix(in oklch, var(--color-global-text) 12%, transparent);
 			box-shadow: 0 16px 40px color-mix(in oklch, var(--color-global-text) 12%, transparent);
-			max-height: min(70vh, 22rem);
+			max-height: min(70vh, 24rem);
 			overflow-y: auto;
 			animation: kitchen-fade-up 0.25s cubic-bezier(0.22, 1, 0.36, 1) both;
 		}
@@ -228,13 +282,31 @@ const menuLinks = menuLinkDefs.map((link) => ({
 		:global(body.nav-locked) {
 			overflow: hidden;
 		}
-
 	}
 
-	/* Desktop: always show horizontal nav, hide hamburger */
 	@media (min-width: 640px) {
 		.menu-toggle {
 			display: none;
+		}
+
+		.header-tools__desktop {
+			display: flex;
+		}
+
+		.nav-utils {
+			display: none;
+		}
+
+		.site-mark {
+			width: 2.35rem;
+			height: 2.35rem;
+			border-radius: 0.55rem;
+		}
+
+		.site-wordmark {
+			font-size: 1.5rem;
+			text-overflow: clip;
+			overflow: visible;
 		}
 
 		.site-nav {
@@ -258,7 +330,7 @@ const menuLinks = menuLinkDefs.map((link) => ({
 			border-inline-end: 1px solid color-mix(in oklch, var(--color-global-text) 14%, transparent);
 		}
 
-		.site-nav__link:last-child {
+		.site-nav__link:last-of-type {
 			border-inline-end: none;
 		}
 
