@@ -59,18 +59,22 @@ const { href, label } = Astro.props;
 </script>
 
 <style>
+	:global(body:has(.floating-back)) #main {
+		padding-bottom: 4.25rem;
+	}
+
 	.floating-back {
 		position: fixed;
 		left: max(0.75rem, env(safe-area-inset-left));
-		bottom: max(1rem, calc(0.75rem + env(safe-area-inset-bottom)));
+		bottom: max(4.75rem, calc(4.25rem + env(safe-area-inset-bottom)));
 		z-index: 90;
 		display: inline-flex;
 		align-items: center;
+		justify-content: center;
 		gap: 0.35rem;
-		max-width: min(14rem, calc(100vw - 5rem));
-		min-height: 2.75rem;
-		height: auto;
-		padding: 0.55rem 0.9rem 0.55rem 0.7rem;
+		width: 2.75rem;
+		height: 2.75rem;
+		padding: 0;
 		border-radius: 999px;
 		border: 2px solid transparent;
 		background: color-mix(in oklch, var(--color-global-bg) 88%, var(--color-global-text));
@@ -93,14 +97,32 @@ const { href, label } = Astro.props;
 			box-shadow 0.2s ease;
 	}
 
+	.floating-back__label {
+		display: none;
+	}
+
 	@media (min-width: 640px) {
+		:global(body:has(.floating-back)) #main {
+			padding-bottom: 2.5rem;
+		}
+
 		.floating-back {
 			left: max(2rem, env(safe-area-inset-left));
 			bottom: max(2rem, calc(1.25rem + env(safe-area-inset-bottom)));
-			max-width: 16rem;
+			width: auto;
+			height: auto;
 			min-height: 2.75rem;
+			max-width: 16rem;
 			padding: 0.6rem 1rem 0.6rem 0.75rem;
 			font-size: 0.85rem;
+			justify-content: flex-start;
+		}
+
+		.floating-back__label {
+			display: inline;
+			overflow: hidden;
+			text-overflow: ellipsis;
+			white-space: nowrap;
 		}
 	}
 
@@ -127,12 +149,6 @@ const { href, label } = Astro.props;
 		width: 1.15rem;
 		height: 1.15rem;
 		flex-shrink: 0;
-	}
-
-	.floating-back__label {
-		overflow: hidden;
-		text-overflow: ellipsis;
-		white-space: nowrap;
 	}
 
 	@media (prefers-reduced-motion: reduce) {

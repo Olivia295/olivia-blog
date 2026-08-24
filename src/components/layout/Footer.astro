@@ -17,7 +17,7 @@ const menuLinks = menuLinkDefs.map((link) => ({
 ---
 
 <footer
-	class="text-muted mt-auto flex w-full flex-col items-center justify-center gap-y-3 pt-16 pb-6 text-center align-top text-xs font-semibold sm:flex-row sm:justify-between sm:gap-y-2 sm:pt-20 sm:pb-4"
+	class="text-muted mt-auto flex w-full flex-col items-center justify-center gap-y-2 pt-8 pb-1 text-center align-top text-xs font-semibold sm:flex-row sm:justify-between sm:gap-y-2 sm:pt-16 sm:pb-2"
 >
 	<div class="me-0 sm:me-4">
 		&copy; {siteConfig.author}
@@ -27,7 +27,7 @@ const menuLinks = menuLinkDefs.map((link) => ({
 		<p id="footer_links" class="sr-only">{t("nav.siteLinks")}</p>
 		{
 			menuLinks.map((link) => (
-				<a class="hover:text-global-text px-4 py-2 hover:underline sm:py-0" href={link.path}>
+				<a class="hover:text-global-text px-3 py-1.5 hover:underline sm:px-4 sm:py-0" href={link.path}>
 					{link.title}
 				</a>
 			))
