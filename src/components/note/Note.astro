@@ -81,6 +81,20 @@ const { Content } = await render(note);
 		box-shadow: none;
 	}
 
+	.note-card--plain .note-card__header {
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 0.2rem;
+	}
+
+	@media (min-width: 640px) {
+		.note-card--plain .note-card__header {
+			flex-direction: row;
+			align-items: baseline;
+			justify-content: space-between;
+		}
+	}
+
 	.note-card__header {
 		display: flex;
 		flex-wrap: wrap;

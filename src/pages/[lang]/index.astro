@@ -30,10 +30,16 @@ const recentNotes = (await getAllNotes())
 	.slice(0, RECENT_NOTES);
 ---
 
-<PageLayout lang={lang} meta={{ title: t("home.title"), description: t("site.description") }}>
+<PageLayout
+	lang={lang}
+	wide
+	meta={{ title: t("home.title"), description: t("site.description") }}
+>
 	<section class="foyer">
-		<h1 class="title foyer-title">{siteConfig.title}</h1>
-		<p class="foyer-tagline">{t("home.tagline")}</p>
+		<div class="foyer-copy">
+			<h1 class="title foyer-title">{siteConfig.title}</h1>
+			<p class="foyer-tagline">{t("home.tagline")}</p>
+		</div>
 		<figure class="foyer-hero">
 			<img
 				alt={t("home.heroAlt")}
@@ -45,68 +51,83 @@ const recentNotes = (await getAllNotes())
 		</figure>
 	</section>
 
-	<section class="home-feed" aria-labelledby="home-notes-heading">
-		<h2 id="home-notes-heading" class="home-heading">{t("home.recentNotes")}</h2>
-		{
-			recentNotes.length === 0 ? (
-				<p class="home-empty">{t("notes.empty")}</p>
-			) : (
-				<ul class="home-notes" role="list">
-					{recentNotes.map((note) => (
-						<li>
-							<Note note={note} as="h3" lang={lang} plain />
-						</li>
-					))}
-				</ul>
-			)
-		}
-		<a class="home-more" href={localePath(lang, "/notes/")}>
-			{t("home.viewAllNotes")}
-			<span aria-hidden="true">→</span>
-		</a>
-	</section>
+	<div class="home-columns">
+		<section class="home-feed" aria-labelledby="home-notes-heading">
+			<h2 id="home-notes-heading" class="home-heading">{t("home.recentNotes")}</h2>
+			{
+				recentNotes.length === 0 ? (
+					<p class="home-empty">{t("notes.empty")}</p>
+				) : (
+					<ul class="home-notes" role="list">
+						{recentNotes.map((note) => (
+							<li>
+								<Note note={note} as="h3" lang={lang} plain />
+							</li>
+						))}
+					</ul>
+				)
+			}
+			<a class="home-more" href={localePath(lang, "/notes/")}>
+				{t("home.viewAllNotes")}
+				<span aria-hidden="true">→</span>
+			</a>
+		</section>
 
-	<section class="home-feed home-feed--posts" aria-labelledby="home-posts-heading">
-		<h2 id="home-posts-heading" class="home-heading">{t("home.recentPosts")}</h2>
-		{
-			recentPosts.length === 0 ? (
-				<p class="home-empty">{t("posts.empty")}</p>
-			) : (
-				<ul class="home-posts" role="list">
-					{recentPosts.map((post) => (
-						<li class="home-post">
-							<a class="home-post__title" href={localePath(lang, `/posts/${post.id}/`)}>
-								{post.data.title}
-							</a>
-							<FormattedDate class="home-post__date" date={post.data.publishDate} lang={lang} />
-							{
-								post.data.tags.length > 0 && (
-									<ul class="home-post__tags" role="list">
-										{post.data.tags.map((tag) => (
-											<li>
-												<a class="home-post__tag" href={localePath(lang, `/tags/${tag}/`)}>
-													#{tag}
-												</a>
-											</li>
-										))}
-									</ul>
-								)
-							}
-						</li>
-					))}
-				</ul>
-			)
-		}
-		<a class="home-more" href={localePath(lang, "/posts/")}>
-			{t("home.viewAllPosts")}
-			<span aria-hidden="true">→</span>
-		</a>
-	</section>
+		<section class="home-feed home-feed--posts" aria-labelledby="home-posts-heading">
+			<h2 id="home-posts-heading" class="home-heading">{t("home.recentPosts")}</h2>
+			{
+				recentPosts.length === 0 ? (
+					<p class="home-empty">{t("posts.empty")}</p>
+				) : (
+					<ul class="home-posts" role="list">
+						{recentPosts.map((post) => (
+							<li>
+								<article class="home-post">
+									<a class="home-post__hit" href={localePath(lang, `/posts/${post.id}/`)}>
+										<span class="home-post__title">{post.data.title}</span>
+										<FormattedDate
+											class="home-post__date"
+											date={post.data.publishDate}
+											lang={lang}
+										/>
+									</a>
+									{
+										post.data.tags.length > 0 && (
+											<ul class="home-post__tags" role="list">
+												{post.data.tags.map((tag) => (
+													<li>
+														<a class="home-post__tag" href={localePath(lang, `/tags/${tag}/`)}>
+															#{tag}
+														</a>
+													</li>
+												))}
+											</ul>
+										)
+									}
+								</article>
+							</li>
+						))}
+					</ul>
+				)
+			}
+			<a class="home-more" href={localePath(lang, "/posts/")}>
+				{t("home.viewAllPosts")}
+				<span aria-hidden="true">→</span>
+			</a>
+		</section>
+	</div>
 </PageLayout>
 
 <style>
 	.foyer {
-		padding: 0.35rem 0 0.15rem;
+		display: flex;
+		flex-direction: column;
+		min-height: calc(100svh - 9.25rem);
+		padding: 0 0 1.5rem;
+	}
+
+	.foyer-copy {
+		flex-shrink: 0;
 	}
 
 	.foyer-title {
@@ -116,7 +137,7 @@ const recentNotes = (await getAllNotes())
 	}
 
 	.foyer-tagline {
-		margin: 0 0 1.1rem;
+		margin: 0 0 1rem;
 		max-width: 22rem;
 		font-size: 1.05rem;
 		line-height: 1.7;
@@ -125,6 +146,9 @@ const recentNotes = (await getAllNotes())
 
 	.foyer-hero {
 		position: relative;
+		display: flex;
+		flex: 1 1 auto;
+		min-height: 16rem;
 		margin: 0;
 		overflow: hidden;
 		border-radius: 1rem;
@@ -154,31 +178,40 @@ const recentNotes = (await getAllNotes())
 	.foyer-hero__img {
 		display: block;
 		width: 100%;
-		height: auto;
-		aspect-ratio: 3 / 2;
+		height: 100%;
 		object-fit: cover;
 		transform-origin: 40% 40%;
 		animation: kitchen-hero-drift 22s ease-in-out infinite alternate;
 		filter: saturate(1.08) contrast(1.05);
 	}
 
+	.home-columns {
+		display: grid;
+		grid-template-columns: 1fr;
+		gap: 0;
+		padding-bottom: 2rem;
+		border-top: 1px solid color-mix(in oklch, var(--color-global-text) 10%, transparent);
+	}
+
 	.home-feed {
-		margin-top: 2rem;
-		padding-bottom: 0.5rem;
+		padding-top: 1.75rem;
 	}
 
 	.home-feed--posts {
-		margin-top: 2.25rem;
-		padding-bottom: 2rem;
+		margin-top: 1.75rem;
+		padding-top: 1.75rem;
+		border-top: 1px solid color-mix(in oklch, var(--color-global-text) 10%, transparent);
 	}
 
 	.home-heading {
-		margin: 0 0 1.1rem;
-		font-size: 0.72rem;
+		margin: 0 0 1.15rem;
+		padding-bottom: 0.7rem;
+		border-bottom: 1px solid color-mix(in oklch, var(--color-brand) 22%, transparent);
+		font-size: 1.2rem;
 		font-weight: 700;
-		letter-spacing: 0.16em;
-		text-transform: uppercase;
-		color: var(--color-muted);
+		letter-spacing: -0.02em;
+		line-height: 1.2;
+		color: var(--color-accent-2);
 	}
 
 	.home-empty {
@@ -194,39 +227,53 @@ const recentNotes = (await getAllNotes())
 	}
 
 	.home-notes > li + li {
-		margin-top: 1.35rem;
-		padding-top: 1.35rem;
+		margin-top: 1.25rem;
+		padding-top: 1.25rem;
 		border-top: 1px solid color-mix(in oklch, var(--color-global-text) 8%, transparent);
 	}
 
 	.home-posts {
-		margin: 0 0 0.85rem;
+		display: flex;
+		flex-direction: column;
+		gap: 0.75rem;
+		margin: 0 0 1rem;
 		padding: 0;
 		list-style: none;
 	}
 
 	.home-post {
+		padding: 0.95rem 1rem 1rem;
+		border-radius: 0.9rem;
+		background: var(--color-global-bg);
+		border: 1px solid color-mix(in oklch, var(--color-global-text) 7%, transparent);
+		box-shadow: 0 8px 22px color-mix(in oklch, var(--color-global-text) 7%, transparent);
+		transition:
+			transform 0.2s cubic-bezier(0.22, 1, 0.36, 1),
+			box-shadow 0.2s ease;
+	}
+
+	.home-post:hover,
+	.home-post:active {
+		transform: translateY(-2px);
+		box-shadow: 0 12px 28px color-mix(in oklch, var(--color-brand) 16%, transparent);
+	}
+
+	.home-post__hit {
 		display: flex;
 		flex-direction: column;
 		align-items: flex-start;
-		gap: 0.3rem;
-		padding: 0.95rem 0;
-	}
-
-	.home-post + .home-post {
-		border-top: 1px solid color-mix(in oklch, var(--color-global-text) 8%, transparent);
-	}
-
-	.home-post__title {
-		font-size: 1.05rem;
-		font-weight: 700;
-		line-height: 1.35;
+		gap: 0.28rem;
 		color: inherit;
 		text-decoration: none;
 	}
 
-	.home-post__title:hover,
-	.home-post__title:active {
+	.home-post__title {
+		font-size: 1.02rem;
+		font-weight: 700;
+		line-height: 1.35;
+	}
+
+	.home-post__hit:hover .home-post__title {
 		color: var(--color-brand);
 	}
 
@@ -239,8 +286,8 @@ const recentNotes = (await getAllNotes())
 	.home-post__tags {
 		display: flex;
 		flex-wrap: wrap;
-		gap: 0.35rem 0.7rem;
-		margin: 0.2rem 0 0;
+		gap: 0.3rem 0.65rem;
+		margin: 0.45rem 0 0;
 		padding: 0;
 		list-style: none;
 	}
@@ -250,7 +297,7 @@ const recentNotes = (await getAllNotes())
 		font-weight: 600;
 		color: var(--color-brand);
 		text-decoration: none;
-		opacity: 0.85;
+		opacity: 0.88;
 	}
 
 	.home-post__tag:hover {
@@ -259,23 +306,47 @@ const recentNotes = (await getAllNotes())
 		text-underline-offset: 2px;
 	}
 
-	@media (min-width: 640px) {
+	@media (min-width: 860px) {
 		.foyer {
-			padding: 0.6rem 0 0.25rem;
+			min-height: 0;
+			padding: 0.35rem 0 2rem;
+		}
+
+		.foyer-hero {
+			flex: none;
+			min-height: 0;
+			aspect-ratio: 16 / 9;
+			max-height: 28rem;
+		}
+
+		.home-columns {
+			grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+			gap: 0 2.75rem;
+			margin-top: 0.25rem;
+			padding-top: 2rem;
 		}
 
 		.home-feed {
-			margin-top: 2.5rem;
+			padding-top: 0;
 		}
 
 		.home-feed--posts {
-			margin-top: 2.75rem;
+			margin-top: 0;
+			padding-top: 0;
+			padding-left: 2.75rem;
+			border-top: none;
+			border-left: 1px solid color-mix(in oklch, var(--color-global-text) 10%, transparent);
 		}
 	}
 
 	@media (prefers-reduced-motion: reduce) {
 		.foyer-hero__img {
 			animation: none;
+		}
+
+		.home-post:hover,
+		.home-post:active {
+			transform: none;
 		}
 	}
 </style>

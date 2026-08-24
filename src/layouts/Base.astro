@@ -11,10 +11,12 @@ import type { SiteMeta } from "@/types";
 interface Props {
 	meta: SiteMeta;
 	lang?: Lang;
+	wide?: boolean;
 }
 
 const lang = Astro.props.lang ?? getLangFromUrl(Astro.url) ?? defaultLang;
 const t = useTranslations(lang);
+const wide = Astro.props.wide ?? false;
 
 const {
 	meta: { articleDate, description = t("site.description"), ogImage, title },
@@ -33,7 +35,10 @@ const {
 		<ThemeProvider />
 	</head>
 	<body
-		class="bg-global-bg text-global-text mx-auto flex min-h-screen w-full max-w-3xl flex-col overflow-x-clip px-4 pt-8 pb-[max(0.75rem,env(safe-area-inset-bottom))] font-mono text-sm font-normal antialiased sm:px-8 sm:pt-16 sm:pb-6"
+		class:list={[
+			"bg-global-bg text-global-text mx-auto flex min-h-screen w-full flex-col overflow-x-clip px-4 pt-8 pb-[max(0.75rem,env(safe-area-inset-bottom))] font-mono text-sm font-normal antialiased sm:px-8 sm:pt-16 sm:pb-6",
+			wide ? "max-w-5xl" : "max-w-3xl",
+		]}
 	>
 		<SkipLink lang={lang} />
 		<Header lang={lang} />
