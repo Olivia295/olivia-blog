@@ -11,7 +11,7 @@
  * CONTENT_REPO_TOKEN=https PAT (optional alternative to SSH)
  */
 import { execSync } from "node:child_process";
-import { cp, mkdir, readdir, writeFile } from "node:fs/promises";
+import { cp, mkdir, readdir, readFile, rm, writeFile } from "node:fs/promises";
 import { existsSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
@@ -45,6 +45,14 @@ async function copyIfPresent(from, to) {
 	return true;
 }
 
+async function replaceDir(from, to) {
+	if (!existsSync(from)) return false;
+	await rm(to, { recursive: true, force: true });
+	await mkdir(path.dirname(to), { recursive: true });
+	await cp(from, to, { recursive: true });
+	return true;
+}
+
 async function cloneRepo(repo, dest) {
 	const env = { ...process.env };
 	const sshKey = process.env.CONTENT_SSH_KEY;
@@ -63,19 +71,60 @@ async function cloneRepo(repo, dest) {
 	execSync(`git clone --depth 1 "${url}" "${dest}"`, { env, stdio: "inherit" });
 }
 
-const hasLocalWriting = (await hasMarkdown(blogDir)) || (await hasMarkdown(postDir));
-const hasLocalGallery = existsSync(photosJson);
-const contentDir = process.env.CONTENT_DIR;
-const repo = process.env.CONTENT_REPO;
+const IMAGE_EXT = new Set([".jpg", ".jpeg", ".png", ".webp", ".gif", ".avif"]);
 
-if (hasLocalWriting && hasLocalGallery && !contentDir && !repo) {
-	console.log("sync-content: using local writing and gallery");
-	process.exit(0);
+async function buildGalleryFromFolders(galleryRoot, photosOut, mediaOut) {
+	if (!existsSync(galleryRoot)) return false;
+	const albums = [];
+	for (const entry of await readdir(galleryRoot, { withFileTypes: true })) {
+		if (!entry.isDirectory()) continue;
+		if (entry.name.startsWith(".") || entry.name === "images") continue;
+		const folder = path.join(galleryRoot, entry.name);
+		let meta = {};
+		const metaFile = path.join(folder, "album.json");
+		if (existsSync(metaFile)) {
+			meta = JSON.parse(await readFile(metaFile, "utf8"));
+		}
+		const slug = String(meta.slug || entry.name);
+		const title = String(meta.title || entry.name);
+		const alts = meta.alts && typeof meta.alts === "object" ? meta.alts : {};
+		const files = (await readdir(folder))
+			.filter((name) => IMAGE_EXT.has(path.extname(name).toLowerCase()))
+			.sort((a, b) => a.localeCompare(b, "en"));
+		const photos = files.map((name) => {
+			const stem = path.basename(name, path.extname(name));
+			return {
+				slug: stem,
+				src: `/media/gallery/${slug}/${name}`,
+				alt: alts[stem] || alts[name] || stem,
+			};
+		});
+		if (Array.isArray(meta.photos)) {
+			for (const extra of meta.photos) {
+				if (extra?.src) photos.push(extra);
+			}
+		}
+		if (!photos.length) continue;
+		const dest = path.join(mediaOut, slug);
+		await mkdir(dest, { recursive: true });
+		for (const name of files) {
+			await cp(path.join(folder, name), path.join(dest, name));
+		}
+		albums.push({ slug, title, photos });
+	}
+	if (!albums.length) return false;
+	await mkdir(path.dirname(photosOut), { recursive: true });
+	await writeFile(photosOut, `${JSON.stringify({ albums }, null, "\t")}\n`);
+	return true;
 }
 
-let source = contentDir ?? "";
+const sibling = path.resolve(root, "../olivia-blog-content");
+const contentDir =
+	process.env.CONTENT_DIR || (existsSync(path.join(sibling, ".git")) ? sibling : "");
+const repo = process.env.CONTENT_REPO;
+let source = contentDir;
 
-if (!source && repo && (!hasLocalWriting || !hasLocalGallery)) {
+if (!source && repo) {
 	const cache = path.join(root, ".content-src", "repo");
 	if (existsSync(path.join(cache, ".git"))) {
 		execSync("git pull --ff-only", { cwd: cache, stdio: "inherit" });
@@ -86,24 +135,30 @@ if (!source && repo && (!hasLocalWriting || !hasLocalGallery)) {
 }
 
 if (!source) {
-	console.log(
-		"sync-content: no local content and no CONTENT_DIR/CONTENT_REPO — building with empty writing/gallery",
-	);
+	console.log("sync-content: no content source — leaving local files as they are");
 	process.exit(0);
 }
 
-if (!hasLocalWriting) {
-	if (existsSync(path.join(source, "blog"))) {
-		await copyIfPresent(path.join(source, "blog"), blogDir);
-		await copyIfPresent(path.join(source, "post"), postDir);
-	} else {
-		await copyIfPresent(path.join(source, "post"), blogDir);
-		await copyIfPresent(path.join(source, "note"), postDir);
-	}
-	await copyIfPresent(path.join(source, "notes-images"), path.join(root, "public/notes"));
+if (existsSync(path.join(source, "blog"))) {
+	await replaceDir(path.join(source, "blog"), blogDir);
+	await replaceDir(path.join(source, "post"), postDir);
+} else {
+	await replaceDir(path.join(source, "post"), blogDir);
+	await replaceDir(path.join(source, "note"), postDir);
 }
+await mkdir(blogDir, { recursive: true });
+await mkdir(postDir, { recursive: true });
+await writeFile(path.join(blogDir, ".gitkeep"), "");
+await writeFile(path.join(postDir, ".gitkeep"), "");
+await copyIfPresent(path.join(source, "post/images"), path.join(root, "public/notes"));
+await copyIfPresent(path.join(source, "notes-images"), path.join(root, "public/notes"));
 
-if (!hasLocalGallery) {
+const built = await buildGalleryFromFolders(
+	path.join(source, "gallery"),
+	photosJson,
+	path.join(root, "public/media/gallery"),
+);
+if (!built) {
 	const remotePhotos = path.join(source, "gallery/photos.json");
 	if (existsSync(remotePhotos)) {
 		await mkdir(path.dirname(photosJson), { recursive: true });
@@ -112,4 +167,12 @@ if (!hasLocalGallery) {
 	await copyIfPresent(path.join(source, "gallery/images"), path.join(root, "public/media/gallery"));
 }
 
-console.log("sync-content: copied private content");
+const siteDir = path.join(source, "site");
+if (existsSync(path.join(siteDir, "logo.png"))) {
+	await cp(path.join(siteDir, "logo.png"), path.join(root, "public/logo.png"));
+}
+if (existsSync(path.join(siteDir, "home-hero.jpg"))) {
+	await cp(path.join(siteDir, "home-hero.jpg"), path.join(root, "public/home-hero.jpg"));
+}
+
+console.log("sync-content: copied private content from", source);

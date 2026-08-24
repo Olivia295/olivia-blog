@@ -1,5 +1,7 @@
 # 文章不进 GitHub
 
+真正改内容请打开旁边的 **olivia-blog-content**（private）。那边用文件夹分类，见该仓库 README。
+
 `post/`（文章 / Blogs）、`note/`（短记 / Posts）和画廊清单已加入 `.gitignore`。  
 本地照常写；`git push` 只推代码，不推正文和相册。
 
