@@ -60,25 +60,27 @@ const menuLinks = menuLinkDefs.map((link) => ({
 	.site-header {
 		display: flex;
 		flex-direction: column;
-		align-items: stretch;
 		width: 100%;
 		min-width: 0;
 		margin-bottom: 1.75rem;
 		animation: kitchen-fade-up 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
-		z-index: 50;
 	}
 
 	.header-top {
 		display: flex;
+		flex-direction: row;
+		flex-wrap: nowrap;
 		align-items: center;
-		gap: 0.5rem;
+		justify-content: space-between;
+		gap: 0.75rem;
+		width: 100%;
 		min-width: 0;
 	}
 
 	.site-logo {
-		display: inline-flex;
+		display: flex;
+		flex: 0 1 auto;
 		min-width: 0;
-		flex: 1;
 		align-items: center;
 		gap: 0.5rem;
 		color: inherit;
@@ -90,10 +92,10 @@ const menuLinks = menuLinkDefs.map((link) => ({
 	}
 
 	.site-mark {
-		width: 2rem;
-		height: 2rem;
+		width: 1.85rem;
+		height: 1.85rem;
 		flex-shrink: 0;
-		border-radius: 0.45rem;
+		border-radius: 0.4rem;
 		object-fit: cover;
 		background: #2b2e33;
 	}
@@ -101,7 +103,7 @@ const menuLinks = menuLinkDefs.map((link) => ({
 	.site-wordmark {
 		min-width: 0;
 		overflow: hidden;
-		font-size: 1.05rem;
+		font-size: 1rem;
 		font-weight: 700;
 		letter-spacing: -0.03em;
 		line-height: 1.2;
@@ -111,61 +113,123 @@ const menuLinks = menuLinkDefs.map((link) => ({
 
 	.header-tools {
 		display: flex;
+		flex-direction: row;
+		flex-wrap: nowrap;
 		flex-shrink: 0;
 		align-items: center;
+		gap: 0.1rem;
+		margin-inline-start: auto;
+	}
+
+	.header-tools :global(site-search),
+	.header-tools :global(theme-toggle) {
+		display: inline-flex;
+		flex-shrink: 0;
+		align-items: center;
+		justify-content: center;
+		width: auto;
+		margin: 0;
+	}
+
+	.header-tools :global(site-search > button),
+	.header-tools :global(theme-toggle > button) {
+		width: 2.15rem;
+		height: 2.15rem;
+		padding: 0;
+	}
+
+	.header-tools :global(theme-toggle > button svg) {
+		width: 1.25rem;
+		height: 1.25rem;
+	}
+
+	.header-tools :global(site-search > button svg) {
+		width: 1.25rem;
+		height: 1.25rem;
+	}
+
+	.header-tools :global(.lang-switch) {
+		margin-inline: 0.1rem;
 	}
 
 	.site-nav {
 		display: flex;
 		flex-direction: row;
-		flex-wrap: wrap;
-		margin-top: 0.45rem;
-		margin-inline-start: -0.45rem;
+		flex-wrap: nowrap;
+		align-items: center;
+		gap: 0;
+		margin-top: 0.55rem;
+		padding-top: 0.45rem;
+		border-top: 1px solid color-mix(in oklch, var(--color-global-text) 10%, transparent);
+		overflow-x: auto;
+		scrollbar-width: none;
+		-ms-overflow-style: none;
+	}
+
+	.site-nav::-webkit-scrollbar {
+		display: none;
 	}
 
 	.site-nav__link {
-		padding: 0.35rem 0.55rem;
+		flex-shrink: 0;
+		padding: 0.2rem 0.7rem 0.2rem 0;
+		margin-inline-end: 0.7rem;
 		font-size: 0.8rem;
 		font-weight: 600;
-		color: var(--color-accent);
+		letter-spacing: 0.01em;
+		color: var(--color-muted);
 		text-decoration: none;
 		border-inline-end: 1px solid color-mix(in oklch, var(--color-global-text) 14%, transparent);
 	}
 
 	.site-nav__link:last-child {
+		margin-inline-end: 0;
+		padding-inline-end: 0;
 		border-inline-end: none;
+	}
+
+	.site-nav__link[aria-current="page"] {
+		color: var(--color-accent);
 	}
 
 	.site-nav__link:hover,
 	.site-nav__link:active {
-		text-decoration: underline;
-		text-underline-offset: 2px;
+		color: var(--color-accent);
 	}
 
 	@media (min-width: 640px) {
 		.site-header {
-			margin-bottom: 4.5rem;
+			margin-bottom: 3.5rem;
 		}
 
 		.site-mark {
-			width: 2.35rem;
-			height: 2.35rem;
-			border-radius: 0.55rem;
+			width: 2.25rem;
+			height: 2.25rem;
+			border-radius: 0.5rem;
 		}
 
 		.site-wordmark {
-			font-size: 1.5rem;
-			text-overflow: clip;
-			overflow: visible;
+			font-size: 1.35rem;
+		}
+
+		.header-tools {
+			gap: 0.2rem;
+		}
+
+		.header-tools :global(site-search > button),
+		.header-tools :global(theme-toggle > button) {
+			width: 2.25rem;
+			height: 2.25rem;
 		}
 
 		.site-nav {
-			margin-top: 0.4rem;
-			margin-inline-start: -0.85rem;
+			margin-top: 0.65rem;
+			padding-top: 0.55rem;
 		}
 
 		.site-nav__link {
-			padding: 0.15rem 0.85rem;
+			padding: 0.15rem 0.85rem 0.15rem 0;
+			margin-inline-end: 0.85rem;
 			font-size: 0.875rem;
 		}
 	}
