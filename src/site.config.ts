@@ -3,7 +3,7 @@ import type { SiteConfig } from "@/types";
 
 export const siteConfig: SiteConfig = {
 	// Phase 1: Vercel preview domain is fine; replace when you bind a custom domain.
-	url: "https://olivia-blog.vercel.app/",
+	url: "https://oliviapan-blog.vercel.app/",
 	/*
 		- Used to construct the meta title property found in src/components/BaseHead.astro L:11
 		- The webmanifest name found in astro.config.ts L:42
