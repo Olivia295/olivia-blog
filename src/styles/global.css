@@ -24,15 +24,20 @@
 	inherits: true;
 	initial-value: oklch(44.6% 0.03 256.802);
 }
+@property --color-brand {
+	syntax: "<color>";
+	inherits: true;
+	initial-value: oklch(0.5 0.18 312);
+}
 @property --color-link {
 	syntax: "<color>";
 	inherits: true;
-	initial-value: oklch(55.44% 0.0431 185.69);
+	initial-value: oklch(0.5 0.18 312);
 }
 @property --color-accent {
 	syntax: "<color>";
 	inherits: true;
-	initial-value: oklch(55.27% 0.195 19.06);
+	initial-value: oklch(0.5 0.18 312);
 }
 @property --color-accent-2 {
 	syntax: "<color>";
@@ -42,18 +47,23 @@
 @property --color-quote {
 	syntax: "<color>";
 	inherits: true;
-	initial-value: oklch(55.27% 0.195 19.06);
+	initial-value: oklch(0.5 0.18 312);
 }
 
-/* you could refactor below to use light-dark(), depending on your target audience */
+/*
+	Brand / 提示色 — change --color-brand (and the dark-theme copy below)
+	to recolor links, current nav, fold markers, and other accents.
+	Hue 312 ≈ violet. Examples: 265 blue-violet, 330 magenta.
+*/
 @theme {
 	--color-global-bg: oklch(98.48% 0 0);
 	--color-global-text: oklch(26.99% 0.0096 235.05);
 	--color-muted: oklch(44.6% 0.03 256.802);
-	--color-link: oklch(55.44% 0.0431 185.69);
-	--color-accent: oklch(55.27% 0.195 19.06);
+	--color-brand: oklch(0.5 0.18 312);
+	--color-link: var(--color-brand);
+	--color-accent: var(--color-brand);
 	--color-accent-2: oklch(18.15% 0 0);
-	--color-quote: oklch(55.27% 0.195 19.06);
+	--color-quote: var(--color-brand);
 }
 
 @layer base {
@@ -65,6 +75,11 @@
 		/* stable gutter can add a side gap on some mobile browsers */
 		scrollbar-gutter: auto;
 
+		--color-brand: oklch(0.5 0.18 312);
+		--color-accent: var(--color-brand);
+		--color-link: var(--color-brand);
+		--color-quote: var(--color-brand);
+
 		&[data-theme="light"] {
 			color-scheme: light;
 		}
@@ -74,10 +89,11 @@
 			--color-global-bg: oklch(23.64% 0.0045 248);
 			--color-global-text: oklch(83.54% 0 264);
 			--color-muted: oklch(70.7% 0.022 261.325);
-			--color-link: oklch(70.44% 0.1133 349);
-			--color-accent: oklch(70.91% 0.1415 163.7);
+			--color-brand: oklch(0.8 0.13 312);
+			--color-accent: var(--color-brand);
+			--color-link: var(--color-brand);
 			--color-accent-2: oklch(94.66% 0 0);
-			--color-quote: oklch(94.8% 0.106 136.49);
+			--color-quote: var(--color-brand);
 		}
 
 		--color-mode-transition-duration: 300ms;
@@ -87,6 +103,7 @@
 			--color-global-bg var(--color-mode-transition-duration) var(--color-mode-transition-easing),
 			--color-global-text var(--color-mode-transition-duration) var(--color-mode-transition-easing),
 			--color-muted var(--color-mode-transition-duration) var(--color-mode-transition-easing),
+			--color-brand var(--color-mode-transition-duration) var(--color-mode-transition-easing),
 			--color-link var(--color-mode-transition-duration) var(--color-mode-transition-easing),
 			--color-accent var(--color-mode-transition-duration) var(--color-mode-transition-easing),
 			--color-accent-2 var(--color-mode-transition-duration) var(--color-mode-transition-easing),
@@ -132,6 +149,103 @@
 
 	.title {
 		@apply text-accent-2 text-2xl font-semibold;
+	}
+
+	.home-fold {
+		border-radius: 0.9rem;
+		border: 1px solid color-mix(in oklch, var(--color-brand) 16%, transparent);
+		background: color-mix(in oklch, var(--color-brand) 5%, var(--color-global-bg));
+		padding: 0.15rem 1rem 0.9rem;
+	}
+
+	.home-fold__summary {
+		display: flex;
+		align-items: center;
+		gap: 0.45rem;
+		cursor: pointer;
+		list-style: none;
+		padding: 0.85rem 0 0.55rem;
+		font-size: 0.92rem;
+		font-weight: 700;
+		user-select: none;
+	}
+
+	.home-fold__summary::-webkit-details-marker,
+	.home-fold__summary::marker {
+		display: none;
+		content: "";
+	}
+
+	.home-fold__summary::before {
+		content: "";
+		width: 0.42rem;
+		height: 0.42rem;
+		flex-shrink: 0;
+		border-right: 2px solid var(--color-brand);
+		border-bottom: 2px solid var(--color-brand);
+		transform: rotate(-45deg);
+		transition: transform 0.18s ease;
+	}
+
+	.home-fold[open] > .home-fold__summary::before {
+		transform: rotate(45deg);
+	}
+
+	.home-fold__empty {
+		margin: 0.1rem 0 0.65rem;
+		color: var(--color-muted);
+		font-size: 0.85rem;
+	}
+
+	.home-fold__list {
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+
+	.home-fold__link {
+		display: flex;
+		align-items: baseline;
+		justify-content: space-between;
+		gap: 0.75rem;
+		padding: 0.7rem 0.1rem;
+		border-top: 1px solid color-mix(in oklch, var(--color-brand) 12%, transparent);
+		text-decoration: none;
+		color: inherit;
+	}
+
+	.home-fold__title {
+		font-weight: 600;
+		line-height: 1.4;
+	}
+
+	.home-fold__date {
+		flex-shrink: 0;
+		color: var(--color-muted);
+		font-size: 0.72rem;
+		font-weight: 600;
+		white-space: nowrap;
+	}
+
+	.home-fold__link:hover .home-fold__title,
+	.home-fold__link:active .home-fold__title {
+		color: var(--color-brand);
+	}
+
+	.home-fold__more {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.25rem;
+		margin-top: 0.2rem;
+		font-size: 0.8rem;
+		font-weight: 700;
+		color: var(--color-brand);
+		text-decoration: none;
+	}
+
+	.home-fold__more:hover {
+		text-decoration: underline;
+		text-underline-offset: 3px;
 	}
 
 	/* Main content enter (all pages) */
