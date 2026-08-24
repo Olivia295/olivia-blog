@@ -27,3 +27,16 @@ pnpm-debug.log*
 # local media mirror (binaries stay out of git)
 media-local/**
 !media-local/README.md
+
+# writing: markdown stays on your machine (or a private repo)
+# see src/content/README.md
+src/content/post/**
+!src/content/post/.gitkeep
+src/content/note/**
+!src/content/note/.gitkeep
+public/notes/**
+.content-src/
+
+# editor junk
+*.swp
+*~

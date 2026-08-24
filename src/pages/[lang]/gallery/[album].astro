@@ -1,0 +1,107 @@
+---
+import FloatingBack from "@/components/FloatingBack.astro";
+import { buildPhotoSrcSet, getPhotoAlbum, getPhotoAlbums, photoFullUrl } from "@/data/photos";
+import { languages, type Lang } from "@/i18n/config";
+import { localePath, useTranslations } from "@/i18n/utils";
+import PageLayout from "@/layouts/Base.astro";
+
+export function getStaticPaths() {
+	return languages.flatMap((lang) =>
+		getPhotoAlbums().map((album) => ({
+			params: { lang, album: album.slug },
+		})),
+	);
+}
+
+const lang = Astro.params.lang as Lang;
+const t = useTranslations(lang);
+const album = getPhotoAlbum(Astro.params.album as string)!;
+
+const meta = {
+	title: `${album.title} · ${t("photos.title")}`,
+	description: album.title,
+};
+---
+
+<PageLayout lang={lang} meta={meta}>
+	<section class="album-page">
+		<p class="crumb">
+			<a href={localePath(lang, "/gallery/")}>{t("photos.back")}</a>
+			<span aria-hidden="true"> / </span>
+			<span>{album.title}</span>
+		</p>
+		<h1 class="title mb-8">{album.title}</h1>
+		<ul class="album-grid" role="list">
+			{
+				album.photos.map((image) => {
+					const full = photoFullUrl(image.src, 1400);
+					const srcset = buildPhotoSrcSet(image.src, [600, 900, 1400]);
+					return (
+						<li>
+							<figure>
+								<img
+									src={full}
+									srcset={srcset}
+									sizes="(max-width: 640px) 100vw, 50vw"
+									alt={image.alt}
+									loading="lazy"
+									decoding="async"
+								/>
+								<figcaption>{image.alt}</figcaption>
+							</figure>
+						</li>
+					);
+				})
+			}
+		</ul>
+	</section>
+	<FloatingBack />
+</PageLayout>
+
+<style>
+	.crumb {
+		margin: 0 0 0.75rem;
+		font-size: 0.8rem;
+		font-weight: 600;
+		color: var(--color-muted);
+	}
+
+	.crumb a {
+		color: var(--color-brand);
+		text-decoration: none;
+	}
+
+	.album-grid {
+		display: grid;
+		grid-template-columns: 1fr;
+		gap: 1.25rem;
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+
+	figure {
+		margin: 0;
+	}
+
+	img {
+		display: block;
+		width: 100%;
+		height: auto;
+		border-radius: 0.9rem;
+		background: color-mix(in oklch, var(--color-global-text) 6%, transparent);
+	}
+
+	figcaption {
+		margin-top: 0.45rem;
+		font-size: 0.8rem;
+		color: var(--color-muted);
+	}
+
+	@media (min-width: 700px) {
+		.album-grid {
+			grid-template-columns: 1fr 1fr;
+			gap: 1.5rem;
+		}
+	}
+</style>

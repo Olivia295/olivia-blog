@@ -168,6 +168,28 @@
 		text-underline-offset: 3px;
 	}
 
+	.note-zoom {
+		padding: 0;
+		border: none;
+		background: transparent;
+		max-width: 96vw;
+		max-height: 96vh;
+	}
+
+	.note-zoom::backdrop {
+		background: rgb(12 10 16 / 0.78);
+	}
+
+	.note-zoom img {
+		display: block;
+		max-width: 96vw;
+		max-height: 92vh;
+		width: auto;
+		height: auto;
+		object-fit: contain;
+		border-radius: 0.4rem;
+	}
+
 	/* Main content enter (all pages) */
 	#main {
 		animation: kitchen-fade-in 0.55s ease forwards;
@@ -181,6 +203,45 @@
 	iframe {
 		max-width: 100%;
 		height: auto;
+	}
+
+	/* Closed dialogs must stay display:none — `display:grid` would keep the overlay on screen. */
+	dialog.note-zoom:not([open]),
+	dialog.tag-picker:not([open]) {
+		display: none;
+	}
+
+	dialog.note-zoom[open] {
+		position: fixed;
+		inset: 0;
+		display: grid;
+		place-items: center;
+		width: 100%;
+		max-width: none;
+		height: 100%;
+		max-height: none;
+		margin: 0;
+		padding: 1.25rem;
+		overflow: hidden;
+		border: none;
+		background: transparent;
+		cursor: zoom-out;
+	}
+
+	dialog.note-zoom::backdrop {
+		background: color-mix(in oklch, black 56%, transparent);
+	}
+
+	dialog.note-zoom img {
+		display: block;
+		width: auto;
+		height: auto;
+		max-width: min(100%, 48rem);
+		max-height: min(82vh, 40rem);
+		object-fit: contain;
+		border-radius: 0.85rem;
+		box-shadow: 0 18px 48px color-mix(in oklch, black 28%, transparent);
+		pointer-events: none;
 	}
 
 	/* Tap targets */

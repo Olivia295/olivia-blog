@@ -11,10 +11,16 @@ export function getFormattedDate(
 		return "Invalid Date";
 	}
 
-	return new Intl.DateTimeFormat(dateLocale[lang] ?? siteConfig.date.locale, {
+	const merged: Intl.DateTimeFormatOptions = {
 		...(siteConfig.date.options as Intl.DateTimeFormatOptions),
 		...options,
-	}).format(date);
+	};
+
+	if (merged.year === undefined) {
+		delete merged.year;
+	}
+
+	return new Intl.DateTimeFormat(dateLocale[lang] ?? siteConfig.date.locale, merged).format(date);
 }
 
 export function collectionDateSort(

@@ -8,12 +8,17 @@ type Props = HTMLAttributes<"time"> & {
 	date: Date;
 	dateTimeOptions?: Intl.DateTimeFormatOptions;
 	lang?: Lang;
+	omitYear?: boolean;
 };
 
-const { date, dateTimeOptions, lang: langProp, ...attrs } = Astro.props;
+const { date, dateTimeOptions, lang: langProp, omitYear = false, ...attrs } = Astro.props;
 const lang = langProp ?? getLangFromUrl(Astro.url) ?? defaultLang;
 
-const postDate = getFormattedDate(date, dateTimeOptions, lang);
+const postDate = getFormattedDate(
+	date,
+	omitYear ? { ...dateTimeOptions, year: undefined } : dateTimeOptions,
+	lang,
+);
 const ISO = date.toISOString();
 ---
 

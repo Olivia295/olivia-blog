@@ -22,6 +22,18 @@ export function groupPostsByYear(posts: CollectionEntry<"post">[]) {
 	return Object.groupBy(posts, (post) => post.data.publishDate.getFullYear().toString());
 }
 
+export function groupPostsBySeries(
+	posts: CollectionEntry<"post">[],
+	uncategorized: string,
+): Record<string, CollectionEntry<"post">[]> {
+	const grouped: Record<string, CollectionEntry<"post">[]> = {};
+	for (const post of posts) {
+		const key = post.data.series?.trim() || uncategorized;
+		(grouped[key] ??= []).push(post);
+	}
+	return grouped;
+}
+
 /** returns all tags created from posts (inc duplicate tags)
  *  Note: This function doesn't filter draft posts, pass it the result of getAllPosts above to do so.
  *  */

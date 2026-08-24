@@ -5,7 +5,8 @@ import { Icon } from "astro-icon/components";
 import FloatingBack from "@/components/FloatingBack.astro";
 import PostPreview from "@/components/blog/PostPreview.astro";
 import Pagination from "@/components/Paginator.astro";
-import { getAllPosts, getUniqueTags, groupPostsByYear } from "@/data/post";
+import TagPicker from "@/components/blog/TagPicker.astro";
+import { getAllPosts, getUniqueTags, groupPostsBySeries, groupPostsByYear } from "@/data/post";
 import { languages, type Lang } from "@/i18n/config";
 import { localePath, useTranslations } from "@/i18n/utils";
 import PageLayout from "@/layouts/Base.astro";
@@ -28,7 +29,7 @@ export const getStaticPaths = (async ({ paginate }) => {
 		paginate(allPostsByDate, {
 			params: { lang },
 			pageSize: MAX_POSTS_PER_PAGE,
-			props: { uniqueTags, pinnedPosts },
+			props: { uniqueTags, pinnedPosts, allPostsByDate },
 		}),
 	);
 }) satisfies GetStaticPaths;
@@ -37,11 +38,12 @@ interface Props {
 	page: Page<CollectionEntry<"post">>;
 	uniqueTags: string[];
 	pinnedPosts: CollectionEntry<"post">[];
+	allPostsByDate: CollectionEntry<"post">[];
 }
 
 const lang = Astro.params.lang as Lang;
 const t = useTranslations(lang);
-const { page, uniqueTags, pinnedPosts } = Astro.props;
+const { page, uniqueTags, pinnedPosts, allPostsByDate } = Astro.props;
 
 const meta = {
 	description: t("posts.description"),
@@ -65,6 +67,12 @@ const paginationProps = {
 
 const groupedByYear = groupPostsByYear(page.data);
 const descYearKeys = Object.keys(groupedByYear).sort((a, b) => +b - +a);
+const groupedBySeries = groupPostsBySeries(allPostsByDate, t("posts.uncategorized"));
+const seriesKeys = Object.keys(groupedBySeries).sort((a, b) => {
+	if (a === t("posts.uncategorized")) return 1;
+	if (b === t("posts.uncategorized")) return -1;
+	return a.localeCompare(b, lang);
+});
 ---
 
 <PageLayout lang={lang} meta={meta}>
@@ -76,10 +84,18 @@ const descYearKeys = Object.keys(groupedByYear).sort((a, b) => +b - +a);
 		</a>
 	</div>
 	<div class="grid sm:grid-cols-[3fr_1fr] sm:gap-x-8 sm:gap-y-16">
-		<div>
+		<div class="posts-board" data-view="time">
+			<div class="posts-switch" role="tablist" aria-label={t("posts.title")}>
+				<button type="button" class="posts-switch__btn" data-view="time" aria-pressed="true">
+					{t("posts.byTime")}
+				</button>
+				<button type="button" class="posts-switch__btn" data-view="series" aria-pressed="false">
+					{t("posts.bySeries")}
+				</button>
+			</div>
 			{
 				pinnedPosts.length > 0 && (
-					<section class="mb-16">
+					<section class="mb-16" data-panel="time">
 						<h2 class="title mb-6 text-xl">{t("posts.pinned")}</h2>
 						<ul class="space-y-4" role="list">
 							{pinnedPosts.map((p) => (
@@ -96,24 +112,42 @@ const descYearKeys = Object.keys(groupedByYear).sort((a, b) => +b - +a);
 					<p class="text-muted mb-8">{t("posts.empty")}</p>
 				)
 			}
-			{
-				descYearKeys.map((yearKey) => (
-					<section class="mb-16">
-						<h2 id={`year-${yearKey}`} class="title text-lg">
-							<span class="sr-only">{t("posts.year")}</span>
-							{yearKey}
-						</h2>
-						<ul class="mt-5 space-y-4 text-start">
-							{groupedByYear[yearKey]?.map((p) => (
-								<li class="grid gap-1 sm:grid-cols-[auto_1fr] sm:[&_q]:col-start-2">
-									<PostPreview post={p} lang={lang} />
-								</li>
-							))}
-						</ul>
-					</section>
-				))
-			}
-			<Pagination {...paginationProps} />
+			<div data-panel="time">
+				{
+					descYearKeys.map((yearKey) => (
+						<section class="mb-16">
+							<h2 id={`year-${yearKey}`} class="title text-lg">
+								<span class="sr-only">{t("posts.year")}</span>
+								{yearKey}
+							</h2>
+							<ul class="mt-5 space-y-4 text-start">
+								{groupedByYear[yearKey]?.map((p) => (
+									<li class="grid gap-1 sm:grid-cols-[auto_1fr] sm:[&_q]:col-start-2">
+										<PostPreview post={p} lang={lang} omitYear />
+									</li>
+								))}
+							</ul>
+						</section>
+					))
+				}
+				<Pagination {...paginationProps} />
+			</div>
+			<div data-panel="series" hidden>
+				{
+					seriesKeys.map((seriesKey) => (
+						<section class="mb-16">
+							<h2 class="title text-lg">{seriesKey}</h2>
+							<ul class="mt-5 space-y-4 text-start">
+								{groupedBySeries[seriesKey]?.map((p) => (
+									<li class="grid gap-1 sm:grid-cols-[auto_1fr] sm:[&_q]:col-start-2">
+										<PostPreview post={p} lang={lang} />
+									</li>
+								))}
+							</ul>
+						</section>
+					))
+				}
+			</div>
 		</div>
 		{
 			!!uniqueTags.length && (
@@ -142,7 +176,7 @@ const descYearKeys = Object.keys(groupedByYear).sort((a, b) => +b - +a);
 							<li>
 								<a
 									class="cactus-link flex items-center justify-center"
-									href={localePath(lang, `/tags/${tag}/`)}
+									href={localePath(lang, `/posts/tags/${tag}/`)}
 								>
 									<span aria-hidden="true">#</span>
 									{tag}
@@ -150,14 +184,52 @@ const descYearKeys = Object.keys(groupedByYear).sort((a, b) => +b - +a);
 							</li>
 						))}
 					</ul>
-					<span class="mt-4 block sm:text-end">
-						<a class="hover:text-link" href={localePath(lang, "/tags/")}>
-							{t("tags.title")} <span aria-hidden="true">→</span>
-						</a>
-					</span>
+					<TagPicker lang={lang} />
 				</aside>
 			)
 		}
 	</div>
 	<FloatingBack />
 </PageLayout>
+
+<script>
+	const board = document.querySelector(".posts-board");
+	if (board) {
+		const buttons = board.querySelectorAll<HTMLButtonElement>(".posts-switch__btn");
+		const setView = (view: string) => {
+			board.setAttribute("data-view", view);
+			buttons.forEach((btn) => {
+				btn.setAttribute("aria-pressed", String(btn.dataset.view === view));
+			});
+			board.querySelectorAll<HTMLElement>("[data-panel]").forEach((panel) => {
+				panel.hidden = panel.dataset.panel !== view;
+			});
+		};
+		buttons.forEach((btn) => {
+			btn.addEventListener("click", () => setView(btn.dataset.view || "time"));
+		});
+	}
+</script>
+
+<style>
+	.posts-switch {
+		display: flex;
+		gap: 0.5rem;
+		margin-bottom: 1.75rem;
+	}
+
+	.posts-switch__btn {
+		padding: 0.25rem 0.15rem;
+		border: none;
+		background: transparent;
+		color: var(--color-muted);
+		cursor: pointer;
+		font: inherit;
+		font-weight: 700;
+	}
+
+	.posts-switch__btn[aria-pressed="true"] {
+		color: var(--color-brand);
+		box-shadow: inset 0 -2px 0 var(--color-brand);
+	}
+</style>

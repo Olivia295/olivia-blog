@@ -7,10 +7,12 @@
 		{ "source": "/notes", "destination": "/zh/notes/", "permanent": false },
 		{ "source": "/notes/rss.xml", "destination": "/zh/notes/rss.xml", "permanent": false },
 		{ "source": "/notes/:slug", "destination": "/zh/notes/#note-:slug", "permanent": false },
-		{ "source": "/photos", "destination": "/zh/photos/", "permanent": false },
-		{ "source": "/photos/:path*", "destination": "/zh/photos/:path*", "permanent": false },
-		{ "source": "/tags", "destination": "/zh/tags/", "permanent": false },
-		{ "source": "/tags/:path*", "destination": "/zh/tags/:path*", "permanent": false },
+		{ "source": "/photos", "destination": "/zh/gallery/", "permanent": false },
+		{ "source": "/photos/:path*", "destination": "/zh/gallery/:path*", "permanent": false },
+		{ "source": "/gallery", "destination": "/zh/gallery/", "permanent": false },
+		{ "source": "/gallery/:path*", "destination": "/zh/gallery/:path*", "permanent": false },
+		{ "source": "/tags", "destination": "/zh/posts/", "permanent": false },
+		{ "source": "/tags/:path*", "destination": "/zh/posts/tags/:path*", "permanent": false },
 		{ "source": "/about", "destination": "/zh/about/", "permanent": false },
 		{ "source": "/rss.xml", "destination": "/zh/rss.xml", "permanent": false }
 	]

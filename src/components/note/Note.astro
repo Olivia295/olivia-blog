@@ -37,6 +37,36 @@ const { Content } = await render(note);
 	</div>
 </article>
 
+<script>
+	const zoom = document.getElementById("note-zoom") as HTMLDialogElement | null;
+	const zoomImg = zoom?.querySelector("img");
+
+	document.querySelectorAll<HTMLElement>(".note-card__body").forEach((body) => {
+		if (body.dataset.shotsPacked === "true") return;
+		const imgs = [...body.querySelectorAll<HTMLImageElement>("img")];
+		body.dataset.shotsPacked = "true";
+		if (!imgs.length) return;
+
+		const row = document.createElement("div");
+		row.className = "note-shots";
+		for (const img of imgs) {
+			const parent = img.parentElement;
+			const cell = document.createElement("span");
+			cell.className = "note-shots__cell";
+			cell.append(img);
+			row.append(cell);
+			if (parent?.tagName === "P" && parent !== body && !parent.textContent?.trim()) parent.remove();
+			img.addEventListener("click", () => {
+				if (!zoom || !zoomImg) return;
+				zoomImg.src = img.currentSrc || img.src;
+				zoomImg.alt = img.alt;
+				zoom.showModal();
+			});
+		}
+		body.append(row);
+	});
+</script>
+
 <style>
 	.note-card {
 		display: grid;
@@ -120,15 +150,47 @@ const { Content } = await render(note);
 		min-width: 0;
 	}
 
-	/* Inline media: full width inside the card */
 	.note-card__body :global(img) {
+		display: inline-block;
+		width: calc((100% - 1.35rem) / 4);
+		aspect-ratio: 1;
+		max-width: 100%;
+		margin: 0.85rem 0.45rem 0 0;
+		border-radius: 0.65rem;
+		object-fit: cover;
+		vertical-align: top;
+		cursor: zoom-in;
+		background: color-mix(in oklch, var(--color-global-text) 6%, transparent);
+	}
+
+	.note-card__body :global(.note-shots) {
+		display: flex;
+		flex-wrap: nowrap;
+		justify-content: center;
+		align-items: stretch;
+		gap: 0.45rem;
+		width: 100%;
+		margin-top: 0.85rem;
+	}
+
+	.note-card__body :global(.note-shots__cell) {
+		flex: 0 0 calc((100% - 1.35rem) / 4);
+		width: calc((100% - 1.35rem) / 4);
+		max-width: calc((100% - 1.35rem) / 4);
+		aspect-ratio: 1;
+		overflow: hidden;
+		border-radius: 0.65rem;
+		background: color-mix(in oklch, var(--color-global-text) 6%, transparent);
+	}
+
+	.note-card__body :global(.note-shots img) {
 		display: block;
 		width: 100%;
-		max-width: 100%;
-		height: auto;
-		margin: 0.75rem 0;
-		border-radius: 0.75rem;
+		height: 100%;
+		max-width: none;
+		margin: 0;
 		object-fit: cover;
+		cursor: zoom-in;
 	}
 
 	.note-card__body :global(p:last-child) {

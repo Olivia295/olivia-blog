@@ -9,14 +9,20 @@ type Props<Tag extends HTMLTag> = Polymorphic<{ as: Tag }> & {
 	post: CollectionEntry<"post">;
 	withDesc?: boolean;
 	lang?: Lang;
+	omitYear?: boolean;
 };
 
-const { as: Tag = "div", post, withDesc = false, lang: langProp } = Astro.props;
+const { as: Tag = "div", post, withDesc = false, lang: langProp, omitYear = false } = Astro.props;
 const lang = langProp ?? getLangFromUrl(Astro.url) ?? defaultLang;
 const href = localePath(lang, `/posts/${post.id}/`);
 ---
 
-<FormattedDate class="text-muted min-w-30 font-semibold" date={post.data.publishDate} lang={lang} />
+<FormattedDate
+	class="text-muted min-w-30 font-semibold"
+	date={post.data.publishDate}
+	lang={lang}
+	omitYear={omitYear}
+/>
 <Tag>
 	{post.data.draft && <span class="text-red-500">(Draft) </span>}
 	<a class="cactus-link" href={href}>

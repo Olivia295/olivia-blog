@@ -3,7 +3,7 @@ import LanguageSwitcher from "@/components/LanguageSwitcher.astro";
 import Search from "@/components/Search.astro";
 import ThemeToggle from "@/components/ThemeToggle.astro";
 import type { Lang } from "@/i18n/config";
-import { localePath, useTranslations } from "@/i18n/utils";
+import { localePath, stripLocalePrefix, useTranslations } from "@/i18n/utils";
 import { menuLinkDefs, siteConfig } from "@/site.config";
 
 interface Props {
@@ -13,16 +13,41 @@ interface Props {
 const { lang } = Astro.props;
 const t = useTranslations(lang);
 const homeHref = localePath(lang, "/");
+const currentPath = Astro.url.pathname.replace(/\/+$/, "") || "/";
+const currentBare = stripLocalePrefix(Astro.url.pathname).replace(/\/+$/, "") || "/";
+
+function normalize(path: string) {
+	return path.replace(/\/+$/, "") || "/";
+}
+
+function navIsCurrent(href: string, isHome = false) {
+	const target = normalize(href);
+	if (isHome) {
+		return currentPath === target || currentPath === `/${lang}`;
+	}
+	if (currentPath === target || currentPath.startsWith(`${target}/`)) return true;
+
+	const targetBare = stripLocalePrefix(target).replace(/\/+$/, "") || "/";
+	if (targetBare === "/gallery" && (currentBare === "/photos" || currentBare.startsWith("/photos/"))) {
+		return true;
+	}
+	if (targetBare === "/posts" && (currentBare === "/tags" || currentBare.startsWith("/tags/"))) {
+		return true;
+	}
+	return false;
+}
+
 const menuLinks = menuLinkDefs.map((link) => ({
 	path: localePath(lang, link.path),
 	title: t(link.titleKey),
+	current: navIsCurrent(localePath(lang, link.path), link.path === "/"),
 }));
 ---
 
 <header class="site-header" id="main-header">
 	<div class="header-top">
 		<a
-			aria-current={Astro.url.pathname === homeHref || Astro.url.pathname === `/${lang}` ? "page" : false}
+			aria-current={navIsCurrent(homeHref, true) ? "page" : undefined}
 			aria-label={siteConfig.title}
 			class="site-logo"
 			href={homeHref}
@@ -40,13 +65,8 @@ const menuLinks = menuLinkDefs.map((link) => ({
 		{
 			menuLinks.map((link) => (
 				<a
-					aria-current={
-						Astro.url.pathname === link.path ||
-						Astro.url.pathname === `${link.path}`.replace(/\/$/, "")
-							? "page"
-							: false
-					}
-					class="site-nav__link"
+					aria-current={link.current ? "page" : undefined}
+					class:list={["site-nav__link", { "is-current": link.current }]}
 					href={link.path}
 				>
 					{link.title}
@@ -171,9 +191,11 @@ const menuLinks = menuLinkDefs.map((link) => ({
 	}
 
 	.site-nav__link {
+		--nav-end: 0.7rem;
+		position: relative;
 		flex-shrink: 0;
-		padding: 0.2rem 0.7rem 0.2rem 0;
-		margin-inline-end: 0.7rem;
+		padding: 0.2rem var(--nav-end) 0.35rem 0;
+		margin-inline-end: var(--nav-end);
 		font-size: 0.8rem;
 		font-weight: 600;
 		letter-spacing: 0.01em;
@@ -188,8 +210,26 @@ const menuLinks = menuLinkDefs.map((link) => ({
 		border-inline-end: none;
 	}
 
-	.site-nav__link[aria-current="page"] {
+	.site-nav__link[aria-current="page"],
+	.site-nav__link.is-current {
 		color: var(--color-accent);
+	}
+
+	.site-nav__link[aria-current="page"]::after,
+	.site-nav__link.is-current::after {
+		content: "";
+		position: absolute;
+		left: 0;
+		right: var(--nav-end);
+		bottom: 0;
+		height: 2px;
+		border-radius: 1px;
+		background: var(--color-accent);
+	}
+
+	.site-nav__link:last-child[aria-current="page"]::after,
+	.site-nav__link:last-child.is-current::after {
+		right: 0;
 	}
 
 	.site-nav__link:hover,
@@ -228,8 +268,9 @@ const menuLinks = menuLinkDefs.map((link) => ({
 		}
 
 		.site-nav__link {
-			padding: 0.15rem 0.85rem 0.15rem 0;
-			margin-inline-end: 0.85rem;
+			--nav-end: 0.85rem;
+			padding: 0.15rem var(--nav-end) 0.35rem 0;
+			margin-inline-end: var(--nav-end);
 			font-size: 0.875rem;
 		}
 	}

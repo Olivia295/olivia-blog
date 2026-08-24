@@ -42,16 +42,19 @@ const recentNotes = (await getAllNotes())
 				<p class="foyer-tagline">{t("home.tagline")}</p>
 			</div>
 			<figure class="foyer-hero">
-				<img
-					alt={t("home.heroAlt")}
-					class="foyer-hero__img"
-					height="777"
-					src="/home-hero.jpg"
-					width="1240"
-				/>
+				<div class="foyer-hero__frame">
+					<img
+						alt={t("home.heroAlt")}
+						class="foyer-hero__img"
+						height="777"
+						src="/home-hero.jpg"
+						width="1240"
+					/>
+				</div>
 			</figure>
 		</section>
 
+		<div class="home-columns">
 		<section class="home-feed home-feed--notes" aria-labelledby="home-notes-heading">
 			<h2 id="home-notes-heading" class="home-heading">{t("home.recentNotes")}</h2>
 			{
@@ -96,7 +99,7 @@ const recentNotes = (await getAllNotes())
 											<ul class="home-post__tags" role="list">
 												{post.data.tags.map((tag) => (
 													<li>
-														<a class="home-post__tag" href={localePath(lang, `/tags/${tag}/`)}>
+														<a class="home-post__tag" href={localePath(lang, `/posts/tags/${tag}/`)}>
 															#{tag}
 														</a>
 													</li>
@@ -115,6 +118,7 @@ const recentNotes = (await getAllNotes())
 				<span aria-hidden="true">→</span>
 			</a>
 		</section>
+		</div>
 	</div>
 </PageLayout>
 
@@ -128,8 +132,8 @@ const recentNotes = (await getAllNotes())
 	.foyer {
 		display: flex;
 		flex-direction: column;
-		min-height: calc(100svh - 9.25rem);
-		padding: 0 0 1.5rem;
+		min-height: calc(100svh - 11.25rem);
+		padding: 0 0 0.85rem;
 	}
 
 	.foyer-copy {
@@ -151,17 +155,28 @@ const recentNotes = (await getAllNotes())
 	}
 
 	.foyer-hero {
-		position: relative;
+		display: flex;
 		flex: 1 1 auto;
-		min-height: 16rem;
+		align-items: center;
+		justify-content: center;
+		min-height: 12rem;
 		margin: 0;
+		background: none;
+		box-shadow: none;
+		overflow: visible;
+	}
+
+	.foyer-hero__frame {
+		position: relative;
+		width: min(100%, 22rem);
+		aspect-ratio: 4 / 3;
 		overflow: hidden;
 		border-radius: 1rem;
 		background: color-mix(in oklch, var(--color-brand) 12%, var(--color-global-bg));
 		box-shadow: 0 18px 40px color-mix(in oklch, var(--color-brand) 16%, transparent);
 	}
 
-	.foyer-hero::after {
+	.foyer-hero__frame::after {
 		content: "";
 		position: absolute;
 		inset: 0;
@@ -192,9 +207,22 @@ const recentNotes = (await getAllNotes())
 		filter: saturate(1.08) contrast(1.05);
 	}
 
+	.home-columns {
+		display: flex;
+		flex-direction: column;
+		gap: 0;
+	}
+
 	.home-feed {
+		display: flex;
+		flex-direction: column;
 		padding-top: 1.75rem;
 		border-top: 1px solid color-mix(in oklch, var(--color-global-text) 10%, transparent);
+	}
+
+	.home-feed .home-more {
+		margin-top: auto;
+		padding-top: 1rem;
 	}
 
 	.home-heading {
@@ -227,8 +255,8 @@ const recentNotes = (await getAllNotes())
 	}
 
 	.home-notes :global(.note-card__body img) {
-		max-height: 13rem;
-		object-fit: cover;
+		width: 11.25rem;
+		height: 11.25rem;
 	}
 
 	.home-posts {
@@ -305,50 +333,74 @@ const recentNotes = (await getAllNotes())
 		text-underline-offset: 2px;
 	}
 
-	@media (min-width: 1024px) {
-		.home-stage {
-			display: grid;
-			grid-template-columns: minmax(16rem, 0.95fr) minmax(22rem, 1.25fr) minmax(15rem, 0.9fr);
-			grid-template-areas: "notes hero posts";
-			align-items: start;
-			gap: 2rem 2.25rem;
-			padding-top: 0.25rem;
-		}
-
+	@media (min-width: 860px) {
 		.foyer {
-			grid-area: hero;
-			min-height: 0;
-			padding: 0;
-			position: sticky;
-			top: 1.25rem;
+			display: grid;
+			grid-template-columns: minmax(15rem, 0.7fr) minmax(22rem, 1.3fr);
+			align-items: stretch;
+			gap: 2rem 2.5rem;
+			min-height: calc(100svh - 16.5rem);
+			padding: 0 0 1rem;
 		}
 
-		.home-feed--notes {
-			grid-area: notes;
+		.foyer-copy {
+			display: flex;
+			flex-direction: column;
+			justify-content: center;
+			padding-right: 0.5rem;
 		}
 
-		.home-feed--posts {
-			grid-area: posts;
+		.foyer-title {
+			font-size: clamp(2.2rem, 4vw, 3rem);
+			margin-bottom: 0.7rem;
 		}
 
-		.home-feed {
-			padding-top: 0;
-			border-top: none;
+		.foyer-tagline {
+			margin: 0;
+			max-width: 18rem;
+			font-size: 1.15rem;
 		}
 
 		.foyer-hero {
 			flex: none;
-			min-height: 22rem;
-			aspect-ratio: 4 / 5;
-			max-height: min(38rem, 72vh);
+			width: 100%;
+			height: auto;
+			min-height: 0;
+		}
+
+		.foyer-hero__frame {
+			width: min(100%, 34rem);
+			aspect-ratio: 4 / 3;
+		}
+
+		.home-columns {
+			display: grid;
+			grid-template-columns: 1fr 1fr;
+			align-items: stretch;
+			gap: 0 2.75rem;
+			padding-top: 2rem;
+			border-top: 1px solid color-mix(in oklch, var(--color-global-text) 10%, transparent);
+		}
+
+		.home-feed {
+			min-height: 100%;
+			padding-top: 0;
+			border-top: none;
+		}
+
+		.home-feed--posts {
+			padding-left: 2.75rem;
+			border-left: 1px solid color-mix(in oklch, var(--color-global-text) 10%, transparent);
+		}
+
+		.home-notes,
+		.home-posts {
+			flex: 1 1 auto;
 		}
 
 		.home-notes :global(.note-card__body img) {
-			max-height: 9.5rem;
-		}
-
-		.home-heading {
-			font-size: 1.05rem;
+			width: 11.25rem;
+			height: 11.25rem;
 		}
 	}
 

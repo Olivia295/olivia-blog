@@ -31,13 +31,15 @@ export const siteConfig: SiteConfig = {
 };
 
 /** Bare paths (no locale prefix). Titles come from i18n ui keys. */
-export const menuLinkDefs: { path: string; titleKey: "nav.home" | "nav.posts" | "nav.notes" | "nav.photos" }[] =
-	[
-		{ path: "/", titleKey: "nav.home" },
-		{ path: "/posts/", titleKey: "nav.posts" },
-		{ path: "/notes/", titleKey: "nav.notes" },
-		{ path: "/photos/", titleKey: "nav.photos" },
-	];
+export const menuLinkDefs: {
+	path: string;
+	titleKey: "nav.home" | "nav.posts" | "nav.notes" | "nav.gallery";
+}[] = [
+	{ path: "/", titleKey: "nav.home" },
+	{ path: "/posts/", titleKey: "nav.posts" },
+	{ path: "/notes/", titleKey: "nav.notes" },
+	{ path: "/gallery/", titleKey: "nav.gallery" },
+];
 
 // https://expressive-code.com/reference/configuration/
 export const expressiveCodeOptions: AstroExpressiveCodeOptions = {
