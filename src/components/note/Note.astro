@@ -8,14 +8,15 @@ import { getLangFromUrl } from "@/i18n/utils";
 type Props<Tag extends HTMLTag> = Polymorphic<{ as: Tag }> & {
 	note: CollectionEntry<"note">;
 	lang?: Lang;
+	plain?: boolean;
 };
 
-const { as: Tag = "h2", note, lang: langProp } = Astro.props;
+const { as: Tag = "h2", note, lang: langProp, plain = false } = Astro.props;
 const lang = langProp ?? getLangFromUrl(Astro.url) ?? defaultLang;
 const { Content } = await render(note);
 ---
 
-<article class="note-card" id={`note-${note.id}`} data-pagefind-body>
+<article class:list={["note-card", { "note-card--plain": plain }]} id={`note-${note.id}`} data-pagefind-body>
 	<header class="note-card__header">
 		<Tag class="note-card__title">{note.data.title}</Tag>
 		<FormattedDate
@@ -63,6 +64,21 @@ const { Content } = await render(note);
 
 	.note-card:active {
 		transform: scale(0.995);
+	}
+
+	.note-card--plain {
+		padding: 0 0 1.35rem;
+		border: none;
+		border-radius: 0;
+		background: transparent;
+		box-shadow: none;
+	}
+
+	.note-card--plain:hover,
+	.note-card--plain:active {
+		transform: none;
+		border: none;
+		box-shadow: none;
 	}
 
 	.note-card__header {
