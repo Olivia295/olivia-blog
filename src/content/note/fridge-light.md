@@ -5,3 +5,12 @@ publishDate: "2026-08-18T23:41:00+10:00"
 ---
 
 打开冰箱不是因为饿。灯亮着，酸奶还在，我把门再轻轻带上。像确认这间厨房还在运转。
+
+<img
+  src="/notes/fridge.jpg"
+  alt="夜里微开的冰箱灯"
+  width="1248"
+  height="777"
+  loading="lazy"
+  decoding="async"
+/>
