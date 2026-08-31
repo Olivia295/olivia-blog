@@ -1,6 +1,6 @@
 /* Shared motion — desktop + mobile. Respects prefers-reduced-motion. */
 
-@keyframes kitchen-fade-up {
+@keyframes Spaceship-fade-up {
 	from {
 		opacity: 0;
 		transform: translateY(12px);
@@ -11,7 +11,7 @@
 	}
 }
 
-@keyframes kitchen-fade-in {
+@keyframes Spaceship-fade-in {
 	from {
 		opacity: 0;
 	}
@@ -20,7 +20,7 @@
 	}
 }
 
-@keyframes kitchen-soft-pop {
+@keyframes Spaceship-soft-pop {
 	from {
 		opacity: 0;
 		transform: scale(0.97);
@@ -31,7 +31,7 @@
 	}
 }
 
-@keyframes kitchen-hero-drift {
+@keyframes Spaceship-hero-drift {
 	from {
 		transform: scale(1.04) translate3d(0, 0, 0);
 	}
@@ -43,20 +43,20 @@
 @layer components {
 	.motion-fade-up {
 		/* forwards only — never leave content stuck at opacity:0 if animation is skipped/late */
-		animation: kitchen-fade-up 0.65s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+		animation: Spaceship-fade-up 0.65s cubic-bezier(0.22, 1, 0.36, 1) forwards;
 	}
 
 	.motion-fade-in {
-		animation: kitchen-fade-in 0.5s ease forwards;
+		animation: Spaceship-fade-in 0.5s ease forwards;
 	}
 
 	.motion-soft-pop {
-		animation: kitchen-soft-pop 0.55s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+		animation: Spaceship-soft-pop 0.55s cubic-bezier(0.22, 1, 0.36, 1) forwards;
 	}
 
 	/* Stagger children (notes feed, grids) */
 	.motion-stagger > * {
-		animation: kitchen-fade-up 0.55s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+		animation: Spaceship-fade-up 0.55s cubic-bezier(0.22, 1, 0.36, 1) forwards;
 	}
 	.motion-stagger > *:nth-child(1) {
 		animation-delay: 0.04s;

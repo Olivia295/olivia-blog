@@ -42,14 +42,16 @@ const label = t("backToTop");
 		}
 
 		const threshold = 280;
+		const scroller = document.querySelector(".page-scroll");
+		const y = () => (scroller ? scroller.scrollTop : window.scrollY);
 		const update = () => {
-			btn.dataset.show = (window.scrollY > threshold).toString();
+			btn.dataset.show = (y() > threshold).toString();
 		};
 
 		update();
-		window.addEventListener("scroll", update, { passive: true });
+		(scroller ?? window).addEventListener("scroll", update, { passive: true });
 		btn.addEventListener("click", () => {
-			window.scrollTo({ top: 0, behavior: "smooth" });
+			(scroller ?? window).scrollTo({ top: 0, behavior: "smooth" });
 		});
 	}
 </script>

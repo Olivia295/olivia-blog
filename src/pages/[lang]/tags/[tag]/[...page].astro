@@ -1,32 +1,18 @@
 ---
-import type { GetStaticPaths, InferGetStaticPropsType } from "astro";
+import type { GetStaticPaths } from "astro";
 import { getAllBlogs, getUniqueTags } from "@/data/blog";
 import { languages, type Lang } from "@/i18n/config";
 import { localePath } from "@/i18n/utils";
-import { collectionDateSort } from "@/utils/date";
 
-export const getStaticPaths = (async ({ paginate }) => {
-	const allPosts = await getAllBlogs();
-	const sortedPosts = allPosts.sort(collectionDateSort);
-	const uniqueTags = getUniqueTags(sortedPosts);
-
+export const getStaticPaths = (async () => {
+	const uniqueTags = getUniqueTags(await getAllBlogs());
 	return languages.flatMap((lang) =>
-		uniqueTags.flatMap((tag) => {
-			const postsWithTag = sortedPosts.filter((post) => post.data.tags.includes(tag));
-			return paginate(postsWithTag, {
-				pageSize: 10,
-				params: { lang, tag },
-			});
-		}),
+		uniqueTags.map((tag) => ({
+			params: { lang, tag, page: undefined },
+		})),
 	);
 }) satisfies GetStaticPaths;
 
-type Props = InferGetStaticPropsType<typeof getStaticPaths>;
-
 const lang = Astro.params.lang as Lang;
-const { page } = Astro.props as Props;
-const tag = Astro.params.tag as string;
-const suffix = page.currentPage > 1 ? `${page.currentPage}/` : "";
-return Astro.redirect(localePath(lang, `/blogs/tags/${tag}/${suffix}`), 301);
+return Astro.redirect(localePath(lang, "/blogs/"), 301);
 ---
-

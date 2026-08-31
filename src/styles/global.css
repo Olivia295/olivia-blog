@@ -70,10 +70,13 @@
 	html {
 		color-scheme: light dark;
 		accent-color: var(--color-accent);
-		/* Avoid mobile horizontal scroll from glow/blur/shadow bleed */
-		overflow-x: clip;
-		/* stable gutter can add a side gap on some mobile browsers */
-		scrollbar-gutter: auto;
+		width: 100%;
+		max-width: 100%;
+		min-width: 0;
+		height: 100%;
+		overflow: hidden;
+		scrollbar-width: none;
+		-ms-overflow-style: none;
 
 		--color-brand: oklch(0.5 0.18 312);
 		--color-accent: var(--color-brand);
@@ -111,8 +114,26 @@
 	}
 
 	body {
-		overflow-x: clip;
+		overflow: hidden;
+		width: 100%;
 		max-width: 100%;
+		min-width: 0;
+		scrollbar-width: none;
+		-ms-overflow-style: none;
+	}
+
+	html::-webkit-scrollbar,
+	body::-webkit-scrollbar,
+	.page-scroll::-webkit-scrollbar {
+		display: none !important;
+		width: 0 !important;
+		height: 0 !important;
+		background: transparent;
+	}
+
+	.page-scroll {
+		scrollbar-width: none !important;
+		-ms-overflow-style: none !important;
 	}
 
 	:target {
@@ -192,7 +213,7 @@
 
 	/* Main content enter (all pages) */
 	#main {
-		animation: kitchen-fade-in 0.55s ease forwards;
+		animation: Spaceship-fade-in 0.55s ease forwards;
 		min-width: 0;
 		max-width: 100%;
 	}

@@ -1,0 +1,54 @@
+---
+interface Props {
+	title: string;
+	lead?: string;
+}
+
+const { title, lead } = Astro.props;
+---
+
+<header class="page-header">
+	<div class="page-header__row">
+		<h1 class="title page-header__title">{title}</h1>
+		{
+			Astro.slots.has("default") && (
+				<div class="page-header__extra">
+					<slot />
+				</div>
+			)
+		}
+	</div>
+	{lead && <p class="page-header__lead">{lead}</p>}
+</header>
+
+<style>
+	.page-header {
+		margin: 0 0 2rem;
+	}
+
+	.page-header__row {
+		display: flex;
+		align-items: center;
+		gap: 0.65rem;
+	}
+
+	.page-header__title {
+		margin: 0;
+		font-size: clamp(1.35rem, 4vw, 1.75rem);
+		line-height: 1.2;
+	}
+
+	.page-header__extra {
+		display: flex;
+		align-items: center;
+		color: var(--color-accent);
+	}
+
+	.page-header__lead {
+		margin: 0.45rem 0 0;
+		max-width: 32rem;
+		font-size: 0.92rem;
+		line-height: 1.6;
+		opacity: 0.72;
+	}
+</style>

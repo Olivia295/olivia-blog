@@ -11,7 +11,7 @@ const t = useTranslations(lang);
 ---
 
 <theme-toggle class="ms-0.5 sm:ms-2">
-	<button class="hover:text-accent relative flex h-10 w-10 cursor-pointer items-center justify-center rounded-md sm:h-9 sm:w-9 sm:p-2" type="button">
+	<button class="hover:text-accent relative flex h-7 w-7 cursor-pointer items-center justify-center rounded-md sm:h-8 sm:w-8 sm:p-2" type="button">
 		<span class="sr-only">{t("theme.toggle")}</span>
 		<svg
 			aria-hidden="true"
@@ -100,3 +100,23 @@ const t = useTranslations(lang);
 
 	customElements.define("theme-toggle", ThemeToggle);
 </script>
+
+<style>
+	:host,
+	theme-toggle {
+		display: inline-block;
+		width: 1.7rem;
+		height: 1.7rem;
+		overflow: hidden;
+		margin: 0;
+		vertical-align: middle;
+	}
+
+	@media (min-width: 640px) {
+		:host,
+		theme-toggle {
+			width: 2rem;
+			height: 2rem;
+		}
+	}
+</style>

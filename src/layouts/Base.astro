@@ -16,7 +16,6 @@ interface Props {
 
 const lang = Astro.props.lang ?? getLangFromUrl(Astro.url) ?? defaultLang;
 const t = useTranslations(lang);
-const wide = Astro.props.wide ?? false;
 
 const {
 	meta: { articleDate, description = t("site.description"), ogImage, title },
@@ -35,17 +34,16 @@ const {
 		<ThemeProvider />
 	</head>
 	<body
-		class:list={[
-			"bg-global-bg text-global-text mx-auto flex min-h-screen w-full flex-col overflow-x-clip px-4 pt-8 pb-[max(0.75rem,env(safe-area-inset-bottom))] font-mono text-sm font-normal antialiased sm:px-8 sm:pt-16 sm:pb-6",
-			wide ? "max-w-5xl" : "max-w-3xl",
-		]}
+		class="bg-global-bg text-global-text mx-auto flex h-dvh w-full min-w-0 max-w-5xl flex-col overflow-hidden px-4 pt-8 font-mono text-sm font-normal antialiased sm:px-8 sm:pt-16"
 	>
 		<SkipLink lang={lang} />
 		<Header lang={lang} />
-		<main id="main">
-			<slot />
-		</main>
-		<Footer lang={lang} />
+		<div class="page-scroll">
+			<main id="main" class="site-main">
+				<slot />
+			</main>
+			<Footer />
+		</div>
 		<dialog class="note-zoom" id="note-zoom" onclick="this.close()">
 			<img alt="" />
 		</dialog>
@@ -71,3 +69,48 @@ const {
 		</script>
 	</body>
 </html>
+
+<style>
+	.page-scroll {
+		display: flex;
+		flex: 1 1 auto;
+		flex-direction: column;
+		width: 100%;
+		min-width: 0;
+		min-height: 0;
+		overflow-x: clip;
+		overflow-y: auto;
+		overscroll-behavior: contain;
+		-webkit-overflow-scrolling: touch;
+		padding-bottom: 1.5rem;
+		scrollbar-width: none;
+		-ms-overflow-style: none;
+	}
+
+	.page-scroll::-webkit-scrollbar {
+		display: none;
+		width: 0;
+		height: 0;
+		background: transparent;
+	}
+
+	:global(html),
+	:global(body) {
+		scrollbar-width: none;
+		-ms-overflow-style: none;
+	}
+
+	:global(html::-webkit-scrollbar),
+	:global(body::-webkit-scrollbar) {
+		display: none;
+		width: 0;
+		height: 0;
+	}
+
+	.site-main {
+		flex: 1 0 auto;
+		width: 100%;
+		max-width: 100%;
+		min-width: 0;
+	}
+</style>

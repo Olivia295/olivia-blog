@@ -1,113 +1,18 @@
 ---
-import { render } from "astro:content";
-import type { GetStaticPaths, InferGetStaticPropsType } from "astro";
-import FloatingBack from "@/components/FloatingBack.astro";
-import BlogPreview from "@/components/blog/BlogPreview.astro";
-import TagPicker from "@/components/blog/TagPicker.astro";
-import Pagination from "@/components/Paginator.astro";
-import { getAllBlogs, getTagMeta, getUniqueTags } from "@/data/blog";
+import type { GetStaticPaths } from "astro";
+import { getAllBlogs, getUniqueTags } from "@/data/blog";
 import { languages, type Lang } from "@/i18n/config";
-import { localePath, useTranslations } from "@/i18n/utils";
-import PageLayout from "@/layouts/Base.astro";
-import { collectionDateSort } from "@/utils/date";
+import { localePath } from "@/i18n/utils";
 
-export const getStaticPaths = (async ({ paginate }) => {
-	const allPosts = await getAllBlogs();
-	const sortedPosts = allPosts.sort(collectionDateSort);
-	const uniqueTags = getUniqueTags(sortedPosts);
-
+export const getStaticPaths = (async () => {
+	const uniqueTags = getUniqueTags(await getAllBlogs());
 	return languages.flatMap((lang) =>
-		uniqueTags.flatMap((tag) => {
-			const postsWithTag = sortedPosts.filter((post) => post.data.tags.includes(tag));
-			return paginate(postsWithTag, {
-				pageSize: 10,
-				params: { lang, tag },
-			});
-		}),
+		uniqueTags.map((tag) => ({
+			params: { lang, tag, page: undefined },
+		})),
 	);
 }) satisfies GetStaticPaths;
 
-type Props = InferGetStaticPropsType<typeof getStaticPaths>;
-
 const lang = Astro.params.lang as Lang;
-const t = useTranslations(lang);
-const { page } = Astro.props as Props;
-const { tag } = Astro.params;
-const tagMeta = await getTagMeta(tag!);
-
-const TagContent = tagMeta ? (await render(tagMeta)).Content : null;
-
-const meta = {
-	description: tagMeta?.data.description ?? `${t("tags.view")} - ${tag}`,
-	title: tagMeta?.data.title ?? `#${tag}`,
-};
-
-const paginationProps = {
-	...(page.url.prev && {
-		prevUrl: {
-			text: t("pagination.prev"),
-			url: page.url.prev,
-		},
-	}),
-	...(page.url.next && {
-		nextUrl: {
-			text: t("pagination.next"),
-			url: page.url.next,
-		},
-	}),
-};
+return Astro.redirect(localePath(lang, "/blogs/"), 301);
 ---
-
-<PageLayout lang={lang} meta={meta}>
-	<p class="tag-crumb">
-		<a href={localePath(lang, "/blogs/")}>{t("tags.back")}</a>
-		<span aria-hidden="true"> / </span>
-		<span>#{tag}</span>
-	</p>
-	<div class="tag-head">
-		<h1 class="title capitalize">{tagMeta?.data.title ?? `#${tag}`}</h1>
-		<TagPicker lang={lang} current={tag} />
-	</div>
-	<div class="prose prose-sm prose-cactus mb-10 max-w-none">
-		{tagMeta?.data.description && <p>{tagMeta.data.description}</p>}
-		{TagContent && <TagContent />}
-	</div>
-	<ul class="space-y-4">
-		{
-			page.data.map((p) => (
-				<li class="grid gap-1 sm:grid-cols-[auto_1fr]">
-					<BlogPreview as="h2" post={p} lang={lang} />
-				</li>
-			))
-		}
-	</ul>
-	<Pagination {...paginationProps} />
-	<FloatingBack />
-</PageLayout>
-
-<style>
-	.tag-crumb {
-		margin: 0 0 0.75rem;
-		font-size: 0.8rem;
-		font-weight: 600;
-		color: var(--color-muted);
-	}
-
-	.tag-crumb a {
-		color: var(--color-brand);
-		text-decoration: none;
-	}
-
-	.tag-head {
-		display: flex;
-		flex-wrap: wrap;
-		align-items: baseline;
-		justify-content: space-between;
-		gap: 0.5rem 1.25rem;
-		margin-bottom: 1.25rem;
-	}
-
-	.tag-head :global(.tag-more) {
-		margin-top: 0;
-	}
-</style>

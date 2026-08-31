@@ -6,7 +6,7 @@
  * Local writing wins: if .md files already exist, this is a no-op.
  *
  * CONTENT_DIR=/path/to/olivia-blog-content
- * CONTENT_REPO=git@github.com:Olivia295/olivia-blog-content.git
+ * CONTENT_REPO=git URL of the private content repo
  * CONTENT_SSH_KEY=base64 of a read-only deploy key (or raw PEM)
  * CONTENT_REPO_TOKEN=https PAT (optional alternative to SSH)
  */
@@ -45,11 +45,38 @@ async function copyIfPresent(from, to) {
 	return true;
 }
 
+function skipJunk(src) {
+	const base = path.basename(src);
+	return base !== ".DS_Store" && base !== ".git" && !base.startsWith("._");
+}
+
 async function replaceDir(from, to) {
 	if (!existsSync(from)) return false;
 	await rm(to, { recursive: true, force: true });
 	await mkdir(path.dirname(to), { recursive: true });
-	await cp(from, to, { recursive: true });
+	await cp(from, to, { recursive: true, filter: skipJunk });
+	return true;
+}
+
+/**
+ * Site chrome (logo, home-hero, tab icon) lives in content/site.
+ * Defaults stay in public/; this only writes gitignored overlays.
+ */
+async function applySiteChrome(source) {
+	const localSiteDir = path.join(root, "src/content/site");
+	const publicSiteDir = path.join(root, "public/site");
+	const remoteSite = source ? path.join(source, "site") : "";
+
+	if (remoteSite && existsSync(remoteSite)) {
+		await replaceDir(remoteSite, localSiteDir);
+	}
+
+	if (!existsSync(localSiteDir)) {
+		await rm(publicSiteDir, { recursive: true, force: true });
+		return false;
+	}
+
+	await replaceDir(localSiteDir, publicSiteDir);
 	return true;
 }
 
@@ -199,7 +226,12 @@ if (!source && repo) {
 }
 
 if (!source) {
-	console.log("sync-content: no content source — leaving local files as they are");
+	const overlaid = await applySiteChrome("");
+	console.log(
+		overlaid
+			? "sync-content: no content source — applied local site chrome from src/content/site"
+			: "sync-content: no content source — leaving local files as they are",
+	);
 	process.exit(0);
 }
 
@@ -233,12 +265,6 @@ if (!built) {
 	await copyIfPresent(path.join(source, "gallery/images"), path.join(root, "public/media/gallery"));
 }
 
-const siteDir = path.join(source, "site");
-if (existsSync(path.join(siteDir, "logo.png"))) {
-	await cp(path.join(siteDir, "logo.png"), path.join(root, "public/logo.png"));
-}
-if (existsSync(path.join(siteDir, "home-hero.jpg"))) {
-	await cp(path.join(siteDir, "home-hero.jpg"), path.join(root, "public/home-hero.jpg"));
-}
+await applySiteChrome(source);
 
 console.log("sync-content: copied private content from", source);

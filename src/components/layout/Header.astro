@@ -4,6 +4,7 @@ import Search from "@/components/Search.astro";
 import ThemeToggle from "@/components/ThemeToggle.astro";
 import type { Lang } from "@/i18n/config";
 import { localePath, stripLocalePrefix, useTranslations } from "@/i18n/utils";
+import { siteLogoSrc } from "@/data/site-assets";
 import { menuLinkDefs, siteConfig } from "@/site.config";
 
 interface Props {
@@ -28,7 +29,10 @@ function navIsCurrent(href: string, isHome = false) {
 	if (currentPath === target || currentPath.startsWith(`${target}/`)) return true;
 
 	const targetBare = stripLocalePrefix(target).replace(/\/+$/, "") || "/";
-	if (targetBare === "/gallery" && (currentBare === "/photos" || currentBare.startsWith("/photos/"))) {
+	if (
+		targetBare === "/gallery" &&
+		(currentBare === "/photos" || currentBare.startsWith("/photos/"))
+	) {
 		return true;
 	}
 	if (targetBare === "/blogs" && (currentBare === "/tags" || currentBare.startsWith("/tags/"))) {
@@ -52,7 +56,7 @@ const menuLinks = menuLinkDefs.map((link) => ({
 			class="site-logo"
 			href={homeHref}
 		>
-			<img alt="" class="site-mark" height="64" src="/logo.png" width="64" />
+			<img alt="" class="site-mark" height="64" src={siteLogoSrc} width="64" />
 			<span class="site-wordmark">{siteConfig.title}</span>
 		</a>
 		<div class="header-tools">
@@ -80,10 +84,13 @@ const menuLinks = menuLinkDefs.map((link) => ({
 	.site-header {
 		display: flex;
 		flex-direction: column;
+		flex: 0 0 auto;
+		box-sizing: border-box;
 		width: 100%;
+		max-width: 100%;
 		min-width: 0;
-		margin-bottom: 1.75rem;
-		animation: kitchen-fade-up 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+		margin-bottom: 1.15rem;
+		animation: Spaceship-fade-up 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
 	}
 
 	.header-top {
@@ -92,9 +99,10 @@ const menuLinks = menuLinkDefs.map((link) => ({
 		flex-wrap: nowrap;
 		align-items: center;
 		justify-content: space-between;
-		gap: 0.75rem;
+		gap: 0.4rem;
 		width: 100%;
 		min-width: 0;
+		min-height: 1.7rem;
 	}
 
 	.site-logo {
@@ -102,7 +110,7 @@ const menuLinks = menuLinkDefs.map((link) => ({
 		flex: 0 1 auto;
 		min-width: 0;
 		align-items: center;
-		gap: 0.5rem;
+		gap: 0.35rem;
 		color: inherit;
 		text-decoration: none;
 	}
@@ -112,64 +120,70 @@ const menuLinks = menuLinkDefs.map((link) => ({
 	}
 
 	.site-mark {
-		width: 1.85rem;
-		height: 1.85rem;
+		width: 1.4rem;
+		height: 1.4rem;
 		flex-shrink: 0;
-		border-radius: 0.4rem;
+		border-radius: 0.32rem;
 		object-fit: cover;
 		background: #2b2e33;
 	}
 
 	.site-wordmark {
-		min-width: 0;
-		overflow: hidden;
-		font-size: 1rem;
+		flex: 0 0 auto;
+		font-size: 0.8rem;
 		font-weight: 700;
-		letter-spacing: -0.03em;
+		letter-spacing: -0.045em;
 		line-height: 1.2;
 		white-space: nowrap;
-		text-overflow: ellipsis;
 	}
 
 	.header-tools {
 		display: flex;
 		flex-direction: row;
 		flex-wrap: nowrap;
-		flex-shrink: 0;
+		flex: 0 0 auto;
 		align-items: center;
-		gap: 0.1rem;
+		gap: 0.05rem;
 		margin-inline-start: auto;
 	}
 
-	.header-tools :global(site-search),
+	.header-tools :global(#search),
 	.header-tools :global(theme-toggle) {
-		display: inline-flex;
-		flex-shrink: 0;
-		align-items: center;
-		justify-content: center;
-		width: auto;
+		display: block;
+		flex: 0 0 1.7rem;
+		width: 1.7rem;
+		height: 1.7rem;
+		overflow: hidden;
 		margin: 0;
+	}
+
+	.header-tools :global(site-search > dialog) {
+		position: fixed;
+	}
+
+	.header-tools :global(site-search > dialog:not([open])) {
+		display: none;
 	}
 
 	.header-tools :global(site-search > button),
 	.header-tools :global(theme-toggle > button) {
-		width: 2.15rem;
-		height: 2.15rem;
+		width: 1.7rem;
+		height: 1.7rem;
 		padding: 0;
 	}
 
 	.header-tools :global(theme-toggle > button svg) {
-		width: 1.25rem;
-		height: 1.25rem;
+		width: 1.05rem;
+		height: 1.05rem;
 	}
 
 	.header-tools :global(site-search > button svg) {
-		width: 1.25rem;
-		height: 1.25rem;
+		width: 1.05rem;
+		height: 1.05rem;
 	}
 
 	.header-tools :global(.lang-switch) {
-		margin-inline: 0.1rem;
+		margin-inline: 0;
 	}
 
 	.site-nav {
@@ -181,6 +195,7 @@ const menuLinks = menuLinkDefs.map((link) => ({
 		gap: 0;
 		margin-top: 0.4rem;
 		padding-top: 0.15rem;
+		min-height: 1.7rem;
 		overflow-x: auto;
 		scrollbar-width: none;
 		-ms-overflow-style: none;
@@ -239,32 +254,46 @@ const menuLinks = menuLinkDefs.map((link) => ({
 
 	@media (min-width: 640px) {
 		.site-header {
-			margin-bottom: 3.5rem;
+			margin-bottom: 2rem;
 		}
 
 		.site-mark {
-			width: 2.25rem;
-			height: 2.25rem;
-			border-radius: 0.5rem;
+			width: 1.7rem;
+			height: 1.7rem;
+			border-radius: 0.38rem;
 		}
 
 		.site-wordmark {
-			font-size: 1.35rem;
+			font-size: 1.05rem;
+			letter-spacing: -0.04em;
 		}
 
 		.header-tools {
-			gap: 0.2rem;
+			gap: 0.1rem;
+		}
+
+		.header-tools :global(#search),
+		.header-tools :global(theme-toggle) {
+			flex-basis: 2rem;
+			width: 2rem;
+			height: 2rem;
 		}
 
 		.header-tools :global(site-search > button),
 		.header-tools :global(theme-toggle > button) {
-			width: 2.25rem;
-			height: 2.25rem;
+			width: 2rem;
+			height: 2rem;
+		}
+
+		.header-tools :global(theme-toggle > button svg),
+		.header-tools :global(site-search > button svg) {
+			width: 1.15rem;
+			height: 1.15rem;
 		}
 
 		.site-nav {
-			margin-top: 0.5rem;
-			padding-top: 0.2rem;
+			margin-top: 0.45rem;
+			padding-top: 0.15rem;
 		}
 
 		.site-nav__link {

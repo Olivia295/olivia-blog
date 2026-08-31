@@ -6,6 +6,7 @@ import type { Lang } from "@/i18n/config";
 import { getStaticLangPaths, localePath, useTranslations } from "@/i18n/utils";
 import { getAllBlogs } from "@/data/blog";
 import { getAllPosts } from "@/data/post";
+import { siteHeroSrc } from "@/data/site-assets";
 import { siteConfig } from "@/site.config";
 import { collectionDateSort } from "@/utils/date";
 
@@ -30,11 +31,7 @@ const recentPosts = (await getAllPosts())
 	.slice(0, RECENT_POSTS);
 ---
 
-<PageLayout
-	lang={lang}
-	wide
-	meta={{ title: t("home.title"), description: t("site.description") }}
->
+<PageLayout lang={lang} meta={{ title: t("home.title"), description: t("site.description") }}>
 	<div class="home-stage">
 		<section class="foyer">
 			<div class="foyer-copy">
@@ -47,7 +44,7 @@ const recentPosts = (await getAllPosts())
 						alt={t("home.heroAlt")}
 						class="foyer-hero__img"
 						height="777"
-						src="/home-hero.jpg"
+						src={siteHeroSrc}
 						width="1240"
 					/>
 				</div>
@@ -55,69 +52,64 @@ const recentPosts = (await getAllPosts())
 		</section>
 
 		<div class="home-columns">
-		<section class="home-feed home-feed--posts" aria-labelledby="home-posts-heading">
-			<h2 id="home-posts-heading" class="home-heading">{t("home.recentPosts")}</h2>
-			{
-				recentPosts.length === 0 ? (
-					<p class="home-empty">{t("posts.empty")}</p>
-				) : (
-					<ul class="home-notes" role="list">
-						{recentPosts.map((post) => (
-							<li>
-								<Post post={post} as="h3" lang={lang} plain />
-							</li>
-						))}
-					</ul>
-				)
-			}
-			<a class="home-more" href={localePath(lang, "/posts/")}>
-				{t("home.viewAllPosts")}
-				<span aria-hidden="true">→</span>
-			</a>
-		</section>
+			<section class="home-feed home-feed--posts" aria-labelledby="home-posts-heading">
+				<h2 id="home-posts-heading" class="home-heading">{t("home.recentPosts")}</h2>
+				{
+					recentPosts.length === 0 ? (
+						<p class="home-empty">{t("posts.empty")}</p>
+					) : (
+						<ul class="home-notes" role="list">
+							{recentPosts.map((post) => (
+								<li>
+									<Post post={post} as="h3" lang={lang} plain />
+								</li>
+							))}
+						</ul>
+					)
+				}
+				<a class="home-more" href={localePath(lang, "/posts/")}>
+					{t("home.viewAllPosts")}
+					<span aria-hidden="true">→</span>
+				</a>
+			</section>
 
-		<section class="home-feed home-feed--blogs" aria-labelledby="home-blogs-heading">
-			<h2 id="home-blogs-heading" class="home-heading">{t("home.recentBlogs")}</h2>
-			{
-				recentBlogs.length === 0 ? (
-					<p class="home-empty">{t("blogs.empty")}</p>
-				) : (
-					<ul class="home-posts" role="list">
-						{recentBlogs.map((post) => (
-							<li>
-								<article class="home-post">
-									<a class="home-post__hit" href={localePath(lang, `/blogs/${post.id}/`)}>
-										<span class="home-post__title">{post.data.title}</span>
-										<FormattedDate
-											class="home-post__date"
-											date={post.data.publishDate}
-											lang={lang}
-										/>
-									</a>
-									{
-										post.data.tags.length > 0 && (
-											<ul class="home-post__tags" role="list">
-												{post.data.tags.map((tag) => (
-													<li>
-														<a class="home-post__tag" href={localePath(lang, `/blogs/tags/${tag}/`)}>
-															#{tag}
-														</a>
-													</li>
-												))}
-											</ul>
-										)
-									}
-								</article>
-							</li>
-						))}
-					</ul>
-				)
-			}
-			<a class="home-more" href={localePath(lang, "/blogs/")}>
-				{t("home.viewAllBlogs")}
-				<span aria-hidden="true">→</span>
-			</a>
-		</section>
+			<section class="home-feed home-feed--blogs" aria-labelledby="home-blogs-heading">
+				<h2 id="home-blogs-heading" class="home-heading">{t("home.recentBlogs")}</h2>
+				{
+					recentBlogs.length === 0 ? (
+						<p class="home-empty">{t("blogs.empty")}</p>
+					) : (
+						<ul class="home-posts" role="list">
+							{recentBlogs.map((post) => (
+								<li>
+									<article class="home-post">
+										<a class="home-post__hit" href={localePath(lang, `/blogs/${post.id}/`)}>
+											<span class="home-post__title">{post.data.title}</span>
+											<FormattedDate
+												class="home-post__date"
+												date={post.data.publishDate}
+												lang={lang}
+											/>
+										</a>
+										{post.data.series && (
+											<a
+												class="home-post__tag"
+												href={`${localePath(lang, "/blogs/")}?series=${encodeURIComponent(post.data.series)}`}
+											>
+												{post.data.series}
+											</a>
+										)}
+									</article>
+								</li>
+							))}
+						</ul>
+					)
+				}
+				<a class="home-more" href={localePath(lang, "/blogs/")}>
+					{t("home.viewAllBlogs")}
+					<span aria-hidden="true">→</span>
+				</a>
+			</section>
 		</div>
 	</div>
 </PageLayout>
@@ -141,16 +133,17 @@ const recentPosts = (await getAllPosts())
 	}
 
 	.foyer-title {
-		margin-bottom: 0.4rem;
-		font-size: clamp(1.85rem, 5vw, 2.5rem);
-		line-height: 1.15;
+		margin-bottom: 0.28rem;
+		font-size: 1.35rem;
+		line-height: 1.2;
+		white-space: nowrap;
 	}
 
 	.foyer-tagline {
-		margin: 0 0 1rem;
+		margin: 0 0 0.85rem;
 		max-width: 22rem;
-		font-size: 1.05rem;
-		line-height: 1.7;
+		font-size: 0.9rem;
+		line-height: 1.55;
 		opacity: 0.78;
 	}
 
@@ -203,7 +196,7 @@ const recentPosts = (await getAllPosts())
 		height: 100%;
 		object-fit: cover;
 		transform-origin: 40% 40%;
-		animation: kitchen-hero-drift 22s ease-in-out infinite alternate;
+		animation: Spaceship-hero-drift 22s ease-in-out infinite alternate;
 		filter: saturate(1.08) contrast(1.05);
 	}
 
@@ -310,16 +303,9 @@ const recentPosts = (await getAllPosts())
 		font-weight: 600;
 	}
 
-	.home-post__tags {
-		display: flex;
-		flex-wrap: wrap;
-		gap: 0.3rem 0.65rem;
-		margin: 0.45rem 0 0;
-		padding: 0;
-		list-style: none;
-	}
-
 	.home-post__tag {
+		display: inline-block;
+		margin: 0.45rem 0 0;
 		font-size: 0.75rem;
 		font-weight: 600;
 		color: var(--color-brand);
@@ -333,10 +319,20 @@ const recentPosts = (await getAllPosts())
 		text-underline-offset: 2px;
 	}
 
+	@media (min-width: 640px) {
+		.foyer-title {
+			font-size: 1.5rem;
+		}
+
+		.foyer-tagline {
+			font-size: 0.95rem;
+		}
+	}
+
 	@media (min-width: 860px) {
 		.foyer {
 			display: grid;
-			grid-template-columns: minmax(15rem, 0.7fr) minmax(22rem, 1.3fr);
+			grid-template-columns: minmax(18rem, 0.85fr) minmax(20rem, 1.15fr);
 			align-items: stretch;
 			gap: 2rem 2.5rem;
 			min-height: calc(100svh - 16.5rem);
@@ -351,14 +347,14 @@ const recentPosts = (await getAllPosts())
 		}
 
 		.foyer-title {
-			font-size: clamp(2.2rem, 4vw, 3rem);
-			margin-bottom: 0.7rem;
+			font-size: 1.55rem;
+			margin-bottom: 0.45rem;
 		}
 
 		.foyer-tagline {
 			margin: 0;
 			max-width: 18rem;
-			font-size: 1.15rem;
+			font-size: 1rem;
 		}
 
 		.foyer-hero {

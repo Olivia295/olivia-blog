@@ -21,37 +21,36 @@ const show = Boolean(prevUrl || nextUrl || pages.length > 1);
 	show && (
 		<nav class="pager" aria-label="Pagination">
 			{prevUrl ? (
-				<a class="pager__step" href={prevUrl.url}>
-					{prevUrl.text}
+				<a class="pager__arrow" href={prevUrl.url} aria-label={prevUrl.text}>
+					←
 				</a>
 			) : (
-				<span class="pager__step pager__step--ghost" />
+				<span class="pager__arrow pager__arrow--off" aria-hidden="true">
+					←
+				</span>
 			)}
 			{
-				pages.length > 1 && (
-					<ol class="pager__pages">
-						{pages.map((item) => (
-							<li>
-								{item.current ? (
-									<span class="pager__num pager__num--current" aria-current="page">
-										{item.number}
-									</span>
-								) : (
-									<a class="pager__num" href={item.href}>
-										{item.number}
-									</a>
-								)}
-							</li>
-						))}
-					</ol>
-				)
+				pages.length > 1 &&
+					pages.map((item) =>
+						item.current ? (
+							<span class="pager__dot pager__dot--now" aria-current="page">
+								{item.number}
+							</span>
+						) : (
+							<a class="pager__dot" href={item.href}>
+								{item.number}
+							</a>
+						),
+					)
 			}
 			{nextUrl ? (
-				<a class="pager__step pager__step--next" href={nextUrl.url}>
-					{nextUrl.text}
+				<a class="pager__arrow" href={nextUrl.url} aria-label={nextUrl.text}>
+					→
 				</a>
 			) : (
-				<span class="pager__step pager__step--next pager__step--ghost" />
+				<span class="pager__arrow pager__arrow--off" aria-hidden="true">
+					→
+				</span>
 			)}
 		</nav>
 	)
@@ -60,51 +59,46 @@ const show = Boolean(prevUrl || nextUrl || pages.length > 1);
 <style>
 	.pager {
 		display: flex;
-		flex-wrap: wrap;
 		align-items: center;
-		gap: 0.75rem 1rem;
-		margin-top: 2rem;
-		padding-top: 1.25rem;
-		border-top: 1px solid color-mix(in oklch, var(--color-global-text) 10%, transparent);
-	}
-
-	.pager__pages {
-		display: flex;
-		flex-wrap: wrap;
+		justify-content: center;
 		gap: 0.35rem;
-		margin: 0 auto;
-		padding: 0;
-		list-style: none;
+		margin-top: 2.25rem;
 	}
 
-	.pager__num,
-	.pager__step {
+	.pager__arrow,
+	.pager__dot {
 		display: inline-flex;
 		align-items: center;
-		min-height: 2rem;
-		padding: 0.15rem 0.55rem;
-		font-size: 0.85rem;
+		justify-content: center;
+		min-width: 2rem;
+		height: 2rem;
+		padding: 0 0.4rem;
+		border-radius: 999px;
+		font-size: 0.8rem;
 		font-weight: 600;
 		color: inherit;
 		text-decoration: none;
+		opacity: 0.55;
+		transition:
+			opacity 0.15s ease,
+			background 0.15s ease,
+			color 0.15s ease;
 	}
 
-	.pager__num--current {
+	.pager__arrow:hover,
+	.pager__dot:hover {
+		opacity: 1;
+		background: color-mix(in oklch, var(--color-global-text) 6%, transparent);
+	}
+
+	.pager__dot--now {
+		opacity: 1;
 		color: var(--color-brand);
-		box-shadow: inset 0 -2px 0 var(--color-brand);
+		background: color-mix(in oklch, var(--color-brand) 12%, transparent);
 	}
 
-	.pager__step:hover,
-	.pager__num:hover {
-		color: var(--color-brand);
-	}
-
-	.pager__step--ghost {
-		visibility: hidden;
-		min-width: 4.5rem;
-	}
-
-	.pager__step--next {
-		margin-inline-start: auto;
+	.pager__arrow--off {
+		opacity: 0.18;
+		pointer-events: none;
 	}
 </style>

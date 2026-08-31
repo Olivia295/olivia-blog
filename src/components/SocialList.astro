@@ -1,37 +1,34 @@
 ---
 import { Icon } from "astro-icon/components";
+import { profile } from "@/data/profile";
+import { defaultLang, type Lang } from "@/i18n/config";
+import { getLangFromUrl, useTranslations } from "@/i18n/utils";
 
-/** 
-	Uses https://www.astroicon.dev/getting-started/
-	Find icons via guide: https://www.astroicon.dev/guides/customization/#open-source-icon-sets
-	Only installed pack is: @iconify-json/mdi
-*/
-const socialLinks: {
-	friendlyName: string;
-	isWebmention?: boolean;
-	link: string;
-	name: string;
-}[] = [
-	// Add real profiles when ready, e.g.:
-	// { friendlyName: "GitHub", link: "https://github.com/you", name: "mdi:github" },
-];
+interface Props {
+	lang?: Lang;
+}
+
+const lang = Astro.props.lang ?? getLangFromUrl(Astro.url) ?? defaultLang;
+const t = useTranslations(lang);
+const socialLinks = profile.links;
 ---
 
 {
 	socialLinks.length > 0 && (
-		<div class="flex flex-wrap items-end gap-x-2">
-			<p>找到我</p>
+		<div class="flex flex-wrap items-center gap-x-3 gap-y-2">
+			<p class="text-sm opacity-70">{t("about.findMe")}</p>
 			<ul class="flex flex-1 items-center gap-x-2 sm:flex-initial">
-				{socialLinks.map(({ friendlyName, isWebmention, link, name }) => (
+				{socialLinks.map(({ label, href, icon }) => (
 					<li class="flex">
 						<a
-							class="hover:text-link inline-block"
-							href={link}
-							rel={`noreferrer ${isWebmention ? "me authn" : ""}`}
-							target="_blank"
+							class="hover:text-link inline-flex items-center gap-1"
+							href={href}
+							rel={href.startsWith("mailto:") ? undefined : "noreferrer noopener"}
+							target={href.startsWith("mailto:") ? undefined : "_blank"}
+							title={label}
 						>
-							<Icon aria-hidden="true" class="h-8 w-8" focusable="false" name={name} />
-							<span class="sr-only">{friendlyName}</span>
+							<Icon aria-hidden="true" class="h-7 w-7" focusable="false" name={icon} />
+							<span class="sr-only">{label}</span>
 						</a>
 					</li>
 				))}

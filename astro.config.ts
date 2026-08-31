@@ -17,7 +17,8 @@ import remarkDirective from "remark-directive"; /* Handle ::: directives as node
 import { remarkAdmonitions } from "./src/plugins/remark-admonitions"; /* Add admonitions */
 import { remarkGithubCard } from "./src/plugins/remark-github-card";
 import { remarkReadingTime } from "./src/plugins/remark-reading-time";
-import { expressiveCodeOptions, siteConfig } from "./src/site.config";
+import { siteIconFile } from "./src/data/site-assets";
+import { expressiveCodeOptions, siteConfig, siteShortName } from "./src/site.config";
 
 // https://astro.build/config
 export default defineConfig({
@@ -48,10 +49,10 @@ export default defineConfig({
 		webmanifest({
 			// See: https://github.com/alextim/astro-lib/blob/main/packages/astro-webmanifest/README.md
 			name: siteConfig.title,
-			short_name: "95 kitchen",
+			short_name: siteShortName,
 			description: siteConfig.description,
 			lang: siteConfig.lang,
-			icon: "public/icon.svg", // the source for generating favicon & icons
+			icon: siteIconFile(), // content site/icon.* overlays public/icon.svg
 			icons: [
 				{
 					src: "icons/apple-touch-icon.png", // used in src/components/BaseHead.astro L:26

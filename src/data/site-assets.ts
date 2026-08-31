@@ -1,0 +1,69 @@
+import { existsSync } from "node:fs";
+import path from "node:path";
+
+const root = process.cwd();
+const bare = process.env.BARE === "1";
+
+const LOGO_CANDIDATES = [
+	"site/logo.png",
+	"site/logo.jpg",
+	"site/logo.jpeg",
+	"site/logo.webp",
+	"site/logo.svg",
+	"logo.png",
+];
+
+const HERO_CANDIDATES = [
+	"site/home-hero.jpg",
+	"site/home-hero.jpeg",
+	"site/home-hero.png",
+	"site/home-hero.webp",
+	"home-hero.jpg",
+];
+
+const ICON_CANDIDATES = [
+	"site/icon.svg",
+	"site/favicon.svg",
+	"site/favicon.png",
+	"site/favicon.ico",
+	"site/icon.png",
+	"site/logo.svg",
+	"site/logo.png",
+	"icon.svg",
+];
+
+function publicUrl(rel: string): string {
+	return `/${rel.replace(/^\/+/, "")}`;
+}
+
+function firstPublic(candidates: string[], fallback: string): string {
+	const list = bare ? candidates.filter((rel) => !rel.startsWith("site/")) : candidates;
+	for (const rel of list) {
+		if (existsSync(path.join(root, "public", rel))) return publicUrl(rel);
+	}
+	return fallback;
+}
+
+/** Header mark. Content `site/logo.*` wins; `public/logo.png` is the source default. */
+export const siteLogoSrc = firstPublic(LOGO_CANDIDATES, "/logo.png");
+
+/** Home hero. Content `site/home-hero.*` wins; `public/home-hero.jpg` is the source default. */
+export const siteHeroSrc = firstPublic(HERO_CANDIDATES, "/home-hero.jpg");
+
+/** Browser tab / favicon. Content `site/icon.*` or `site/favicon.*` wins. */
+export const siteIconSrc = firstPublic(ICON_CANDIDATES, "/icon.svg");
+
+export function siteIconMime(src = siteIconSrc): string {
+	const ext = path.extname(src).toLowerCase();
+	if (ext === ".svg") return "image/svg+xml";
+	if (ext === ".png") return "image/png";
+	if (ext === ".jpg" || ext === ".jpeg") return "image/jpeg";
+	if (ext === ".ico") return "image/x-icon";
+	if (ext === ".webp") return "image/webp";
+	return "image/png";
+}
+
+/** Filesystem path for astro-webmanifest (`public/...`). */
+export function siteIconFile(src = siteIconSrc): string {
+	return path.join("public", src.replace(/^\/+/, ""));
+}

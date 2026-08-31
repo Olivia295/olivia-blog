@@ -34,12 +34,14 @@ src/content/blog/**
 !src/content/blog/.gitkeep
 src/content/post/**
 !src/content/post/.gitkeep
+src/content/site/**
 src/data/photos.json
 public/notes/**
 public/gallery/**
 public/media/gallery/**
 public/media/blogs/**
 public/media/posts/**
+public/site/
 .content-src/
 
 # editor junk

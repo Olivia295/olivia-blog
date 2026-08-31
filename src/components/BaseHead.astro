@@ -2,6 +2,7 @@
 import { WEBMENTION_PINGBACK, WEBMENTION_URL } from "astro:env/client";
 import { defaultLang, ogLocale, type Lang } from "@/i18n/config";
 import { localePath, useTranslations } from "@/i18n/utils";
+import { siteIconMime, siteIconSrc } from "@/data/site-assets";
 import { siteConfig } from "@/site.config";
 import type { SiteMeta } from "@/types";
 import "@/styles/global.css";
@@ -24,7 +25,7 @@ const postsRss = localePath(lang, "/posts/rss.xml");
 <title>{siteTitle}</title>
 
 {/* Icons */}
-<link href="/icon.svg" rel="icon" type="image/svg+xml" />
+<link href={siteIconSrc} rel="icon" type={siteIconMime()} />
 {
 	import.meta.env.PROD && (
 		<>

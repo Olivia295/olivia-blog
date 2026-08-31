@@ -8,54 +8,43 @@ import { getLangFromUrl, useTranslations } from "@/i18n/utils";
  * multi-page navigations remount the document and kill <audio>.
  */
 interface Props {
-	/** Override catalog; omit to use full music.json list. */
 	songs?: Song[];
 	lang?: Lang;
-	autoplay?: boolean;
 }
 
-const { songs: songsProp, lang: langProp, autoplay = false } = Astro.props;
+const { songs: songsProp, lang: langProp } = Astro.props;
 const lang = langProp ?? getLangFromUrl(Astro.url) ?? defaultLang;
 const t = useTranslations(lang);
 const songs = songsProp ?? getSongs();
 const hasSongs = songs.length > 0;
 const singleTrack = songs.length === 1;
+const displayTitle =
+	songs[0]?.title && !/^bgm$/i.test(songs[0].title) ? songs[0].title : t("music.trackForBlog");
+const displayArtist = songs[0]?.artist && songs[0].artist !== "Unknown Artist" ? songs[0].artist : "";
 ---
 
 {
 	hasSongs ? (
-		<div
-			id="music-player"
-			class="music-player"
-			data-single={singleTrack ? "true" : "false"}
-			data-autoplay={autoplay ? "true" : "false"}
-			data-bgm-soon={t("music.bgmSoon")}
-			data-bgm-hint={t("music.bgmHint")}
-			data-bgm-play={t("music.bgmPlay")}
-		>
+		<div id="music-player" class="music-player" data-single={singleTrack ? "true" : "false"}>
+			<div class="music-player__mark" aria-hidden="true">
+				{t("music.trackForBlog")}
+			</div>
 			<div class="now-playing">
-				<p class="label">{singleTrack ? t("music.trackForBlog") : t("music.nowPlaying")}</p>
 				<p id="current-title" class="current-title">
-					{songs[0]?.title}
+					{displayTitle}
 				</p>
-				<p id="current-artist" class="current-artist">
-					{songs[0]?.artist}
-				</p>
+				{
+					displayArtist && (
+						<p id="current-artist" class="current-artist">
+							{displayArtist}
+						</p>
+					)
+				}
 			</div>
 
-			<audio id="audio-player" controls preload="auto">
+			<audio id="audio-player" controls preload="metadata">
 				<source id="audio-source" src={songs[0]?.src} type="audio/mpeg" />
 			</audio>
-			{
-				autoplay && (
-					<div class="bgm-toast" role="status">
-						<p class="bgm-toast__text">{t("music.bgmSoon")}</p>
-						<button type="button" class="bgm-toast__play">
-							{t("music.bgmPlay")}
-						</button>
-					</div>
-				)
-			}
 
 			{
 				!singleTrack && (
@@ -79,51 +68,11 @@ const singleTrack = songs.length === 1;
 				)
 			}
 		</div>
-	) : (
-		<p class="empty">{t("music.empty")}</p>
-	)
+	) : null
 }
 
 <script>
 	const root = document.getElementById("music-player");
-	const audioEl = document.getElementById("audio-player") as HTMLAudioElement | null;
-
-	function fadeIn(audio: HTMLAudioElement, duration = 2200) {
-		audio.volume = 0;
-		const start = performance.now();
-		const tick = (now: number) => {
-			const t = Math.min(1, (now - start) / duration);
-			audio.volume = t * 0.7;
-			if (t < 1) requestAnimationFrame(tick);
-		};
-		requestAnimationFrame(tick);
-	}
-
-	function bindAutoplay(rootEl: HTMLElement, audio: HTMLAudioElement) {
-		if (rootEl.dataset.autoplay !== "true") return;
-		const toast = rootEl.querySelector<HTMLElement>(".bgm-toast");
-		const playBtn = rootEl.querySelector<HTMLButtonElement>(".bgm-toast__play");
-		const text = rootEl.querySelector<HTMLElement>(".bgm-toast__text");
-		const startPlayback = () => {
-			audio.volume = 0;
-			void audio
-				.play()
-				.then(() => {
-					fadeIn(audio);
-					if (text && rootEl.dataset.bgmHint) text.textContent = rootEl.dataset.bgmHint;
-					window.setTimeout(() => toast?.classList.add("is-gone"), 3200);
-				})
-				.catch(() => {
-					if (text && rootEl.dataset.bgmHint) text.textContent = rootEl.dataset.bgmHint;
-					toast?.classList.add("needs-click");
-				});
-		};
-		playBtn?.addEventListener("click", startPlayback);
-		window.setTimeout(startPlayback, 5000);
-	}
-
-	if (root && audioEl) bindAutoplay(root, audioEl);
-
 	if (root && root.dataset.single !== "true") {
 		const audio = document.getElementById("audio-player") as HTMLAudioElement;
 		const source = document.getElementById("audio-source") as HTMLSourceElement;
@@ -148,7 +97,7 @@ const singleTrack = songs.length === 1;
 			void audio.play().catch(() => {});
 
 			if (title) currentTitle.textContent = title;
-			if (artist) currentArtist.textContent = artist;
+			if (artist && currentArtist) currentArtist.textContent = artist;
 
 			buttons.forEach((btn) => btn.classList.remove("active"));
 			button.classList.add("active");
@@ -169,48 +118,69 @@ const singleTrack = songs.length === 1;
 
 <style>
 	.music-player {
-		width: 100%;
-		max-width: 28rem;
-		padding: 1.25rem;
-		border-radius: 1rem;
-		background: color-mix(in oklch, var(--color-global-text) 4%, transparent);
-		border: 1px solid color-mix(in oklch, var(--color-global-text) 10%, transparent);
+		position: relative;
+		width: min(22rem, 100%);
+		margin-inline: auto;
+		padding: 1.1rem 1.2rem 1.15rem;
+		border-radius: 1.05rem;
+		background: color-mix(in oklch, var(--color-brand) 9%, var(--color-global-bg));
+		border: 1px solid color-mix(in oklch, var(--color-brand) 38%, transparent);
+		box-shadow:
+			inset 0 1px 0 color-mix(in oklch, white 35%, transparent),
+			0 10px 28px color-mix(in oklch, var(--color-brand) 12%, transparent);
+	}
+
+	.music-player__mark {
+		position: absolute;
+		top: -0.55rem;
+		left: 50%;
+		transform: translateX(-50%);
+		padding: 0.12rem 0.55rem;
+		border-radius: 999px;
+		background: var(--color-brand);
+		color: white;
+		font-size: 0.62rem;
+		font-weight: 800;
+		letter-spacing: 0.14em;
+		line-height: 1.2;
 	}
 
 	.now-playing {
-		margin-bottom: 1rem;
+		margin: 0.35rem 0 0.85rem;
+		text-align: center;
 	}
 
 	.label {
-		margin: 0 0 0.5rem;
-		font-size: 0.7rem;
-		letter-spacing: 0.12em;
-		text-transform: uppercase;
-		opacity: 0.55;
+		margin: 0 0 0.3rem;
+		font-size: 0.68rem;
+		letter-spacing: 0.08em;
+		font-weight: 700;
+		color: var(--color-brand);
 	}
 
 	.current-title {
 		margin: 0;
-		font-size: 1.05rem;
+		font-size: 0.95rem;
 		font-weight: 700;
 		line-height: 1.35;
 	}
 
 	.current-artist {
-		margin: 0.25rem 0 0;
-		font-size: 0.85rem;
+		margin: 0.2rem 0 0;
+		font-size: 0.8rem;
 		opacity: 0.65;
 	}
 
 	audio {
 		width: 100%;
-		height: 2.25rem;
+		height: 2.35rem;
+		accent-color: var(--color-brand);
 	}
 
 	.playlist {
 		list-style: none;
 		padding: 0;
-		margin: 1rem 0 0;
+		margin: 0.9rem 0 0;
 		max-height: 20rem;
 		overflow-y: auto;
 	}
@@ -234,11 +204,11 @@ const singleTrack = songs.length === 1;
 
 	.playlist button:hover,
 	.playlist button.active {
-		background: color-mix(in oklch, var(--color-global-text) 8%, transparent);
+		background: color-mix(in oklch, var(--color-brand) 12%, transparent);
 	}
 
 	.playlist button.active {
-		box-shadow: inset 2px 0 0 var(--color-accent);
+		box-shadow: inset 2px 0 0 var(--color-brand);
 	}
 
 	.song-title {
@@ -252,72 +222,5 @@ const singleTrack = songs.length === 1;
 		margin-top: 0.15rem;
 		font-size: 0.75rem;
 		opacity: 0.6;
-	}
-
-	.empty {
-		opacity: 0.75;
-	}
-
-	.playlist::-webkit-scrollbar {
-		width: 6px;
-	}
-
-	.playlist::-webkit-scrollbar-thumb {
-		background: color-mix(in oklch, var(--color-global-text) 25%, transparent);
-		border-radius: 999px;
-	}
-
-	.bgm-toast {
-		position: fixed;
-		z-index: 40;
-		right: 1rem;
-		bottom: 5.5rem;
-		display: flex;
-		align-items: center;
-		gap: 0.75rem;
-		max-width: min(22rem, calc(100vw - 2rem));
-		padding: 0.7rem 0.85rem;
-		border-radius: 0.85rem;
-		background: color-mix(in oklch, var(--color-global-bg) 88%, var(--color-brand));
-		border: 1px solid color-mix(in oklch, var(--color-brand) 35%, transparent);
-		box-shadow: 0 12px 32px color-mix(in oklch, black 16%, transparent);
-		animation: bgm-in 0.55s ease both;
-	}
-
-	.bgm-toast.is-gone {
-		opacity: 0;
-		transform: translateY(8px);
-		pointer-events: none;
-		transition: opacity 0.4s ease, transform 0.4s ease;
-	}
-
-	.bgm-toast__text {
-		margin: 0;
-		font-size: 0.8rem;
-		font-weight: 600;
-	}
-
-	.bgm-toast__play {
-		flex-shrink: 0;
-		border: none;
-		border-radius: 999px;
-		padding: 0.3rem 0.7rem;
-		background: var(--color-brand);
-		color: white;
-		font: inherit;
-		font-size: 0.75rem;
-		font-weight: 700;
-		cursor: pointer;
-	}
-
-	@keyframes bgm-in {
-		from {
-			opacity: 0;
-			transform: translateY(10px);
-		}
-		to {
-			opacity: 1;
-			transform: translateY(0);
-		}
 	}
 </style>

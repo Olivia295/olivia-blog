@@ -1,25 +1,20 @@
+import { existsSync, readFileSync } from "node:fs";
+import path from "node:path";
 import type { AstroExpressiveCodeOptions } from "astro-expressive-code";
 import type { SiteConfig } from "@/types";
 
-export const siteConfig: SiteConfig = {
-	// Phase 1: Vercel preview domain is fine; replace when you bind a custom domain.
-	url: "https://oliviapan-blog.vercel.app/",
-	/*
-		- Used to construct the meta title property found in src/components/BaseHead.astro L:11
-		- The webmanifest name found in astro.config.ts L:42
-		- The link value found in src/components/layout/Header.astro L:35
-		- In the footer found in src/components/layout/Footer.astro L:12
-	*/
-	title: "95 kitchen",
-	// Used as both a meta property (src/components/BaseHead.astro L:31 + L:49) & the generated satori png (src/pages/og-image/[slug].png.ts)
-	author: "Olivia Pan",
-	// Used as the default description meta property and webmanifest description
-	description: "一个奇怪的厨房。",
-	// HTML lang property, found in src/layouts/Base.astro L:18 & astro.config.ts L:48
+/**
+ * Public GitHub defaults — no personal identity.
+ * Vercel/local overlay: gitignored `src/content/site/site.json`
+ * from the private content repo (`site/site.json`).
+ */
+const defaults: SiteConfig & { shortName?: string } = {
+	url: "https://example.com/",
+	title: "Astro Cactus",
+	author: "Guest",
+	description: "A small static site.",
 	lang: "zh-CN",
-	// Meta property, found in src/components/BaseHead.astro L:42
 	ogLocale: "zh_CN",
-	// Date.prototype.toLocaleDateString() parameters, found in src/utils/date.ts.
 	date: {
 		locale: "zh-CN",
 		options: {
@@ -30,15 +25,44 @@ export const siteConfig: SiteConfig = {
 	},
 };
 
+type SiteOverlay = Partial<Pick<SiteConfig, "url" | "title" | "author" | "description">> & {
+	shortName?: string;
+};
+
+function loadSiteOverlay(): SiteOverlay {
+	const file = path.join(process.cwd(), "src/content/site/site.json");
+	if (!existsSync(file)) return {};
+	try {
+		return JSON.parse(readFileSync(file, "utf8")) as SiteOverlay;
+	} catch {
+		return {};
+	}
+}
+
+const overlay = loadSiteOverlay();
+
+export const siteConfig: SiteConfig = {
+	url: overlay.url ?? defaults.url,
+	title: overlay.title ?? defaults.title,
+	author: overlay.author ?? defaults.author,
+	description: overlay.description ?? defaults.description,
+	lang: defaults.lang,
+	ogLocale: defaults.ogLocale,
+	date: defaults.date,
+};
+
+export const siteShortName = overlay.shortName ?? overlay.title ?? defaults.title;
+
 /** Bare paths (no locale prefix). Titles come from i18n ui keys. */
 export const menuLinkDefs: {
 	path: string;
-	titleKey: "nav.home" | "nav.blogs" | "nav.posts" | "nav.gallery";
+	titleKey: "nav.home" | "nav.blogs" | "nav.posts" | "nav.gallery" | "nav.about";
 }[] = [
 	{ path: "/", titleKey: "nav.home" },
 	{ path: "/blogs/", titleKey: "nav.blogs" },
 	{ path: "/posts/", titleKey: "nav.posts" },
 	{ path: "/gallery/", titleKey: "nav.gallery" },
+	{ path: "/about/", titleKey: "nav.about" },
 ];
 
 // https://expressive-code.com/reference/configuration/
@@ -56,17 +80,13 @@ export const expressiveCodeOptions: AstroExpressiveCodeOptions = {
 		uiLineHeight: "inherit",
 	},
 	themeCssSelector(theme, { styleVariants }) {
-		// If one dark and one light theme are available
-		// generate theme CSS selectors compatible with cactus-theme dark mode switch
 		if (styleVariants.length >= 2) {
 			const baseTheme = styleVariants[0]?.theme;
 			const altTheme = styleVariants.find((v) => v.theme.type !== baseTheme?.type)?.theme;
 			if (theme === baseTheme || theme === altTheme) return `[data-theme='${theme.type}']`;
 		}
-		// return default selector
 		return `[data-theme="${theme.name}"]`;
 	},
-	// One dark, one light theme => https://expressive-code.com/guides/themes/#available-themes
 	themes: ["dracula", "github-light"],
 	useThemedScrollbars: false,
 };

@@ -1,12 +1,33 @@
 ---
 import { siteConfig } from "@/site.config";
+
+const year = new Date().getFullYear();
 ---
 
-<footer
-	class="text-muted mt-auto flex w-full flex-col items-center justify-center pt-8 pb-1 text-center text-xs font-semibold sm:pt-14 sm:pb-2"
->
-	<div>
+<footer class="site-footer">
+	<p>
 		&copy; {siteConfig.author}
-		{new Date().getFullYear()}.<span class="inline-block">&nbsp;·&nbsp;{siteConfig.title}</span>
-	</div>
+		{year}
+		<span aria-hidden="true"> · </span>
+		{siteConfig.title}
+	</p>
 </footer>
+
+<style>
+	.site-footer {
+		width: 100%;
+		padding: 2.5rem 0 0.5rem;
+		text-align: center;
+	}
+
+	.site-footer p {
+		margin: 0 auto;
+		width: 100%;
+		text-align: center;
+		font-size: 0.7rem;
+		font-weight: 400;
+		letter-spacing: 0.04em;
+		color: var(--color-muted);
+		opacity: 0.55;
+	}
+</style>

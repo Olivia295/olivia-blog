@@ -15,7 +15,7 @@ const t = useTranslations(lang);
 
 <site-search class="site-search" id="search">
 	<button
-		class="hover:text-accent flex h-9 w-9 cursor-pointer items-center justify-center rounded-md"
+		class="hover:text-accent flex h-7 w-7 cursor-pointer items-center justify-center rounded-md sm:h-8 sm:w-8"
 		aria-keyshortcuts="Control+K Meta+K"
 		data-open-modal
 		disabled
@@ -169,3 +169,29 @@ const t = useTranslations(lang);
 
 	customElements.define("site-search", SiteSearch);
 </script>
+
+<style>
+	:host,
+	site-search,
+	.site-search {
+		display: inline-block;
+		width: 1.7rem;
+		height: 1.7rem;
+		overflow: hidden;
+		vertical-align: middle;
+	}
+
+	site-search > dialog:not([open]),
+	.site-search > dialog:not([open]) {
+		display: none !important;
+	}
+
+	@media (min-width: 640px) {
+		:host,
+		site-search,
+		.site-search {
+			width: 2rem;
+			height: 2rem;
+		}
+	}
+</style>

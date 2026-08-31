@@ -50,16 +50,16 @@ const showMusicSlot = Boolean(postSongs) || Astro.slots.has("music");
 			<div
 				class="prose prose-sm prose-headings:font-semibold prose-headings:text-accent-2 prose-headings:before:absolute prose-headings:before:-ms-4 prose-headings:before:text-muted prose-headings:hover:before:text-accent sm:prose-headings:before:content-['#'] sm:prose-th:before:content-none"
 			>
-				<slot />
 				{
 					showMusicSlot && (
-						<aside class="not-prose mt-12" data-pagefind-ignore>
+						<aside class="not-prose mb-8" data-pagefind-ignore>
 							<slot name="music">
-								{postSongs && <MusicPlayer songs={postSongs} lang={lang} autoplay />}
+								{postSongs && <MusicPlayer songs={postSongs} lang={lang} />}
 							</slot>
 						</aside>
 					)
 				}
+				<slot />
 				<WebMentions />
 			</div>
 		</div>

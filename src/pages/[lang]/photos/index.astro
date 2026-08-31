@@ -1,5 +1,6 @@
 ---
 import FloatingBack from "@/components/FloatingBack.astro";
+import PageHeader from "@/components/PageHeader.astro";
 import {
 	buildPhotoSrcSet,
 	getPhotoAlbums,
@@ -25,8 +26,7 @@ const meta = {
 
 <PageLayout lang={lang} meta={meta}>
 	<section class="photos-page motion-fade-up">
-		<h1 class="title mb-2">{t("gallery.title")}</h1>
-		<p class="intro">{t("gallery.intro")}</p>
+		<PageHeader title={t("gallery.title")} lead={t("gallery.lead")} />
 
 		{
 			albums.length === 0 ? (
@@ -67,12 +67,6 @@ const meta = {
 <style>
 	.photos-page {
 		width: 100%;
-	}
-
-	.intro {
-		margin-bottom: 3rem;
-		opacity: 0.7;
-		font-size: 0.95rem;
 	}
 
 	.empty {

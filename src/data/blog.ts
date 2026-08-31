@@ -40,6 +40,16 @@ export function groupBlogsBySeries(
 	return grouped;
 }
 
+/** Named series that actually exist on published blogs, sorted. */
+export function getNamedSeries(blogs: CollectionEntry<"blog">[]): string[] {
+	const names = new Set<string>();
+	for (const blog of blogs) {
+		const name = seriesOf(blog);
+		if (name) names.add(name);
+	}
+	return [...names].sort((a, b) => a.localeCompare(b, "zh"));
+}
+
 export function getAllTags(blogs: CollectionEntry<"blog">[]) {
 	return blogs.flatMap((blog) => [...blog.data.tags]);
 }

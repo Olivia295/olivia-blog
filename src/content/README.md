@@ -10,10 +10,24 @@
 ```
 src/content/blog/     文章 / Blogs，对应 /blogs
 src/content/post/     短记 / Posts，对应 /posts
+src/content/site/     站点图：logo / 首页大图 / 标签页图标（覆盖源码，不改源文件）
 src/data/photos.json  画廊合集清单
 public/media/gallery/ 画廊本地图片
 public/notes/         短记配图
 ```
+
+换 logo、首页大图、浏览器标签页图标：把文件丢进 **olivia-blog-content/site/**（或本地 `src/content/site/`）。
+
+| 文件 | 用在 |
+| --- | --- |
+| `logo.png`（也可用 `.jpg` `.webp` `.svg`） | 左上角 |
+| `home-hero.jpg`（也可用 `.png` `.webp`） | 首页大图 |
+| `icon.svg`（也可用 `favicon.svg` / `favicon.png` / `icon.png`） | 浏览器标签页 |
+| `about.json` | 关于页文案与外链（**不要**写进公开仓库） |
+| `about.jpg`（可选） | 关于页头像 |
+| `site.json` | 站点名 / 作者 / 域名（覆盖公开仓库假数据） |
+
+源码默认图仍在 `public/logo.png`、`public/home-hero.jpg`、`public/icon.svg`，不会被覆盖。`npm run content:sync` 只把 content 里的图铺到 `public/site/`。
 
 ## 看毛胚（没有文章 / 短记 / 画廊）
 
@@ -70,7 +84,7 @@ cp -R public/media/gallery/. ../olivia-blog-content/gallery/images/ 2>/dev/null 
 cd ../olivia-blog-content
 git init
 git add .
-git commit -m "Kitchen writing."
+git commit -m "Spaceship writing."
 gh repo create olivia-blog-content --private --source=. --push
 ```
 
@@ -95,14 +109,14 @@ npx vercel --prod
 2. GitHub 生成 Fine-grained PAT，权限：该私有仓库 Read。
 3. Vercel → Project → Settings → Environment Variables：
 
-私有仓库：`https://github.com/Olivia295/olivia-blog-content`（private）
+私有仓库：你自己的 private content 仓库（不要写进公开 README 的真实用户名以外的文档即可）
 
-Vercel 已配置：
+Vercel 已配置（具体仓库地址只写在 Vercel 环境变量里，不要提交到公开仓库）：
 
 | Name | Value |
 | --- | --- |
-| `CONTENT_REPO` | `git@github.com:Olivia295/olivia-blog-content.git` |
-| `CONTENT_SSH_KEY` | 只读 deploy key（base64，已放在 Vercel 里） |
+| `CONTENT_REPO` | 私有内容仓库的 git URL |
+| `CONTENT_SSH_KEY` | 只读 deploy key（base64，放在 Vercel 里） | |
 
 `npm run build` 会先跑 `scripts/sync-content.mjs`：本地已有 `.md` 就用本地的；否则从私有仓库 clone 到 `src/content/` 再构建。
 
