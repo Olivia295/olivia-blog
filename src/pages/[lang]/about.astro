@@ -45,45 +45,46 @@ const facts = profile.facts[lang];
 			<div class="about__body">
 				<p class="about__name">{profile.name}</p>
 				<p class="about__role">{role}</p>
-				<div class="about__bio">
-					{bio.map((para) => <p>{para}</p>)}
-				</div>
 
-				<div class="about__links-block">
-					<p class="about__links-label">{t("about.findMe")}</p>
-					<ul class="about__links" role="list">
+				<div class="about__info" aria-labelledby="about-info-heading">
+					<p class="about__label" id="about-info-heading">{t("about.info")}</p>
+					<dl class="about__facts">
 						{
-							profile.links.map((link) => (
-								<li>
-									<a
-										class="about__link"
-										href={link.href}
-										target={link.href.startsWith("mailto:") ? undefined : "_blank"}
-										rel={link.href.startsWith("mailto:") ? undefined : "noopener noreferrer"}
-									>
-										<Icon aria-hidden="true" class="about__link-icon" name={link.icon} />
-										<span>{link.label}</span>
-									</a>
-								</li>
+							facts.map((fact) => (
+								<div class="about__fact">
+									<dt>{fact.label}</dt>
+									<dd>{fact.value}</dd>
+								</div>
 							))
 						}
-					</ul>
+					</dl>
 				</div>
 			</div>
 		</div>
 
-		<section class="about__info" aria-labelledby="about-info-heading">
-			<p class="about__links-label" id="about-info-heading">{t("about.info")}</p>
-			<dl class="about__facts">
+		<div class="about__bio">
+			{bio.map((para) => <p>{para}</p>)}
+		</div>
+
+		<section class="about__friends" aria-labelledby="about-friends-heading">
+			<p class="about__label" id="about-friends-heading">{t("about.findMe")}</p>
+			<ul class="about__links" role="list">
 				{
-					facts.map((fact) => (
-						<div class="about__fact">
-							<dt>{fact.label}</dt>
-							<dd>{fact.value}</dd>
-						</div>
+					profile.links.map((link) => (
+						<li>
+							<a
+								class="about__link"
+								href={link.href}
+								target={link.href.startsWith("mailto:") ? undefined : "_blank"}
+								rel={link.href.startsWith("mailto:") ? undefined : "noopener noreferrer"}
+							>
+								<Icon aria-hidden="true" class="about__link-icon" name={link.icon} />
+								<span>{link.label}</span>
+							</a>
+						</li>
 					))
 				}
-			</dl>
+			</ul>
 		</section>
 	</section>
 
@@ -97,7 +98,7 @@ const facts = profile.facts[lang];
 
 	.about__layout {
 		display: grid;
-		gap: 1.75rem;
+		gap: 1.35rem;
 	}
 
 	@media (min-width: 640px) {
@@ -144,25 +145,8 @@ const facts = profile.facts[lang];
 		color: var(--color-accent);
 	}
 
-	.about__bio {
-		margin-top: 1rem;
-		display: grid;
-		gap: 0.7rem;
-		font-size: 0.9rem;
-		line-height: 1.7;
-		opacity: 0.88;
-	}
-
-	.about__bio p {
-		margin: 0;
-	}
-
-	.about__links-block {
-		margin-top: 1.35rem;
-	}
-
-	.about__links-label {
-		margin: 0 0 0.65rem;
+	.about__label {
+		margin: 0 0 0.7rem;
 		font-size: 0.7rem;
 		letter-spacing: 0.14em;
 		text-transform: uppercase;
@@ -170,73 +154,16 @@ const facts = profile.facts[lang];
 		font-weight: 700;
 	}
 
-	.about__links {
-		list-style: none;
-		margin: 0;
-		padding: 0;
-		display: grid;
-		gap: 0.5rem;
-	}
-
-	@media (min-width: 480px) {
-		.about__links {
-			grid-template-columns: 1fr 1fr;
-		}
-	}
-
-	.about__link {
-		display: flex;
-		align-items: center;
-		gap: 0.55rem;
-		min-height: 2.5rem;
-		color: inherit;
-		text-decoration: none;
-		font-size: 0.88rem;
-		font-weight: 600;
-		opacity: 0.88;
-		transition: color 0.15s ease, opacity 0.15s ease;
-	}
-
-	.about__link:hover {
-		opacity: 1;
-		color: var(--color-accent);
-	}
-
-	.about__link-icon {
-		width: 1.25rem;
-		height: 1.25rem;
-		flex-shrink: 0;
-	}
-
 	.about__info {
-		display: block;
-		width: 100%;
-		box-sizing: border-box;
-		margin-top: 2.75rem;
-		padding-top: 2rem;
-		border-top: 1px solid color-mix(in oklch, var(--color-global-text) 12%, transparent);
-		text-align: center;
-	}
-
-	.about__info .about__links-label {
-		margin-bottom: 1.15rem;
+		margin-top: 1.15rem;
 	}
 
 	.about__facts {
-		margin: 0 auto;
+		margin: 0;
 		padding: 0;
 		display: grid;
 		grid-template-columns: 1fr 1fr;
-		gap: 1.35rem 1.75rem;
-		max-width: 34rem;
-		text-align: center;
-	}
-
-	@media (min-width: 720px) {
-		.about__facts {
-			grid-template-columns: repeat(4, minmax(0, 1fr));
-			max-width: 42rem;
-		}
+		gap: 0.85rem 1rem;
 	}
 
 	.about__fact {
@@ -246,17 +173,103 @@ const facts = profile.facts[lang];
 
 	.about__fact dt {
 		margin: 0;
-		font-size: 0.68rem;
-		letter-spacing: 0.14em;
+		font-size: 0.65rem;
+		letter-spacing: 0.12em;
 		text-transform: uppercase;
 		opacity: 0.42;
 		font-weight: 700;
 	}
 
 	.about__fact dd {
-		margin: 0.4rem 0 0;
-		font-size: 0.9rem;
-		line-height: 1.5;
+		margin: 0.28rem 0 0;
+		font-size: 0.86rem;
+		line-height: 1.4;
 		opacity: 0.88;
+	}
+
+	.about__bio {
+		margin-top: 1.6rem;
+		display: grid;
+		gap: 0.7rem;
+		max-width: 42rem;
+		font-size: 0.92rem;
+		line-height: 1.75;
+		opacity: 0.88;
+	}
+
+	.about__bio p {
+		margin: 0;
+	}
+
+	.about__friends {
+		width: 100%;
+		margin-top: 2rem;
+		padding-top: 1.6rem;
+		border-top: 1px solid color-mix(in oklch, var(--color-global-text) 12%, transparent);
+	}
+
+	.about__friends .about__label {
+		text-align: center;
+	}
+
+	.about__links {
+		list-style: none;
+		margin: 0;
+		padding: 0;
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		gap: 0.6rem;
+	}
+
+	@media (min-width: 720px) {
+		.about__links {
+			grid-template-columns: repeat(4, minmax(0, 1fr));
+		}
+	}
+
+	.about__link {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 0.4rem;
+		width: 100%;
+		min-height: 2.85rem;
+		padding: 0.5rem 0.7rem;
+		border-radius: 0.8rem;
+		border: 1px solid color-mix(in oklch, var(--color-global-text) 16%, transparent);
+		background: color-mix(in oklch, var(--color-global-text) 3%, transparent);
+		color: inherit;
+		text-decoration: none;
+		font-size: 0.82rem;
+		font-weight: 600;
+		box-sizing: border-box;
+		transition:
+			border-color 0.15s ease,
+			background 0.15s ease,
+			color 0.15s ease,
+			transform 0.15s ease;
+	}
+
+	.about__link:hover {
+		border-color: color-mix(in oklch, var(--color-accent) 50%, transparent);
+		background: color-mix(in oklch, var(--color-accent) 8%, transparent);
+		color: var(--color-accent);
+	}
+
+	.about__link:active {
+		transform: scale(0.98);
+	}
+
+	.about__link-icon {
+		width: 1.1rem;
+		height: 1.1rem;
+		flex-shrink: 0;
+	}
+
+	@media (max-width: 639px) {
+		.about__link {
+			min-height: 3rem;
+			font-size: 0.84rem;
+		}
 	}
 </style>
