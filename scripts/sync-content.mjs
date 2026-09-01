@@ -15,6 +15,7 @@ import { cp, mkdir, readdir, readFile, rm, writeFile } from "node:fs/promises";
 import { existsSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import sharp from "sharp";
 
 const root = process.cwd();
 const blogDir = path.join(root, "src/content/blog");
@@ -165,6 +166,22 @@ async function enhanceEntryFolders(contentRoot, publicKind, { withAudio = false 
 	}
 }
 
+/** Display pixel size after EXIF orientation (iPhone portraits are often tagged, not rotated). */
+async function displaySize(file) {
+	try {
+		const meta = await sharp(file).metadata();
+		if (!meta.width || !meta.height) return {};
+		const orientation = meta.orientation ?? 1;
+		const swapped = orientation >= 5 && orientation <= 8;
+		return {
+			width: swapped ? meta.height : meta.width,
+			height: swapped ? meta.width : meta.height,
+		};
+	} catch {
+		return {};
+	}
+}
+
 async function buildGalleryFromFolders(galleryRoot, photosOut, mediaOut) {
 	if (!existsSync(galleryRoot)) return false;
 	const albums = [];
@@ -182,14 +199,17 @@ async function buildGalleryFromFolders(galleryRoot, photosOut, mediaOut) {
 		const files = (await readdir(folder))
 			.filter((name) => IMAGE_EXT.has(path.extname(name).toLowerCase()))
 			.sort((a, b) => a.localeCompare(b, "en"));
-		const photos = files.map((name) => {
+		const photos = [];
+		for (const name of files) {
 			const stem = path.basename(name, path.extname(name));
-			return {
+			const size = await displaySize(path.join(folder, name));
+			photos.push({
 				slug: stem,
 				src: `/media/gallery/${slug}/${name}`,
 				alt: "",
-			};
-		});
+				...size,
+			});
+		}
 		if (Array.isArray(meta.photos)) {
 			for (const extra of meta.photos) {
 				if (extra?.src) photos.push(extra);

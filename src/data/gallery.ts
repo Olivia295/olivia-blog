@@ -7,7 +7,65 @@ export type Photo = {
 	slug: string;
 	src: string;
 	alt: string;
+	width?: number;
+	height?: number;
 };
+
+export type AlbumRow = {
+	kind: "pair" | "wide" | "tile";
+	photos: Photo[];
+};
+
+function photosHaveSizes(photos: Photo[]): boolean {
+	return photos.length > 0 && photos.every((photo) => photo.width && photo.height);
+}
+
+function isPortrait(photo: Photo): boolean {
+	return Boolean(photo.width && photo.height && photo.height > photo.width);
+}
+
+/** Two-up rows; mixed albums give landscapes a full row and pair portraits. */
+export function packAlbumRows(photos: Photo[]): AlbumRow[] | null {
+	if (!photosHaveSizes(photos)) return null;
+
+	const mixed =
+		photos.some((photo) => isPortrait(photo)) &&
+		photos.some((photo) => !isPortrait(photo));
+
+	if (!mixed) {
+		const rows: AlbumRow[] = [];
+		for (let i = 0; i < photos.length; i += 2) {
+			const first = photos[i]!;
+			const second = photos[i + 1];
+			if (second) rows.push({ kind: "pair", photos: [first, second] });
+			else rows.push({ kind: "tile", photos: [first] });
+		}
+		return rows;
+	}
+
+	const rows: AlbumRow[] = [];
+	let pending: Photo | undefined;
+
+	for (const photo of photos) {
+		if (!isPortrait(photo)) {
+			if (pending) {
+				rows.push({ kind: "tile", photos: [pending] });
+				pending = undefined;
+			}
+			rows.push({ kind: "wide", photos: [photo] });
+			continue;
+		}
+		if (pending) {
+			rows.push({ kind: "pair", photos: [pending, photo] });
+			pending = undefined;
+		} else {
+			pending = photo;
+		}
+	}
+
+	if (pending) rows.push({ kind: "tile", photos: [pending] });
+	return rows;
+}
 
 export type PhotoAlbum = {
 	slug: string;
