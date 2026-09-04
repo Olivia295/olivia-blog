@@ -65,14 +65,16 @@ const dateTimeOptions: Intl.DateTimeFormatOptions = {
 	}
 </div>
 {
-	data.series && (
-		<p class="mt-2">
-			<a
-				class="cactus-link"
-				href={`${localePath(lang, "/blogs/")}?series=${encodeURIComponent(data.series)}`}
-			>
-				{data.series}
-			</a>
+	data.series.length > 0 && (
+		<p class="mt-2 flex flex-wrap gap-x-3 gap-y-1">
+			{data.series.map((name) => (
+				<a
+					class="cactus-link"
+					href={`${localePath(lang, "/blogs/")}?series=${encodeURIComponent(name)}`}
+				>
+					{name}
+				</a>
+			))}
 		</p>
 	)
 }

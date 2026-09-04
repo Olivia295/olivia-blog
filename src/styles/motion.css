@@ -31,15 +31,6 @@
 	}
 }
 
-@keyframes Spaceship-hero-drift {
-	from {
-		transform: scale(1.04) translate3d(0, 0, 0);
-	}
-	to {
-		transform: scale(1.12) translate3d(-1.8%, -1.2%, 0);
-	}
-}
-
 @layer components {
 	.motion-fade-up {
 		/* forwards only — never leave content stuck at opacity:0 if animation is skipped/late */

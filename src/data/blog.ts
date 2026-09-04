@@ -1,5 +1,22 @@
+import { existsSync, readFileSync } from "node:fs";
+import path from "node:path";
 import { type CollectionEntry, getCollection } from "astro:content";
 import { isBarePreview } from "@/data/bare";
+
+function loadSeriesOrder(): string[] {
+	const file = path.join(process.cwd(), "src/content/site/series.json");
+	if (!existsSync(file)) return [];
+	try {
+		const data = JSON.parse(readFileSync(file, "utf8")) as unknown;
+		if (Array.isArray(data)) return data.map((name) => String(name).trim()).filter(Boolean);
+		if (data && typeof data === "object" && Array.isArray((data as { order?: unknown }).order)) {
+			return (data as { order: unknown[] }).order.map((name) => String(name).trim()).filter(Boolean);
+		}
+	} catch {
+		return [];
+	}
+	return [];
+}
 
 /** filter out draft posts based on the environment */
 export async function getAllBlogs(): Promise<CollectionEntry<"blog">[]> {
@@ -24,8 +41,8 @@ export function groupBlogsByYear(blogs: CollectionEntry<"blog">[]) {
 	return Object.groupBy(blogs, (blog) => blog.data.publishDate.getFullYear().toString());
 }
 
-function seriesOf(blog: CollectionEntry<"blog">): string | undefined {
-	return blog.data.series?.trim() || undefined;
+export function blogSeries(blog: CollectionEntry<"blog">): string[] {
+	return blog.data.series ?? [];
 }
 
 export function groupBlogsBySeries(
@@ -34,20 +51,33 @@ export function groupBlogsBySeries(
 ): Record<string, CollectionEntry<"blog">[]> {
 	const grouped: Record<string, CollectionEntry<"blog">[]> = {};
 	for (const blog of blogs) {
-		const key = seriesOf(blog) || uncategorized;
-		(grouped[key] ??= []).push(blog);
+		const names = blogSeries(blog);
+		if (!names.length) {
+			(grouped[uncategorized] ??= []).push(blog);
+			continue;
+		}
+		for (const key of names) {
+			(grouped[key] ??= []).push(blog);
+		}
 	}
 	return grouped;
 }
 
-/** Named series that actually exist on published blogs, sorted. */
+/** Named series that actually exist on published blogs, sorted by site/series.json. */
 export function getNamedSeries(blogs: CollectionEntry<"blog">[]): string[] {
 	const names = new Set<string>();
 	for (const blog of blogs) {
-		const name = seriesOf(blog);
-		if (name) names.add(name);
+		for (const name of blogSeries(blog)) names.add(name);
 	}
-	return [...names].sort((a, b) => a.localeCompare(b, "zh"));
+	const order = loadSeriesOrder();
+	return [...names].sort((a, b) => {
+		const ia = order.indexOf(a);
+		const ib = order.indexOf(b);
+		if (ia === -1 && ib === -1) return a.localeCompare(b, "zh");
+		if (ia === -1) return 1;
+		if (ib === -1) return -1;
+		return ia - ib;
+	});
 }
 
 export function getAllTags(blogs: CollectionEntry<"blog">[]) {

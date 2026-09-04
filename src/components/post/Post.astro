@@ -1,6 +1,7 @@
 ---
 import { type CollectionEntry, render } from "astro:content";
 import FormattedDate from "@/components/FormattedDate.astro";
+import { resolvePostTags } from "@/data/post-tags";
 import { defaultLang, type Lang } from "@/i18n/config";
 import { getLangFromUrl } from "@/i18n/utils";
 
@@ -13,9 +14,21 @@ type Props = {
 const { post, lang: langProp, plain = false } = Astro.props;
 const lang = langProp ?? getLangFromUrl(Astro.url) ?? defaultLang;
 const { Content } = await render(post);
+const tags = resolvePostTags(post.data.tags, lang);
 ---
 
 <article class:list={["note-card", { "note-card--plain": plain }]} id={`post-${post.id}`} data-pagefind-body>
+	{
+		tags.length > 0 && (
+			<ul class="note-card__tags" aria-label={lang === "en" ? "Tags" : "标签"}>
+				{tags.map((tag) => (
+					<li>
+						<span class:list={["note-tag", `note-tag--${tag.id}`]}>{tag.label}</span>
+					</li>
+				))}
+			</ul>
+		)
+	}
 	<div class="note-card__body prose prose-sm prose-cactus max-w-none">
 		<Content />
 	</div>
@@ -65,14 +78,19 @@ const { Content } = await render(post);
 
 <style>
 	.note-card {
+		position: relative;
 		display: grid;
 		gap: 0.7rem;
 		min-width: 0;
 		max-width: 100%;
-		padding: 1.05rem 1.1rem 0.85rem;
+		padding: 2.35rem 1.1rem 0.85rem;
 		border-radius: 1.05rem;
 		background: color-mix(in oklch, var(--color-global-text) 3.5%, transparent);
 		border: 1px solid color-mix(in oklch, var(--color-global-text) 6%, transparent);
+	}
+
+	.note-card:not(:has(.note-card__tags)) {
+		padding-top: 1.05rem;
 	}
 
 	.note-card--plain {
@@ -80,6 +98,55 @@ const { Content } = await render(post);
 		border: none;
 		border-radius: 0;
 		background: transparent;
+	}
+
+	.note-card__tags {
+		position: absolute;
+		top: 0.62rem;
+		left: 0.7rem;
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.35rem;
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+
+	.note-card--plain .note-card__tags {
+		position: static;
+		margin: 0 0 0.15rem;
+	}
+
+	.note-tag {
+		display: inline-flex;
+		align-items: center;
+		min-height: 1.35rem;
+		padding: 0.12rem 0.55rem;
+		border-radius: 999px;
+		font-size: 0.68rem;
+		font-weight: 700;
+		letter-spacing: 0.06em;
+		line-height: 1;
+	}
+
+	.note-tag--excerpt {
+		color: color-mix(in oklch, var(--color-brand) 72%, var(--color-global-text));
+		background: color-mix(in oklch, var(--color-brand) 12%, transparent);
+	}
+
+	.note-tag--note {
+		color: color-mix(in oklch, var(--color-global-text) 78%, transparent);
+		background: color-mix(in oklch, var(--color-global-text) 8%, transparent);
+	}
+
+	.note-tag--rec {
+		color: oklch(0.52 0.12 75);
+		background: color-mix(in oklch, oklch(0.78 0.12 75) 28%, transparent);
+	}
+
+	.note-tag--other {
+		color: var(--color-muted);
+		background: color-mix(in oklch, var(--color-global-text) 6%, transparent);
 	}
 
 	.note-card__date {

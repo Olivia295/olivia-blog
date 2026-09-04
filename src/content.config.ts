@@ -37,7 +37,14 @@ const blog = defineCollection({
 			draft: z.boolean().default(false),
 			ogImage: z.string().optional(),
 			tags: z.array(z.string()).default([]).transform(removeDupsAndLowerCase),
-			series: z.string().max(40).optional(),
+			series: z
+				.union([z.string().max(40), z.array(z.string().max(40))])
+				.optional()
+				.transform((val) => {
+					if (val == null) return [];
+					const list = Array.isArray(val) ? val : [val];
+					return [...new Set(list.map((name) => name.trim()).filter(Boolean))];
+				}),
 			publishDate: z
 				.string()
 				.or(z.date())
@@ -87,6 +94,10 @@ const post = defineCollection({
 	}),
 	schema: z.object({
 		title: titleSchema.optional(),
+		tags: z
+			.array(z.string())
+			.default([])
+			.transform((arr) => [...new Set(arr.map((tag) => tag.trim()).filter(Boolean))]),
 		description: z.string().optional(),
 		draft: z.boolean().default(false),
 		publishDate: z.iso

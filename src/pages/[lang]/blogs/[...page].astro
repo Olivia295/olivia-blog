@@ -6,6 +6,7 @@ import FloatingBack from "@/components/FloatingBack.astro";
 import PageHeader from "@/components/PageHeader.astro";
 import BlogPreview from "@/components/blog/BlogPreview.astro";
 import { getAllBlogs, getNamedSeries, groupBlogsByYear } from "@/data/blog";
+import { pageLead } from "@/data/page-copy";
 import { languages, type Lang } from "@/i18n/config";
 import { localePath, useTranslations } from "@/i18n/utils";
 import PageLayout from "@/layouts/Base.astro";
@@ -28,7 +29,7 @@ const postsBySeries = new Map<string, CollectionEntry<"blog">[]>();
 for (const name of seriesNames) {
 	postsBySeries.set(
 		name,
-		allPostsByDate.filter((post) => post.data.series?.trim() === name),
+		allPostsByDate.filter((post) => post.data.series.includes(name)),
 	);
 }
 
@@ -39,7 +40,7 @@ const meta = {
 ---
 
 <PageLayout lang={lang} meta={meta}>
-	<PageHeader title={t("blogs.title")} lead={t("blogs.lead")}>
+	<PageHeader title={t("blogs.title")} lead={pageLead("blogs", lang, t("blogs.lead"))}>
 		<a class="text-accent" href={localePath(lang, "/rss.xml")} target="_blank">
 			<span class="sr-only">{t("rss.label")}</span>
 			<Icon aria-hidden="true" class="h-6 w-6" focusable="false" name="mdi:rss" />

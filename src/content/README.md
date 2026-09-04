@@ -12,8 +12,10 @@ src/content/blog/     文章 / Blogs，对应 /blogs
 src/content/post/     短记 / Posts，对应 /posts
 src/content/site/     站点图：logo / 首页大图 / 标签页图标（覆盖源码，不改源文件）
 src/data/photos.json  画廊合集清单
-public/media/gallery/ 画廊本地图片
-public/notes/         短记配图
+public/blog/          文章配图与 BGM
+public/post/          短记配图
+public/gallery/       画廊图片
+public/site/          站点图与文案覆盖
 ```
 
 换 logo、首页大图、浏览器标签页图标：把文件丢进 **olivia-blog-content/site/**（或本地 `src/content/site/`）。
@@ -24,7 +26,9 @@ public/notes/         短记配图
 | `home-hero.jpg`（也可用 `.png` `.webp`） | 首页大图 |
 | `icon.svg`（也可用 `favicon.svg` / `favicon.png` / `icon.png`） | 浏览器标签页 |
 | `about.json` | 关于页文案与外链（**不要**写进公开仓库） |
-| `about.jpg`（可选） | 关于页头像 |
+| `about.jpg`（可选，`.png` / `.webp` 也行） | 关于页头像 |
+| `copy.json` | 各页标题下的简介小字（中/英） |
+| `series.json` | 文章系列在右侧的顺序 |
 | `site.json` | 站点名 / 作者 / 域名（覆盖公开仓库假数据） |
 
 源码默认图仍在 `public/logo.png`、`public/home-hero.jpg`、`public/icon.svg`，不会被覆盖。`npm run content:sync` 只把 content 里的图铺到 `public/site/`。

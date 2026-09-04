@@ -5,8 +5,9 @@ import PageLayout from "@/layouts/Base.astro";
 import type { Lang } from "@/i18n/config";
 import { getStaticLangPaths, localePath, useTranslations } from "@/i18n/utils";
 import { getAllBlogs } from "@/data/blog";
+import { pageLead } from "@/data/page-copy";
 import { getAllPosts } from "@/data/post";
-import { siteHeroSrc } from "@/data/site-assets";
+import { publicImageSize, siteHeroSrc } from "@/data/site-assets";
 import { siteConfig } from "@/site.config";
 import { collectionDateSort } from "@/utils/date";
 
@@ -29,6 +30,8 @@ const recentPosts = (await getAllPosts())
 	.filter((post) => !post.data.draft)
 	.sort(collectionDateSort)
 	.slice(0, RECENT_POSTS);
+
+const heroSize = await publicImageSize(siteHeroSrc);
 ---
 
 <PageLayout lang={lang} meta={{ title: t("home.title"), description: t("site.description") }}>
@@ -36,16 +39,16 @@ const recentPosts = (await getAllPosts())
 		<section class="foyer">
 			<div class="foyer-copy">
 				<h1 class="title foyer-title">{siteConfig.title}</h1>
-				<p class="foyer-tagline">{t("home.tagline")}</p>
+				<p class="foyer-tagline">{pageLead("home", lang, t("home.tagline"))}</p>
 			</div>
 			<figure class="foyer-hero">
 				<div class="foyer-hero__frame">
 					<img
 						alt={t("home.heroAlt")}
 						class="foyer-hero__img"
-						height="777"
+						height={heroSize?.height ?? undefined}
 						src={siteHeroSrc}
-						width="1240"
+						width={heroSize?.width ?? undefined}
 					/>
 				</div>
 			</figure>
@@ -91,13 +94,17 @@ const recentPosts = (await getAllPosts())
 												lang={lang}
 											/>
 										</a>
-										{post.data.series && (
-											<a
-												class="home-post__tag"
-												href={`${localePath(lang, "/blogs/")}?series=${encodeURIComponent(post.data.series)}`}
-											>
-												{post.data.series}
-											</a>
+										{post.data.series.length > 0 && (
+											<div class="home-post__tags">
+												{post.data.series.map((name) => (
+													<a
+														class="home-post__tag"
+														href={`${localePath(lang, "/blogs/")}?series=${encodeURIComponent(name)}`}
+													>
+														{name}
+													</a>
+												))}
+											</div>
 										)}
 									</article>
 								</li>
@@ -124,7 +131,7 @@ const recentPosts = (await getAllPosts())
 	.foyer {
 		display: flex;
 		flex-direction: column;
-		min-height: calc(100svh - 11.25rem);
+		gap: 1.25rem;
 		padding: 0 0 0.85rem;
 	}
 
@@ -149,55 +156,24 @@ const recentPosts = (await getAllPosts())
 
 	.foyer-hero {
 		display: flex;
-		flex: 1 1 auto;
 		align-items: center;
 		justify-content: center;
-		min-height: 12rem;
 		margin: 0;
 		background: none;
 		box-shadow: none;
-		overflow: visible;
 	}
 
 	.foyer-hero__frame {
-		position: relative;
 		width: min(100%, 22rem);
-		aspect-ratio: 4 / 3;
-		overflow: hidden;
-		border-radius: 1rem;
-		background: color-mix(in oklch, var(--color-brand) 12%, var(--color-global-bg));
-		box-shadow: 0 18px 40px color-mix(in oklch, var(--color-brand) 16%, transparent);
-	}
-
-	.foyer-hero__frame::after {
-		content: "";
-		position: absolute;
-		inset: 0;
-		z-index: 1;
-		background:
-			linear-gradient(
-				180deg,
-				transparent 42%,
-				color-mix(in oklch, var(--color-brand) 28%, transparent) 100%
-			),
-			linear-gradient(
-				90deg,
-				color-mix(in oklch, var(--color-brand) 10%, transparent),
-				transparent 40%
-			);
-		pointer-events: none;
-		mix-blend-mode: multiply;
 	}
 
 	.foyer-hero__img {
-		position: absolute;
-		inset: 0;
+		display: block;
 		width: 100%;
-		height: 100%;
-		object-fit: cover;
-		transform-origin: 40% 40%;
-		animation: Spaceship-hero-drift 22s ease-in-out infinite alternate;
-		filter: saturate(1.08) contrast(1.05);
+		height: auto;
+		border-radius: 1rem;
+		background: color-mix(in oklch, var(--color-global-text) 5%, transparent);
+		box-shadow: 0 18px 40px color-mix(in oklch, var(--color-global-text) 10%, transparent);
 	}
 
 	.home-columns {
@@ -303,9 +279,15 @@ const recentPosts = (await getAllPosts())
 		font-weight: 600;
 	}
 
+	.home-post__tags {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.35rem 0.7rem;
+		margin: 0.45rem 0 0;
+	}
+
 	.home-post__tag {
 		display: inline-block;
-		margin: 0.45rem 0 0;
 		font-size: 0.75rem;
 		font-weight: 600;
 		color: var(--color-brand);
@@ -332,10 +314,9 @@ const recentPosts = (await getAllPosts())
 	@media (min-width: 860px) {
 		.foyer {
 			display: grid;
-			grid-template-columns: minmax(18rem, 0.85fr) minmax(20rem, 1.15fr);
-			align-items: stretch;
+			grid-template-columns: minmax(16rem, 1fr) auto;
+			align-items: center;
 			gap: 2rem 2.5rem;
-			min-height: calc(100svh - 16.5rem);
 			padding: 0 0 1rem;
 		}
 
@@ -358,15 +339,11 @@ const recentPosts = (await getAllPosts())
 		}
 
 		.foyer-hero {
-			flex: none;
-			width: 100%;
-			height: auto;
-			min-height: 0;
+			justify-content: flex-end;
 		}
 
 		.foyer-hero__frame {
-			width: min(100%, 34rem);
-			aspect-ratio: 4 / 3;
+			width: min(100%, 26rem);
 		}
 
 		.home-columns {
@@ -401,10 +378,6 @@ const recentPosts = (await getAllPosts())
 	}
 
 	@media (prefers-reduced-motion: reduce) {
-		.foyer-hero__img {
-			animation: none;
-		}
-
 		.home-post:hover,
 		.home-post:active {
 			transform: none;

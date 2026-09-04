@@ -7,9 +7,7 @@ import { localePath } from "@/i18n/utils";
 export const getStaticPaths = (async () => {
 	const uniqueTags = getUniqueTags(await getAllBlogs());
 	return languages.flatMap((lang) =>
-		uniqueTags.map((tag) => ({
-			params: { lang, tag, page: undefined },
-		})),
+		uniqueTags.map((tag) => ({ params: { lang, path: tag } })),
 	);
 }) satisfies GetStaticPaths;
 

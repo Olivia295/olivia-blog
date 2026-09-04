@@ -18,16 +18,20 @@ const PORTRAIT_CANDIDATES = [
 	"about.png",
 ];
 
-function firstPortrait(): string {
-	const root = process.cwd();
+function publicExists(rel: string): boolean {
+	return existsSync(path.join(process.cwd(), "public", rel.replace(/^\/+/, "")));
+}
+
+function firstPortrait(preferred?: string): string {
+	if (preferred) {
+		const name = preferred.replace(/^\/+/, "").replace(/^site\//, "");
+		const rel = `site/${name}`;
+		if (publicExists(rel)) return `/${rel}`;
+	}
 	for (const rel of PORTRAIT_CANDIDATES) {
-		if (existsSync(path.join(root, "public", rel))) {
-			return `/${rel.replace(/^\/+/, "")}`;
-		}
+		if (publicExists(rel)) return `/${rel.replace(/^\/+/, "")}`;
 	}
-	if (existsSync(path.join(root, "public", siteLogoSrc.replace(/^\//, "")))) {
-		return siteLogoSrc;
-	}
+	if (publicExists(siteLogoSrc)) return siteLogoSrc;
 	return siteHeroSrc;
 }
 
@@ -50,6 +54,8 @@ export type ProfileCopy = {
 	portraitAlt: { zh: string; en: string };
 	facts: { zh: ProfileFact[]; en: ProfileFact[] };
 	links: ProfileLink[];
+	/** Filename in `site/`, e.g. `about.jpg`. */
+	portrait?: string;
 };
 
 const defaults: ProfileCopy = {
@@ -118,6 +124,7 @@ function mergeProfile(base: ProfileCopy, over: Partial<ProfileCopy>): ProfileCop
 			en: over.facts?.en?.length ? over.facts.en : base.facts.en,
 		},
 		links: over.links?.length ? over.links : base.links,
+		portrait: over.portrait ?? base.portrait,
 	};
 }
 
@@ -125,5 +132,5 @@ const merged = mergeProfile(defaults, loadPrivateAbout());
 
 export const profile = {
 	...merged,
-	portraitSrc: firstPortrait(),
+	portraitSrc: firstPortrait(merged.portrait),
 };

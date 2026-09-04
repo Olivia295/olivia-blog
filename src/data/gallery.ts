@@ -70,6 +70,7 @@ export function packAlbumRows(photos: Photo[]): AlbumRow[] | null {
 export type PhotoAlbum = {
 	slug: string;
 	title: string;
+	order?: number;
 	photos: Photo[];
 };
 
@@ -99,17 +100,6 @@ export function getPhotoAlbums(): PhotoAlbum[] {
 
 export function getPhotoAlbum(albumSlug: string): PhotoAlbum | undefined {
 	return getPhotoAlbums().find((album) => album.slug === albumSlug);
-}
-
-export function getPhoto(
-	albumSlug: string,
-	photoSlug: string,
-): { album: PhotoAlbum; photo: Photo; index: number } | undefined {
-	const album = getPhotoAlbum(albumSlug);
-	if (!album) return undefined;
-	const index = album.photos.findIndex((p) => p.slug === photoSlug);
-	if (index < 0) return undefined;
-	return { album, photo: album.photos[index]!, index };
 }
 
 /** Build responsive srcset for known CDNs; falls back to single URL. */

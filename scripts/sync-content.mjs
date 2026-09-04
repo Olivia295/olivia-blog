@@ -130,7 +130,7 @@ function injectMusicFrontmatter(markdown, src, title) {
 
 async function enhanceEntryFolders(contentRoot, publicKind, { withAudio = false } = {}) {
 	if (!existsSync(contentRoot)) return;
-	const publicRoot = path.join(root, "public/media", publicKind);
+	const publicRoot = path.join(root, "public", publicKind);
 	for (const entry of await readdir(contentRoot, { withFileTypes: true })) {
 		if (!entry.isDirectory() || entry.name.startsWith("_") || entry.name.startsWith(".")) continue;
 		const folder = path.join(contentRoot, entry.name);
@@ -138,7 +138,7 @@ async function enhanceEntryFolders(contentRoot, publicKind, { withAudio = false 
 		const mdFiles = files.filter((f) => f.isFile() && /\.(md|mdx)$/i.test(f.name));
 		if (!mdFiles.length) continue;
 		const slug = entry.name;
-		const publicPrefix = `/media/${publicKind}/${slug}`;
+		const publicPrefix = `/${publicKind}/${slug}`;
 		const destPublic = path.join(publicRoot, slug);
 		await mkdir(destPublic, { recursive: true });
 		const mediaFiles = files.filter(
@@ -196,6 +196,7 @@ async function buildGalleryFromFolders(galleryRoot, photosOut, mediaOut) {
 		}
 		const slug = String(meta.slug || entry.name);
 		const title = String(meta.title || entry.name);
+		const order = Number(meta.order);
 		const files = (await readdir(folder))
 			.filter((name) => IMAGE_EXT.has(path.extname(name).toLowerCase()))
 			.sort((a, b) => a.localeCompare(b, "en"));
@@ -205,7 +206,7 @@ async function buildGalleryFromFolders(galleryRoot, photosOut, mediaOut) {
 			const size = await displaySize(path.join(folder, name));
 			photos.push({
 				slug: stem,
-				src: `/media/gallery/${slug}/${name}`,
+				src: `/gallery/${slug}/${name}`,
 				alt: "",
 				...size,
 			});
@@ -221,8 +222,14 @@ async function buildGalleryFromFolders(galleryRoot, photosOut, mediaOut) {
 		for (const name of files) {
 			await cp(path.join(folder, name), path.join(dest, name));
 		}
-		albums.push({ slug, title, photos });
+		albums.push({
+			slug,
+			title,
+			order: Number.isFinite(order) ? order : 999,
+			photos,
+		});
 	}
+	albums.sort((a, b) => a.order - b.order || a.title.localeCompare(b.title, "zh"));
 	if (!albums.length) return false;
 	await mkdir(path.dirname(photosOut), { recursive: true });
 	await writeFile(photosOut, `${JSON.stringify({ albums }, null, "\t")}\n`);
@@ -266,15 +273,17 @@ await mkdir(blogDir, { recursive: true });
 await mkdir(postDir, { recursive: true });
 await writeFile(path.join(blogDir, ".gitkeep"), "");
 await writeFile(path.join(postDir, ".gitkeep"), "");
-await enhanceEntryFolders(blogDir, "blogs", { withAudio: true });
-await enhanceEntryFolders(postDir, "posts", { withAudio: false });
-await copyIfPresent(path.join(source, "post/images"), path.join(root, "public/notes"));
-await copyIfPresent(path.join(source, "notes-images"), path.join(root, "public/notes"));
+for (const dir of ["media", "notes", "blog", "post", "gallery"]) {
+	await rm(path.join(root, "public", dir), { recursive: true, force: true });
+}
+
+await enhanceEntryFolders(blogDir, "blog", { withAudio: true });
+await enhanceEntryFolders(postDir, "post", { withAudio: false });
 
 const built = await buildGalleryFromFolders(
 	path.join(source, "gallery"),
 	photosJson,
-	path.join(root, "public/media/gallery"),
+	path.join(root, "public/gallery"),
 );
 if (!built) {
 	const remotePhotos = path.join(source, "gallery/photos.json");
@@ -282,7 +291,6 @@ if (!built) {
 		await mkdir(path.dirname(photosJson), { recursive: true });
 		await cp(remotePhotos, photosJson);
 	}
-	await copyIfPresent(path.join(source, "gallery/images"), path.join(root, "public/media/gallery"));
 }
 
 await applySiteChrome(source);

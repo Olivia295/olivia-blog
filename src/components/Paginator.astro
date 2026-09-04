@@ -14,11 +14,10 @@ interface Props {
 }
 
 const { nextUrl, prevUrl, pages = [] } = Astro.props;
-const show = Boolean(prevUrl || nextUrl || pages.length > 1);
 ---
 
 {
-	show && (
+	(pages.length > 0 || prevUrl || nextUrl) && (
 		<nav class="pager" aria-label="Pagination">
 			{prevUrl ? (
 				<a class="pager__arrow" href={prevUrl.url} aria-label={prevUrl.text}>
@@ -30,18 +29,17 @@ const show = Boolean(prevUrl || nextUrl || pages.length > 1);
 				</span>
 			)}
 			{
-				pages.length > 1 &&
-					pages.map((item) =>
-						item.current ? (
-							<span class="pager__dot pager__dot--now" aria-current="page">
-								{item.number}
-							</span>
-						) : (
-							<a class="pager__dot" href={item.href}>
-								{item.number}
-							</a>
-						),
-					)
+				pages.map((item) =>
+					item.current ? (
+						<span class="pager__dot pager__dot--now" aria-current="page">
+							{item.number}
+						</span>
+					) : (
+						<a class="pager__dot" href={item.href}>
+							{item.number}
+						</a>
+					),
+				)
 			}
 			{nextUrl ? (
 				<a class="pager__arrow" href={nextUrl.url} aria-label={nextUrl.text}>

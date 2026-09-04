@@ -2,7 +2,9 @@
 import { Icon } from "astro-icon/components";
 import FloatingBack from "@/components/FloatingBack.astro";
 import PageHeader from "@/components/PageHeader.astro";
+import { pageLead } from "@/data/page-copy";
 import { profile } from "@/data/profile";
+import { publicImageSize } from "@/data/site-assets";
 import type { Lang } from "@/i18n/config";
 import { getStaticLangPaths, useTranslations } from "@/i18n/utils";
 import PageLayout from "@/layouts/Base.astro";
@@ -23,19 +25,20 @@ const role = profile.role[lang];
 const bio = profile.bio[lang];
 const portraitAlt = profile.portraitAlt[lang];
 const facts = profile.facts[lang];
+const portraitSize = await publicImageSize(profile.portraitSrc);
 ---
 
 <PageLayout lang={lang} meta={meta}>
 	<section class="about motion-fade-up">
-		<PageHeader title={t("about.title")} lead={t("about.lead")} />
+		<PageHeader title={t("about.title")} lead={pageLead("about", lang, t("about.lead"))} />
 
 		<div class="about__layout">
 			<figure class="about__portrait">
 				<img
 					src={profile.portraitSrc}
 					alt={portraitAlt}
-					width="640"
-					height="800"
+					width={portraitSize?.width ?? undefined}
+					height={portraitSize?.height ?? undefined}
 					loading="eager"
 					decoding="async"
 					class="about__portrait-img"
@@ -125,10 +128,9 @@ const facts = profile.facts[lang];
 	.about__portrait-img {
 		display: block;
 		width: 100%;
-		aspect-ratio: 4 / 5;
-		object-fit: cover;
-		object-position: center 20%;
+		height: auto;
 		border-radius: 1rem;
+		background: color-mix(in oklch, var(--color-global-text) 5%, transparent);
 	}
 
 	.about__name {
@@ -214,16 +216,24 @@ const facts = profile.facts[lang];
 
 	.about__links {
 		list-style: none;
-		margin: 0;
+		margin: 0 auto;
 		padding: 0;
-		display: grid;
-		grid-template-columns: 1fr 1fr;
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: center;
 		gap: 0.6rem;
+		width: 100%;
+	}
+
+	.about__links > li {
+		flex: 1 1 calc(50% - 0.3rem);
+		max-width: 16rem;
 	}
 
 	@media (min-width: 720px) {
-		.about__links {
-			grid-template-columns: repeat(4, minmax(0, 1fr));
+		.about__links > li {
+			flex: 0 1 13.5rem;
+			max-width: 14.5rem;
 		}
 	}
 

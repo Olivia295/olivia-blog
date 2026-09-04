@@ -1,0 +1,22 @@
+---
+import { getPhotoAlbums } from "@/data/gallery";
+import { languages, type Lang } from "@/i18n/config";
+import { localePath } from "@/i18n/utils";
+
+export function getStaticPaths() {
+	const albums = getPhotoAlbums();
+	return languages.flatMap((lang) => [
+		{ params: { lang, path: undefined } },
+		...albums.flatMap((album) => [
+			{ params: { lang, path: album.slug } },
+			...album.photos.map((photo) => ({
+				params: { lang, path: `${album.slug}/${photo.slug}` },
+			})),
+		]),
+	]);
+}
+
+const lang = Astro.params.lang as Lang;
+const album = Astro.params.path?.split("/")[0];
+return Astro.redirect(localePath(lang, album ? `/gallery/${album}/` : "/gallery/"), 301);
+---

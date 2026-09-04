@@ -1,5 +1,6 @@
 import { existsSync } from "node:fs";
 import path from "node:path";
+import sharp from "sharp";
 
 const root = process.cwd();
 const bare = process.env.BARE === "1";
@@ -66,4 +67,23 @@ export function siteIconMime(src = siteIconSrc): string {
 /** Filesystem path for astro-webmanifest (`public/...`). */
 export function siteIconFile(src = siteIconSrc): string {
 	return path.join("public", src.replace(/^\/+/, ""));
+}
+
+/** Display size after EXIF orientation, for `width`/`height` on `<img>`. */
+export async function publicImageSize(
+	src: string,
+): Promise<{ width: number; height: number } | undefined> {
+	const file = path.join(root, "public", src.replace(/^\/+/, ""));
+	if (!existsSync(file)) return undefined;
+	try {
+		const meta = await sharp(file).metadata();
+		if (!meta.width || !meta.height) return undefined;
+		const swapped = (meta.orientation ?? 1) >= 5 && (meta.orientation ?? 1) <= 8;
+		return {
+			width: swapped ? meta.height : meta.width,
+			height: swapped ? meta.width : meta.height,
+		};
+	} catch {
+		return undefined;
+	}
 }

@@ -1,36 +1,78 @@
 ---
 import type { CollectionEntry } from "astro:content";
-import type { GetStaticPaths, Page } from "astro";
 import { Icon } from "astro-icon/components";
 import FloatingBack from "@/components/FloatingBack.astro";
 import PageHeader from "@/components/PageHeader.astro";
-import Post from "@/components/post/Post.astro";
 import Pagination from "@/components/Paginator.astro";
-import { getAllPosts } from "@/data/post";
+import Post from "@/components/post/Post.astro";
+import { pageLead } from "@/data/page-copy";
+import { getAllBlogs } from "@/data/blog";
+import { getAllPosts, POST_PAGE_SIZE, postsHref } from "@/data/post";
+import {
+	POST_TAB_IDS,
+	postBelongsToTab,
+	postTabLabel,
+	type PostTabId,
+} from "@/data/post-tags";
 import { languages, type Lang } from "@/i18n/config";
 import { localePath, useTranslations } from "@/i18n/utils";
 import PageLayout from "@/layouts/Base.astro";
 import { collectionDateSort } from "@/utils/date";
 
-export const getStaticPaths = (async ({ paginate }) => {
-	const MAX_NOTES_PER_PAGE = 10;
-	const allNotes = await getAllPosts();
-	const sorted = allNotes.sort(collectionDateSort);
-	return languages.flatMap((lang) =>
-		paginate(sorted, {
-			params: { lang },
-			pageSize: MAX_NOTES_PER_PAGE,
+export async function getStaticPaths() {
+	const reserved = new Set<string>([...POST_TAB_IDS, "rss.xml"]);
+	const allNotes = (await getAllPosts()).sort(collectionDateSort);
+	const tabPaths = languages.flatMap((lang) =>
+		POST_TAB_IDS.flatMap((filter) => {
+			const list = allNotes.filter((entry) => postBelongsToTab(entry.data.tags, filter));
+			const lastPage = Math.max(1, Math.ceil(list.length / POST_PAGE_SIZE));
+			return Array.from({ length: lastPage }, (_, i) => {
+				const n = i + 1;
+				const page =
+					filter === "all" ? (n === 1 ? undefined : String(n)) : n === 1 ? filter : `${filter}/${n}`;
+				return {
+					params: { lang, page },
+					props: {
+						filter,
+						currentPage: n,
+						lastPage,
+						entries: list.slice(i * POST_PAGE_SIZE, (i + 1) * POST_PAGE_SIZE),
+					},
+				};
+			});
 		}),
 	);
-}) satisfies GetStaticPaths;
+	const blogs = await getAllBlogs();
+	const redirects = languages.flatMap((lang) =>
+		blogs
+			.filter((blog) => !reserved.has(blog.id) && !/^\d+$/.test(blog.id))
+			.map((blog) => ({
+				params: { lang, page: blog.id },
+				props: {
+					filter: "all" as const,
+					currentPage: 1,
+					lastPage: 1,
+					entries: [] as CollectionEntry<"post">[],
+					redirectTo: localePath(lang, `/blogs/${blog.id}/`),
+				},
+			})),
+	);
+	return [...tabPaths, ...redirects];
+}
 
 interface Props {
-	page: Page<CollectionEntry<"post">>;
+	filter: PostTabId;
+	currentPage: number;
+	lastPage: number;
+	entries: CollectionEntry<"post">[];
+	redirectTo?: string;
 }
 
 const lang = Astro.params.lang as Lang;
 const t = useTranslations(lang);
-const { page } = Astro.props;
+const { filter, currentPage, lastPage, entries, redirectTo } = Astro.props;
+if (redirectTo) return Astro.redirect(redirectTo, 301);
+const active = filter;
 
 const meta = {
 	description: t("posts.description"),
@@ -38,24 +80,24 @@ const meta = {
 };
 
 const paginationProps = {
-	...(page.url.prev && {
+	...(currentPage > 1 && {
 		prevUrl: {
 			text: t("pagination.prev"),
-			url: page.url.prev,
+			url: postsHref(lang, active, currentPage - 1),
 		},
 	}),
-	...(page.url.next && {
+	...(currentPage < lastPage && {
 		nextUrl: {
 			text: t("pagination.next"),
-			url: page.url.next,
+			url: postsHref(lang, active, currentPage + 1),
 		},
 	}),
-	pages: Array.from({ length: page.lastPage }, (_, i) => {
+	pages: Array.from({ length: lastPage }, (_, i) => {
 		const n = i + 1;
 		return {
 			number: n,
-			current: n === page.currentPage,
-			href: n === 1 ? localePath(lang, "/posts/") : localePath(lang, `/posts/${n}/`),
+			current: n === currentPage,
+			href: postsHref(lang, active, n),
 		};
 	}),
 };
@@ -63,18 +105,35 @@ const paginationProps = {
 
 <PageLayout lang={lang} meta={meta}>
 	<section>
-		<PageHeader title={t("posts.title")} lead={t("posts.lead")}>
+		<PageHeader title={t("posts.title")} lead={pageLead("posts", lang, t("posts.lead"))}>
 			<a class="text-accent" href={localePath(lang, "/posts/rss.xml")} target="_blank">
 				<span class="sr-only">{t("rss.label")}</span>
 				<Icon aria-hidden="true" class="h-6 w-6" focusable="false" name="mdi:rss" />
 			</a>
 		</PageHeader>
+
+		<nav class="post-tabs" aria-label={t("posts.title")}>
+			<div class="post-tabs__bar">
+				{
+					POST_TAB_IDS.map((id) => (
+						<a
+							class:list={["post-tabs__item", { "is-on": active === id }]}
+							href={postsHref(lang, id, 1)}
+							aria-current={active === id ? "page" : undefined}
+						>
+							{postTabLabel(id, lang)}
+						</a>
+					))
+				}
+			</div>
+		</nav>
+
 		{
-			page.data.length === 0 ? (
+			entries.length === 0 ? (
 				<p class="text-muted">{t("posts.empty")}</p>
 			) : (
 				<ul class="note-feed motion-stagger mt-2 space-y-6 text-start" role="list">
-					{page.data.map((entry) => (
+					{entries.map((entry) => (
 						<li>
 							<Post post={entry} lang={lang} />
 						</li>
@@ -86,3 +145,52 @@ const paginationProps = {
 	</section>
 	<FloatingBack />
 </PageLayout>
+
+<style>
+	.post-tabs {
+		display: flex;
+		justify-content: center;
+		margin: 0 0 1.6rem;
+	}
+
+	.post-tabs__bar {
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: center;
+		gap: 0.2rem;
+		padding: 0.28rem;
+		border-radius: 999px;
+		background: color-mix(in oklch, var(--color-global-text) 6%, transparent);
+	}
+
+	.post-tabs__item {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		min-height: 2.05rem;
+		padding: 0.35rem 1.05rem;
+		border-radius: 999px;
+		color: inherit;
+		text-decoration: none;
+		font-size: 0.82rem;
+		font-weight: 650;
+		letter-spacing: 0.02em;
+		opacity: 0.5;
+		transition:
+			opacity 0.15s ease,
+			background 0.15s ease,
+			color 0.15s ease,
+			box-shadow 0.15s ease;
+	}
+
+	.post-tabs__item:hover {
+		opacity: 0.85;
+	}
+
+	.post-tabs__item.is-on {
+		opacity: 1;
+		color: var(--color-brand);
+		background: var(--color-global-bg);
+		box-shadow: 0 1px 8px color-mix(in oklch, var(--color-global-text) 10%, transparent);
+	}
+</style>

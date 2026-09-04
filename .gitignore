@@ -36,12 +36,12 @@ src/content/post/**
 !src/content/post/.gitkeep
 src/content/site/**
 src/data/photos.json
-public/notes/**
+public/blog/**
+public/post/**
 public/gallery/**
-public/media/gallery/**
-public/media/blogs/**
-public/media/posts/**
 public/site/
+public/notes/**
+public/media/**
 .content-src/
 
 # editor junk
