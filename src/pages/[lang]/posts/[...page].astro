@@ -60,18 +60,18 @@ export async function getStaticPaths() {
 	return [...tabPaths, ...redirects];
 }
 
-interface Props {
+type PageProps = {
 	filter: PostTabId;
 	currentPage: number;
 	lastPage: number;
 	entries: CollectionEntry<"post">[];
-	redirectTo?: string;
-}
+	redirectTo?: string | undefined;
+};
 
 const lang = Astro.params.lang as Lang;
 const t = useTranslations(lang);
-const { filter, currentPage, lastPage, entries, redirectTo } = Astro.props;
-if (redirectTo) return Astro.redirect(redirectTo, 301);
+const { filter, currentPage, lastPage, entries, redirectTo } = Astro.props as PageProps;
+if (redirectTo) return Astro.redirect(encodeURI(redirectTo), 301);
 const active = filter;
 
 const meta = {

@@ -1,6 +1,5 @@
 import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
-import { siteConfig } from "@/site.config";
 import { siteHeroSrc, siteLogoSrc } from "@/data/site-assets";
 
 /**
@@ -55,7 +54,7 @@ export type ProfileCopy = {
 	facts: { zh: ProfileFact[]; en: ProfileFact[] };
 	links: ProfileLink[];
 	/** Filename in `site/`, e.g. `about.jpg`. */
-	portrait?: string;
+	portrait?: string | undefined;
 };
 
 const defaults: ProfileCopy = {

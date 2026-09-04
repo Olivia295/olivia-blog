@@ -2,31 +2,33 @@ import musicManifest from "./music.json";
 import { resolveMediaUrl } from "@/utils/media";
 
 export type Song = {
-	id?: string;
+	id?: string | undefined;
 	artist: string;
 	title: string;
 	src: string;
 };
 
+type MusicRef = {
+	id?: string | undefined;
+	src?: string | undefined;
+	title?: string | undefined;
+	artist?: string | undefined;
+};
+
 /** Frontmatter `music` shapes after zod parse. */
-export type PostMusicConfig =
-	| boolean
-	| {
-			id?: string;
-			src?: string;
-			title?: string;
-			artist?: string;
-	  }
-	| {
-			id?: string;
-			src?: string;
-			title?: string;
-			artist?: string;
-	  }[];
+export type PostMusicConfig = boolean | MusicRef | MusicRef[];
 
 export function getSongs(): Song[] {
-	return musicManifest.songs.map((song) => ({
-		...song,
+	const songs = (musicManifest.songs ?? []) as Array<{
+		id?: string;
+		artist?: string;
+		title?: string;
+		src: string;
+	}>;
+	return songs.map((song) => ({
+		id: song.id,
+		artist: song.artist ?? "Unknown Artist",
+		title: song.title ?? "Unknown",
 		src: resolveMediaUrl(song.src),
 	}));
 }
@@ -44,9 +46,8 @@ export function getSongById(id: string): Song | undefined {
  * - array → several of the above
  */
 export function resolvePostMusic(music: PostMusicConfig | undefined): Song[] | null {
-	if (!music) return null;
+	if (music === false || music == null) return null;
 	if (music === true) return getSongs();
-	if (music === false) return null;
 
 	const refs = Array.isArray(music) ? music : [music];
 	const songs: Song[] = [];

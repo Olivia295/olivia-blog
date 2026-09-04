@@ -20,7 +20,7 @@ const tags = getUniqueTagsWithCount(await getAllBlogs());
 				{t("tags.more")}
 				<span aria-hidden="true"> →</span>
 			</button>
-			<dialog class="tag-picker" aria-labelledby="tag-picker-title" onclick="if (event.target === this) this.close()">
+			<dialog class="tag-picker" data-tag-picker aria-labelledby="tag-picker-title">
 				<div class="tag-picker__panel">
 					<header class="tag-picker__head">
 						<h2 id="tag-picker-title" class="tag-picker__title">
@@ -50,6 +50,14 @@ const tags = getUniqueTagsWithCount(await getAllBlogs());
 		</>
 	)
 }
+
+<script>
+	document.querySelectorAll<HTMLDialogElement>("[data-tag-picker]").forEach((dialog) => {
+		dialog.addEventListener("click", (click) => {
+			if (click.target === dialog) dialog.close();
+		});
+	});
+</script>
 
 <style>
 	.tag-more {

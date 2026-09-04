@@ -1,16 +1,15 @@
 ---
 import type { GetStaticPaths } from "astro";
 import { getAllBlogs, getUniqueTags } from "@/data/blog";
-import { languages, type Lang } from "@/i18n/config";
-import { localePath } from "@/i18n/utils";
+import { languages } from "@/i18n/config";
 
 export const getStaticPaths = (async () => {
 	const uniqueTags = getUniqueTags(await getAllBlogs());
 	return languages.flatMap((lang) =>
-		uniqueTags.map((tag) => ({ params: { lang, path: tag } })),
+		uniqueTags.map((tag) => ({
+			params: { lang, path: tag },
+			redirect: encodeURI(`/${lang}/blogs/`),
+		})),
 	);
 }) satisfies GetStaticPaths;
-
-const lang = Astro.params.lang as Lang;
-return Astro.redirect(localePath(lang, "/blogs/"), 301);
 ---

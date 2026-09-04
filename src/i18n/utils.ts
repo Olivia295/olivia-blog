@@ -3,7 +3,7 @@ import { ui, type UIKey } from "./ui";
 
 export function useTranslations(lang: Lang) {
 	return function t(key: UIKey, vars?: Record<string, string | number>): string {
-		let text = ui[lang][key] ?? ui[defaultLang][key] ?? key;
+		let text: string = ui[lang][key] ?? ui[defaultLang][key] ?? key;
 		if (vars) {
 			for (const [name, value] of Object.entries(vars)) {
 				text = text.replaceAll(`{${name}}`, String(value));

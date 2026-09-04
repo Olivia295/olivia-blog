@@ -1,6 +1,6 @@
 ---
 import { render } from "astro:content";
-import type { GetStaticPaths, InferGetStaticPropsType } from "astro";
+import type { GetStaticPaths } from "astro";
 import { getAllBlogs } from "@/data/blog";
 import { languages, type Lang } from "@/i18n/config";
 import PostLayout from "@/layouts/BlogPost.astro";
@@ -14,8 +14,6 @@ export const getStaticPaths = (async () => {
 		})),
 	);
 }) satisfies GetStaticPaths;
-
-type Props = InferGetStaticPropsType<typeof getStaticPaths>;
 
 const lang = Astro.params.lang as Lang;
 const { post } = Astro.props;

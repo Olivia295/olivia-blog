@@ -8,7 +8,7 @@ import WebMentions from "@/components/blog/webmentions/index.astro";
 import MusicPlayer from "@/components/MusicPlayer.astro";
 import { resolvePostMusic } from "@/data/music";
 import { defaultLang, type Lang } from "@/i18n/config";
-import { getLangFromUrl, localePath, useTranslations } from "@/i18n/utils";
+import { getLangFromUrl } from "@/i18n/utils";
 
 import BaseLayout from "./Base.astro";
 
@@ -19,7 +19,6 @@ interface Props {
 
 const { post, lang: langProp } = Astro.props;
 const lang = langProp ?? getLangFromUrl(Astro.url) ?? defaultLang;
-const t = useTranslations(lang);
 const { ogImage, title, description, updatedDate, publishDate, music } = post.data;
 const socialImage = ogImage ?? `/og-image/${post.id}.png`;
 const articleDate = updatedDate?.toISOString() ?? publishDate.toISOString();
