@@ -1,5 +1,5 @@
 ---
-import { buildPhotoSrcSet, photoFullUrl, type Photo } from "@/data/gallery";
+import { buildPhotoSrcSet, type Photo, photoFullUrl } from "@/data/gallery";
 
 type Props = {
 	image: Photo;
@@ -11,21 +11,32 @@ const full = photoFullUrl(image.src, 1400);
 const srcset = buildPhotoSrcSet(image.src, [600, 900, 1400]);
 ---
 
-<figure>
-	<img
-		src={full}
-		srcset={srcset}
-		sizes={sizes}
-		alt={image.alt}
-		width={image.width}
-		height={image.height}
-		loading="lazy"
-		decoding="async"
-	/>
+<figure class="photo-figure">
+	<a
+		href={full}
+		data-photo-src={full}
+		data-photo-alt={image.alt}
+		aria-label={image.alt || image.slug}
+	>
+		<img
+			src={image.previewSrc ?? full}
+			srcset={srcset}
+			sizes={sizes}
+			alt={image.alt}
+			width={image.width}
+			height={image.height}
+			loading="lazy"
+			decoding="async"
+		/>
+	</a>
 	{image.alt ? <figcaption>{image.alt}</figcaption> : null}
 </figure>
 
 <style>
+	a {
+		display: block;
+	}
+
 	figure {
 		margin: 0;
 	}
@@ -34,13 +45,9 @@ const srcset = buildPhotoSrcSet(image.src, [600, 900, 1400]);
 		display: block;
 		width: 100%;
 		height: auto;
-		border-radius: 0.9rem;
-		background: color-mix(in oklch, var(--color-global-text) 6%, transparent);
 	}
 
 	figcaption {
 		margin-top: 0.45rem;
-		font-size: 0.8rem;
-		color: var(--color-muted);
 	}
 </style>

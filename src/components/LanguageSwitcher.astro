@@ -1,5 +1,5 @@
 ---
-import { languageLabels, languages, type Lang } from "@/i18n/config";
+import { type Lang, languageLabels, languages } from "@/i18n/config";
 import { switchLocalePath } from "@/i18n/utils";
 
 interface Props {
@@ -35,6 +35,11 @@ const pathname = Astro.url.pathname;
 		link.addEventListener("click", () => {
 			const locale = link.dataset.setLocale;
 			if (!locale) return;
+			// Read at activation time: the series filter can change without navigation.
+			const target = new URL(link.href);
+			target.search = window.location.search;
+			target.hash = window.location.hash;
+			link.href = target.href;
 			// 1 year
 			document.cookie = `locale=${locale}; path=/; max-age=31536000; samesite=lax`;
 		});
@@ -44,42 +49,17 @@ const pathname = Astro.url.pathname;
 <style>
 	.lang-switch {
 		display: inline-flex;
-		flex-shrink: 0;
-		align-items: center;
 		gap: 0;
-		margin: 0;
-		font-size: 0.62rem;
-		font-weight: 600;
-		line-height: 1;
+		align-items: center;
 	}
-
 	.lang-link {
-		padding: 0.22rem 0.22rem;
-		border-radius: 0.3rem;
-		opacity: 0.55;
-		text-decoration: none;
-		color: inherit;
-		min-width: 0;
-		text-align: center;
+		min-width: 32px;
+		min-height: 44px;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
 	}
-
-	@media (min-width: 640px) {
-		.lang-switch {
-			margin-inline-start: 0.2rem;
-			font-size: 0.72rem;
-		}
-		.lang-link {
-			padding: 0.25rem 0.35rem;
-		}
-	}
-
-	.lang-link:hover {
-		opacity: 0.9;
-	}
-
 	.lang-link.active {
-		opacity: 1;
-		background: color-mix(in oklch, var(--color-global-text) 8%, transparent);
-		color: var(--color-accent);
+		text-underline-offset: 5px;
 	}
 </style>

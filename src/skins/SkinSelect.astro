@@ -1,0 +1,48 @@
+---
+import { settings } from "@/data/settings";
+import type { Lang } from "@/i18n/config";
+import { skins, findSkin } from "./registry";
+interface Props {
+	lang: Lang;
+}
+const { lang } = Astro.props;
+const defaultLabel = findSkin(settings.defaultSkin)!.label[lang];
+---
+
+<section class="skin-preference" aria-labelledby="skin-label">
+	<label id="skin-label" for="skin-select">{lang === "zh" ? "外观" : "Appearance"}</label>
+	<select id="skin-select" aria-describedby="skin-description" disabled>
+		<option value=""
+			>{
+				lang === "zh" ? `跟随站点默认（${defaultLabel}）` : `Site default (${defaultLabel})`
+			}</option
+		>
+		{skins.map((skin) => <option value={skin.id}>{skin.label[lang]}</option>)}
+	</select>
+	<p id="skin-description">
+		{
+			lang === "zh"
+				? "选择喜欢的外观，此浏览器会记住你的选择。"
+				: "Choose a look. This browser will remember your preference."
+		}
+	</p>
+	<noscript
+		>{
+			lang === "zh" ? "启用 JavaScript 后可切换外观。" : "Enable JavaScript to change appearance."
+		}</noscript
+	>
+</section>
+<script>
+	const select = document.querySelector<HTMLSelectElement>("#skin-select");
+	if (select) {
+		select.disabled = false;
+		const sync = () => {
+			select.value = document.documentElement.dataset.skinPreference || "";
+		};
+		sync();
+		document.addEventListener("skin-applied", sync);
+		select.addEventListener("change", () =>
+			document.dispatchEvent(new CustomEvent("skin-change", { detail: { skin: select.value } })),
+		);
+	}
+</script>

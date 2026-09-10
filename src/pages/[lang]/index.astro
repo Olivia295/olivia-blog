@@ -1,386 +1,222 @@
 ---
+import SkinSlot from "@/skins/SkinSlot.astro";
 import FormattedDate from "@/components/FormattedDate.astro";
-import Post from "@/components/post/Post.astro";
-import PageLayout from "@/layouts/Base.astro";
+import { getAllBlogs } from "@/data/blog";
+import { notePreview } from "@/data/note-preview";
+import { getAllPosts } from "@/data/post";
+import { resolvePostTags } from "@/data/post-tags";
+import { profile } from "@/data/profile";
+import { settings } from "@/data/settings";
+import { publicImageSize, siteHeroSrc } from "@/data/site-assets";
+import { seriesHref, seriesLabel } from "@/data/site-series";
+import { contentDate, sortTimeline } from "@/data/timeline";
 import type { Lang } from "@/i18n/config";
 import { getStaticLangPaths, localePath, useTranslations } from "@/i18n/utils";
-import { getAllBlogs } from "@/data/blog";
-import { pageLead } from "@/data/page-copy";
-import { getAllPosts } from "@/data/post";
-import { publicImageSize, siteHeroSrc } from "@/data/site-assets";
+import PageLayout from "@/layouts/Base.astro";
 import { siteConfig } from "@/site.config";
-import { collectionDateSort } from "@/utils/date";
-
 export function getStaticPaths() {
 	return getStaticLangPaths();
 }
-
 const lang = Astro.params.lang as Lang;
 const t = useTranslations(lang);
-
-const RECENT_BLOGS = 3;
-const RECENT_POSTS = 3;
-
-const recentBlogs = (await getAllBlogs())
-	.filter((blog) => !blog.data.draft)
-	.sort(collectionDateSort)
-	.slice(0, RECENT_BLOGS);
-
-const recentPosts = (await getAllPosts())
-	.filter((post) => !post.data.draft)
-	.sort(collectionDateSort)
-	.slice(0, RECENT_POSTS);
-
-const heroSize = await publicImageSize(siteHeroSrc);
+const blogs = sortTimeline(
+	(await getAllBlogs())
+		.filter((e) => !e.data.draft)
+		.map((blog) => ({ key: blog.id, date: contentDate(blog.data.publishDate), blog })),
+).slice(0, settings.home.articles);
+const posts = sortTimeline(
+	(await getAllPosts())
+		.filter((e) => !e.data.draft)
+		.map((post) => ({ key: post.id, date: contentDate(post.data.publishDate), post })),
+).slice(0, settings.home.notes);
+const notes = await Promise.all(
+	posts.map(async (entry) => ({
+		...entry,
+		preview: await notePreview(entry.post.body ?? "", entry.post.id),
+	})),
+);
+const portraitSize = await publicImageSize(siteHeroSrc);
+const heroAlt =
+	settings.home.portraitAlt[lang] ||
+	(siteHeroSrc === "/defaults/portrait.svg"
+		? lang === "zh"
+			? "小小飞船的窗景插画"
+			: "An illustrated spaceship window"
+		: lang === "zh"
+			? `${profile.name} 的个人图片`
+			: `A personal picture of ${profile.name}`);
+const showNotes = settings.sections.posts && (!settings.sections.hideEmpty || notes.length > 0);
+const showBlogs = settings.sections.blogs && (!settings.sections.hideEmpty || blogs.length > 0);
+const empty =
+	lang === "zh"
+		? "这里还很安静，新的分享会慢慢到来。"
+		: "It’s quiet here. New stories will arrive in time.";
 ---
 
-<PageLayout lang={lang} meta={{ title: t("home.title"), description: t("site.description") }}>
-	<div class="home-stage">
-		<section class="foyer">
-			<div class="foyer-copy">
-				<h1 class="title foyer-title">{siteConfig.title}</h1>
-				<p class="foyer-tagline">{pageLead("home", lang, t("home.tagline"))}</p>
-			</div>
-			<figure class="foyer-hero">
-				<div class="foyer-hero__frame">
-					<img
-						alt={t("home.heroAlt")}
-						class="foyer-hero__img"
-						height={heroSize?.height ?? undefined}
-						src={siteHeroSrc}
-						width={heroSize?.width ?? undefined}
-					/>
-				</div>
-			</figure>
-		</section>
-
-		<div class="home-columns">
-			<section class="home-feed home-feed--posts" aria-labelledby="home-posts-heading">
-				<h2 id="home-posts-heading" class="home-heading">{t("home.recentPosts")}</h2>
-				{
-					recentPosts.length === 0 ? (
-						<p class="home-empty">{t("posts.empty")}</p>
-					) : (
-						<ul class="home-notes" role="list">
-							{recentPosts.map((post) => (
-								<li>
-									<Post post={post} lang={lang} plain />
-								</li>
-							))}
-						</ul>
-					)
-				}
-				<a class="home-more" href={localePath(lang, "/posts/")}>
-					{t("home.viewAllPosts")}
-					<span aria-hidden="true">→</span>
-				</a>
-			</section>
-
-			<section class="home-feed home-feed--blogs" aria-labelledby="home-blogs-heading">
-				<h2 id="home-blogs-heading" class="home-heading">{t("home.recentBlogs")}</h2>
-				{
-					recentBlogs.length === 0 ? (
-						<p class="home-empty">{t("blogs.empty")}</p>
-					) : (
-						<ul class="home-posts" role="list">
-							{recentBlogs.map((post) => (
-								<li>
-									<article class="home-post">
-										<a class="home-post__hit" href={localePath(lang, `/blogs/${post.id}/`)}>
-											<span class="home-post__title">{post.data.title}</span>
-											<FormattedDate
-												class="home-post__date"
-												date={post.data.publishDate}
-												lang={lang}
-											/>
-										</a>
-										{post.data.series.length > 0 && (
-											<div class="home-post__tags">
-												{post.data.series.map((name) => (
-													<a
-														class="home-post__tag"
-														href={`${localePath(lang, "/blogs/")}?series=${encodeURIComponent(name)}`}
-													>
-														{name}
-													</a>
+<PageLayout home lang={lang} meta={{ title: t("home.title"), description: siteConfig.description }}>
+	<section class="ship-window" aria-labelledby="home-name">
+		<SkinSlot position="home-background" lang={lang} />
+		<div class="foyer-copy">
+			<SkinSlot position="home-eyebrow" lang={lang} />
+			<h1 id="home-name">
+				{lang === "zh" ? "你好，我是" : "Hello, I’m"}<br />{profile.name}<span aria-hidden="true"
+					>.</span
+				>
+			</h1>
+			<p>{settings.intro[lang]}</p>
+			{
+				settings.sections.about && (
+					<a class="welcome-link" href={localePath(lang, "/about/")}>
+						{lang === "zh" ? "很高兴你来做客" : "Make yourself at home"}{" "}
+						<span aria-hidden="true">↗</span>
+					</a>
+				)
+			}
+		</div>
+		<figure class="hero-portrait">
+			<img
+				src={siteHeroSrc}
+				width={portraitSize?.width}
+				height={portraitSize?.height}
+				alt={heroAlt}
+				fetchpriority="high"
+				decoding="async"
+			/>
+		</figure>
+		<SkinSlot position="home-status" lang={lang} />
+	</section>
+	<section
+		class="recent-columns"
+		id="recent-heading"
+		aria-label={lang === "zh" ? "最近的分享" : "Recent sharing"}
+	>
+		{
+			showNotes && (
+				<section class="recent-column recent-notes" aria-labelledby="notes-heading">
+					<div class="section-heading">
+						<>
+							<h2 id="notes-heading">{lang === "zh" ? "最近短记" : "Recent notes"}</h2>
+							<span>MOMENTS / 01</span>
+						</>
+					</div>
+					{notes.length ? (
+						<ol class="recent-list" role="list">
+							{notes.map(({ post, date, preview }) => (
+								<li class="log-entry note-preview" data-kind="post" data-date={date?.toISOString()}>
+									<article class="note-card--preview">
+										<div class="preview-tags">
+											{resolvePostTags(post.data.tags, lang)
+												.slice(0, 2)
+												.map((tag) => (
+													<span>{tag.label}</span>
 												))}
+										</div>
+										<p class="note-preview-text">
+											{preview.text ||
+												(lang === "zh" ? "用照片记下的片刻。" : "A moment in photographs.")}
+										</p>
+										{preview.photos.length > 0 && (
+											<div class="preview-photo-row">
+												<a
+													class="preview-photo"
+													href={preview.photos[0]!.src}
+													data-photo-src={preview.photos[0]!.src}
+													data-photo-alt={preview.photos[0]!.alt}
+													aria-label={
+														lang === "zh"
+															? `查看短记照片，共 ${preview.photos.length} 张`
+															: `View note photo, ${preview.photos.length} in total`
+													}
+												>
+													<img
+														src={preview.photos[0]!.src}
+														alt={preview.photos[0]!.alt}
+														width="96"
+														height="96"
+														loading="lazy"
+													/>
+												</a>
+												<a class="photo-count" href={localePath(lang, `/posts/#post-${post.id}`)}>
+													{lang === "zh"
+														? `${preview.photos.length} 张照片`
+														: `${preview.photos.length} photos`}{" "}
+													<span aria-hidden="true">↗</span>
+												</a>
 											</div>
 										)}
+										<div class="preview-meta">
+											<FormattedDate date={post.data.publishDate} lang={lang} />
+											<a class="preview-detail" href={localePath(lang, `/posts/#post-${post.id}`)}>
+												{lang === "zh" ? "阅读短记" : "Read note"} <span aria-hidden="true">↗</span>
+											</a>
+										</div>
 									</article>
 								</li>
 							))}
-						</ul>
-					)
-				}
-				<a class="home-more" href={localePath(lang, "/blogs/")}>
-					{t("home.viewAllBlogs")}
-					<span aria-hidden="true">→</span>
-				</a>
-			</section>
-		</div>
-	</div>
+						</ol>
+					) : (
+						<p class="recent-empty">{empty}</p>
+					)}
+					<a class="home-more" href={localePath(lang, "/posts/")}>
+						{lang === "zh" ? "全部短记" : "All notes"} →
+					</a>
+				</section>
+			)
+		}
+		{
+			showBlogs && (
+				<section class="recent-column recent-articles" aria-labelledby="articles-heading">
+					<div class="section-heading">
+						<>
+							<h2 id="articles-heading">{lang === "zh" ? "最近文章" : "Recent writing"}</h2>
+							<span>WRITING / 02</span>
+						</>
+					</div>
+					{blogs.length ? (
+						<ol class="recent-list" role="list">
+							{blogs.map(({ blog, date }) => (
+								<li
+									class="log-entry article-preview"
+									data-kind="blog"
+									data-date={date?.toISOString()}
+								>
+									<article>
+										<h3>
+											<a href={localePath(lang, `/blogs/${blog.id}/`)}>
+												{blog.data.title} <span aria-hidden="true">↗</span>
+											</a>
+										</h3>
+										<FormattedDate date={blog.data.publishDate} lang={lang} />
+										<div class="preview-tags">
+											{blog.data.series.slice(0, 3).map((name) => (
+												<a href={seriesHref(name, lang)}>{seriesLabel(name, lang)}</a>
+											))}
+											{blog.data.series.length > 3 && (
+												<span
+													aria-label={
+														lang === "zh"
+															? `还有 ${blog.data.series.length - 3} 个系列`
+															: `${blog.data.series.length - 3} more series`
+													}
+												>
+													+{blog.data.series.length - 3}
+												</span>
+											)}
+										</div>
+									</article>
+								</li>
+							))}
+						</ol>
+					) : (
+						<p class="recent-empty">{empty}</p>
+					)}
+					<a class="home-more" href={localePath(lang, "/blogs/")}>
+						{lang === "zh" ? "全部文章" : "All writing"} →
+					</a>
+				</section>
+			)
+		}
+		{!showBlogs && !showNotes && <p class="recent-empty">{empty}</p>}
+	</section>
+	<SkinSlot position="home-controls" lang={lang} />
 </PageLayout>
-
-<style>
-	.home-stage {
-		display: flex;
-		flex-direction: column;
-		padding-bottom: 2rem;
-	}
-
-	.foyer {
-		display: flex;
-		flex-direction: column;
-		gap: 1.25rem;
-		padding: 0 0 0.85rem;
-	}
-
-	.foyer-copy {
-		flex-shrink: 0;
-	}
-
-	.foyer-title {
-		margin-bottom: 0.28rem;
-		font-size: 1.35rem;
-		line-height: 1.2;
-		white-space: nowrap;
-	}
-
-	.foyer-tagline {
-		margin: 0 0 0.85rem;
-		max-width: 22rem;
-		font-size: 0.9rem;
-		line-height: 1.55;
-		opacity: 0.78;
-	}
-
-	.foyer-hero {
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		margin: 0;
-		background: none;
-		box-shadow: none;
-	}
-
-	.foyer-hero__frame {
-		width: min(100%, 22rem);
-	}
-
-	.foyer-hero__img {
-		display: block;
-		width: 100%;
-		height: auto;
-		border-radius: 1rem;
-		background: color-mix(in oklch, var(--color-global-text) 5%, transparent);
-		box-shadow: 0 18px 40px color-mix(in oklch, var(--color-global-text) 10%, transparent);
-	}
-
-	.home-columns {
-		display: flex;
-		flex-direction: column;
-		gap: 0;
-	}
-
-	.home-feed {
-		display: flex;
-		flex-direction: column;
-		padding-top: 1.75rem;
-		border-top: 1px solid color-mix(in oklch, var(--color-global-text) 10%, transparent);
-	}
-
-	.home-feed .home-more {
-		margin-top: auto;
-		padding-top: 1rem;
-	}
-
-	.home-heading {
-		margin: 0 0 1.15rem;
-		padding-bottom: 0.7rem;
-		border-bottom: 1px solid color-mix(in oklch, var(--color-brand) 22%, transparent);
-		font-size: 1.2rem;
-		font-weight: 700;
-		letter-spacing: -0.02em;
-		line-height: 1.2;
-		color: var(--color-accent-2);
-	}
-
-	.home-empty {
-		margin: 0 0 0.75rem;
-		color: var(--color-muted);
-		font-size: 0.9rem;
-	}
-
-	.home-notes {
-		margin: 0;
-		padding: 0;
-		list-style: none;
-	}
-
-	.home-notes > li + li {
-		margin-top: 1.25rem;
-		padding-top: 1.25rem;
-		border-top: 1px solid color-mix(in oklch, var(--color-global-text) 8%, transparent);
-	}
-
-	.home-notes :global(.note-card__body img) {
-		width: 11.25rem;
-		height: 11.25rem;
-	}
-
-	.home-posts {
-		display: flex;
-		flex-direction: column;
-		gap: 0.75rem;
-		margin: 0 0 1rem;
-		padding: 0;
-		list-style: none;
-	}
-
-	.home-post {
-		padding: 0.95rem 1rem 1rem;
-		border-radius: 0.9rem;
-		background: var(--color-global-bg);
-		border: 1px solid color-mix(in oklch, var(--color-global-text) 7%, transparent);
-		box-shadow: 0 8px 22px color-mix(in oklch, var(--color-global-text) 7%, transparent);
-		transition:
-			transform 0.2s cubic-bezier(0.22, 1, 0.36, 1),
-			box-shadow 0.2s ease;
-	}
-
-	.home-post:hover,
-	.home-post:active {
-		transform: translateY(-2px);
-		box-shadow: 0 12px 28px color-mix(in oklch, var(--color-brand) 16%, transparent);
-	}
-
-	.home-post__hit {
-		display: flex;
-		flex-direction: column;
-		align-items: flex-start;
-		gap: 0.28rem;
-		color: inherit;
-		text-decoration: none;
-	}
-
-	.home-post__title {
-		font-size: 1.02rem;
-		font-weight: 700;
-		line-height: 1.35;
-	}
-
-	.home-post__hit:hover .home-post__title {
-		color: var(--color-brand);
-	}
-
-	.home-post__date {
-		color: var(--color-muted);
-		font-size: 0.75rem;
-		font-weight: 600;
-	}
-
-	.home-post__tags {
-		display: flex;
-		flex-wrap: wrap;
-		gap: 0.35rem 0.7rem;
-		margin: 0.45rem 0 0;
-	}
-
-	.home-post__tag {
-		display: inline-block;
-		font-size: 0.75rem;
-		font-weight: 600;
-		color: var(--color-brand);
-		text-decoration: none;
-		opacity: 0.88;
-	}
-
-	.home-post__tag:hover {
-		opacity: 1;
-		text-decoration: underline;
-		text-underline-offset: 2px;
-	}
-
-	@media (min-width: 640px) {
-		.foyer-title {
-			font-size: 1.5rem;
-		}
-
-		.foyer-tagline {
-			font-size: 0.95rem;
-		}
-	}
-
-	@media (min-width: 860px) {
-		.foyer {
-			display: grid;
-			grid-template-columns: minmax(16rem, 1fr) auto;
-			align-items: center;
-			gap: 2rem 2.5rem;
-			padding: 0 0 1rem;
-		}
-
-		.foyer-copy {
-			display: flex;
-			flex-direction: column;
-			justify-content: center;
-			padding-right: 0.5rem;
-		}
-
-		.foyer-title {
-			font-size: 1.55rem;
-			margin-bottom: 0.45rem;
-		}
-
-		.foyer-tagline {
-			margin: 0;
-			max-width: 18rem;
-			font-size: 1rem;
-		}
-
-		.foyer-hero {
-			justify-content: flex-end;
-		}
-
-		.foyer-hero__frame {
-			width: min(100%, 26rem);
-		}
-
-		.home-columns {
-			display: grid;
-			grid-template-columns: 1fr 1fr;
-			align-items: stretch;
-			gap: 0 2.75rem;
-			padding-top: 2rem;
-			border-top: 1px solid color-mix(in oklch, var(--color-global-text) 10%, transparent);
-		}
-
-		.home-feed {
-			min-height: 100%;
-			padding-top: 0;
-			border-top: none;
-		}
-
-		.home-feed--posts {
-			padding-left: 2.75rem;
-			border-left: 1px solid color-mix(in oklch, var(--color-global-text) 10%, transparent);
-		}
-
-		.home-notes,
-		.home-posts {
-			flex: 1 1 auto;
-		}
-
-		.home-notes :global(.note-card__body img) {
-			width: 11.25rem;
-			height: 11.25rem;
-		}
-	}
-
-	@media (prefers-reduced-motion: reduce) {
-		.home-post:hover,
-		.home-post:active {
-			transform: none;
-		}
-	}
-</style>

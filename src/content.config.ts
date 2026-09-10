@@ -1,5 +1,5 @@
-import path from "node:path";
 import { defineCollection } from "astro:content";
+import path from "node:path";
 import { glob } from "astro/loaders";
 import { z } from "astro/zod";
 
@@ -12,11 +12,7 @@ function entryId(entry: string) {
 	return path.basename(file).replace(/\.(md|mdx)$/i, "");
 }
 
-function removeDupsAndLowerCase(array: string[]) {
-	return [...new Set(array.map((str) => str.toLowerCase()))];
-}
-
-const titleSchema = z.string().max(60);
+const titleSchema = z.string().min(1);
 
 const blog = defineCollection({
 	loader: glob({
@@ -36,7 +32,8 @@ const blog = defineCollection({
 				.optional(),
 			draft: z.boolean().default(false),
 			ogImage: z.string().optional(),
-			tags: z.array(z.string()).default([]).transform(removeDupsAndLowerCase),
+			// Blog classifications are series; note tags remain independent.
+			tags: z.never().optional(),
 			series: z
 				.union([z.string().max(40), z.array(z.string().max(40))])
 				.optional()
@@ -48,11 +45,13 @@ const blog = defineCollection({
 			publishDate: z
 				.string()
 				.or(z.date())
-				.transform((val) => new Date(val)),
+				.transform((val) => new Date(val))
+				.pipe(z.date()),
 			updatedDate: z
 				.string()
 				.optional()
-				.transform((str) => (str ? new Date(str) : undefined)),
+				.transform((str) => (str ? new Date(str) : undefined))
+				.pipe(z.date().optional()),
 			pinned: z.boolean().default(false),
 			music: z
 				.union([
@@ -100,9 +99,7 @@ const post = defineCollection({
 			.transform((arr) => [...new Set(arr.map((tag) => tag.trim()).filter(Boolean))]),
 		description: z.string().optional(),
 		draft: z.boolean().default(false),
-		publishDate: z.iso
-			.datetime({ offset: true })
-			.transform((val) => new Date(val)),
+		publishDate: z.iso.datetime({ offset: true }).transform((val) => new Date(val)),
 	}),
 });
 

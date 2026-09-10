@@ -1,0 +1,19 @@
+---
+import type { Lang } from "@/i18n/config";
+
+interface Props {
+	lang: Lang;
+}
+const { lang } = Astro.props;
+---
+
+<button
+	class="metal-button motion-toggle"
+	type="button"
+	data-toggle-space
+	aria-pressed="false"
+	hidden
+>
+	<span data-space-icon aria-hidden="true">Ⅱ</span>
+	<span data-space-label>{lang === "zh" ? "暂停动效" : "Pause motion"}</span>
+</button>

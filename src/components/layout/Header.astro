@@ -2,10 +2,11 @@
 import LanguageSwitcher from "@/components/LanguageSwitcher.astro";
 import Search from "@/components/Search.astro";
 import ThemeToggle from "@/components/ThemeToggle.astro";
+import { sectionLinks } from "@/data/navigation";
+import { siteLogoSrc } from "@/data/site-assets";
 import type { Lang } from "@/i18n/config";
 import { localePath, stripLocalePrefix, useTranslations } from "@/i18n/utils";
-import { siteLogoSrc } from "@/data/site-assets";
-import { menuLinkDefs, siteConfig } from "@/site.config";
+import { siteConfig } from "@/site.config";
 
 interface Props {
 	lang: Lang;
@@ -41,7 +42,7 @@ function navIsCurrent(href: string, isHome = false) {
 	return false;
 }
 
-const menuLinks = menuLinkDefs.map((link) => ({
+const menuLinks = (await sectionLinks()).map((link) => ({
 	path: localePath(lang, link.path),
 	title: t(link.titleKey),
 	current: navIsCurrent(localePath(lang, link.path), link.path === "/"),
@@ -80,233 +81,144 @@ const menuLinks = menuLinkDefs.map((link) => ({
 	</nav>
 </header>
 
+<script>
+	const header = document.querySelector<HTMLElement>("#main-header");
+	if (header) {
+		// Reuse one search instance and keep tab order aligned with each layout.
+		const desktop = matchMedia("(min-width: 900px)");
+		const nav = header.querySelector("nav")!;
+		const search = header.querySelector("#search")!;
+		const arrangeNavigation = () => {
+			if (desktop.matches) search.after(nav);
+			else header.append(nav);
+		};
+		arrangeNavigation();
+		desktop.addEventListener("change", arrangeNavigation);
+		const updateOffset = () =>
+			document.documentElement.style.setProperty(
+				"--header-height",
+				`${header.getBoundingClientRect().height}px`,
+			);
+		updateOffset();
+		new ResizeObserver(updateOffset).observe(header);
+	}
+</script>
+
 <style>
 	.site-header {
-		display: flex;
-		flex-direction: column;
-		flex: 0 0 auto;
-		box-sizing: border-box;
-		width: 100%;
-		max-width: 100%;
-		min-width: 0;
-		margin-bottom: 1.15rem;
-		animation: Spaceship-fade-up 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+		width: min(100% - 40px, 1160px);
+		margin: 12px auto 0;
+		padding: 10px 22px;
+		position: sticky;
+		top: 8px;
+		z-index: 90;
 	}
-
 	.header-top {
 		display: flex;
-		flex-direction: row;
-		flex-wrap: nowrap;
-		align-items: center;
 		justify-content: space-between;
-		gap: 0.4rem;
-		width: 100%;
+		align-items: center;
+		gap: 20px;
 		min-width: 0;
-		min-height: 1.7rem;
 	}
-
 	.site-logo {
 		display: flex;
-		flex: 0 1 auto;
-		min-width: 0;
 		align-items: center;
-		gap: 0.35rem;
-		color: inherit;
-		text-decoration: none;
+		gap: 10px;
+		min-width: 0;
 	}
-
-	.site-logo:active {
-		opacity: 0.75;
-	}
-
 	.site-mark {
-		width: 1.4rem;
-		height: 1.4rem;
-		flex-shrink: 0;
-		border-radius: 0.32rem;
+		width: 28px;
+		height: 28px;
 		object-fit: cover;
-		background: #2b2e33;
+		flex-shrink: 0;
 	}
-
 	.site-wordmark {
-		flex: 0 0 auto;
-		font-size: 0.8rem;
-		font-weight: 700;
-		letter-spacing: -0.045em;
-		line-height: 1.2;
-		white-space: nowrap;
+		overflow-wrap: anywhere;
 	}
-
 	.header-tools {
 		display: flex;
-		flex-direction: row;
-		flex-wrap: nowrap;
-		flex: 0 0 auto;
+		gap: 5px;
+		flex-shrink: 0;
 		align-items: center;
-		gap: 0.05rem;
-		margin-inline-start: auto;
 	}
-
 	.header-tools :global(#search),
 	.header-tools :global(theme-toggle) {
 		display: block;
-		flex: 0 0 1.7rem;
-		width: 1.7rem;
-		height: 1.7rem;
-		overflow: hidden;
+		width: 44px;
+		height: 44px;
+		overflow: visible;
 		margin: 0;
 	}
-
-	.header-tools :global(site-search > dialog) {
-		position: fixed;
-	}
-
-	.header-tools :global(site-search > dialog:not([open])) {
-		display: none;
-	}
-
 	.header-tools :global(site-search > button),
 	.header-tools :global(theme-toggle > button) {
-		width: 1.7rem;
-		height: 1.7rem;
-		padding: 0;
+		width: 44px;
+		height: 44px;
+		padding: 10px;
 	}
-
-	.header-tools :global(theme-toggle > button svg) {
-		width: 1.05rem;
-		height: 1.05rem;
+	.header-tools :global(button svg) {
+		width: 21px;
+		height: 21px;
 	}
-
-	.header-tools :global(site-search > button svg) {
-		width: 1.05rem;
-		height: 1.05rem;
-	}
-
-	.header-tools :global(.lang-switch) {
-		margin-inline: 0;
-	}
-
 	.site-nav {
 		display: flex;
-		flex-direction: row;
-		flex-wrap: nowrap;
 		align-items: center;
-		justify-content: center;
-		gap: 0;
-		margin-top: 0.4rem;
-		padding-top: 0.15rem;
-		min-height: 1.7rem;
-		overflow-x: auto;
-		scrollbar-width: none;
-		-ms-overflow-style: none;
+		gap: 22px;
+		margin-top: 5px;
+		flex-wrap: wrap;
 	}
-
-	.site-nav::-webkit-scrollbar {
-		display: none;
-	}
-
 	.site-nav__link {
-		--nav-end: 0.7rem;
-		position: relative;
-		flex-shrink: 0;
-		padding: 0.2rem var(--nav-end) 0.35rem 0;
-		margin-inline-end: var(--nav-end);
-		font-size: 0.8rem;
-		font-weight: 600;
-		letter-spacing: 0.01em;
-		color: var(--color-muted);
-		text-decoration: none;
-		border-inline-end: 1px solid color-mix(in oklch, var(--color-global-text) 14%, transparent);
+		display: inline-flex;
+		align-items: center;
+		min-height: 44px;
 	}
-
-	.site-nav__link:last-child {
-		margin-inline-end: 0;
-		padding-inline-end: 0;
-		border-inline-end: none;
-	}
-
-	.site-nav__link[aria-current="page"],
-	.site-nav__link.is-current {
-		color: var(--color-accent);
-	}
-
-	.site-nav__link[aria-current="page"]::after,
-	.site-nav__link.is-current::after {
-		content: "";
-		position: absolute;
-		left: 0;
-		right: var(--nav-end);
-		bottom: 0;
-		height: 2px;
-		border-radius: 1px;
-		background: var(--color-accent);
-	}
-
-	.site-nav__link:last-child[aria-current="page"]::after,
-	.site-nav__link:last-child.is-current::after {
-		right: 0;
-	}
-
-	.site-nav__link:hover,
-	.site-nav__link:active {
-		color: var(--color-accent);
-	}
-
-	@media (min-width: 640px) {
+	@media (min-width: 900px) {
 		.site-header {
-			margin-bottom: 2rem;
+			display: flex;
+			flex-wrap: wrap;
+			align-items: center;
+			gap: 24px;
+			padding: 10px 22px;
 		}
-
-		.site-mark {
-			width: 1.7rem;
-			height: 1.7rem;
-			border-radius: 0.38rem;
+		.header-top {
+			display: contents;
 		}
-
-		.site-wordmark {
-			font-size: 1.05rem;
-			letter-spacing: -0.04em;
+		.site-logo {
+			flex: 1;
 		}
-
 		.header-tools {
-			gap: 0.1rem;
+			gap: 16px;
 		}
-
-		.header-tools :global(#search),
-		.header-tools :global(theme-toggle) {
-			flex-basis: 2rem;
-			width: 2rem;
-			height: 2rem;
-		}
-
-		.header-tools :global(site-search > button),
-		.header-tools :global(theme-toggle > button) {
-			width: 2rem;
-			height: 2rem;
-		}
-
-		.header-tools :global(theme-toggle > button svg),
-		.header-tools :global(site-search > button svg) {
-			width: 1.15rem;
-			height: 1.15rem;
-		}
-
 		.site-nav {
-			margin-top: 0.45rem;
-			padding-top: 0.15rem;
+			margin: 0;
+			gap: 24px;
 		}
-
-		.site-nav__link {
-			--nav-end: 0.85rem;
-			padding: 0.15rem var(--nav-end) 0.35rem 0;
-			margin-inline-end: var(--nav-end);
-			font-size: 0.875rem;
+		.site-wordmark {
+			max-width: 310px;
 		}
 	}
-
-	@media (prefers-reduced-motion: reduce) {
+	@media (max-width: 600px) {
 		.site-header {
-			animation: none !important;
+			width: calc(100% - 24px);
+			padding: 10px 14px 4px;
+		}
+		.header-top {
+			flex-wrap: wrap;
+			gap: 8px;
+		}
+		.site-logo {
+			flex: 1 1 140px;
+		}
+		.header-tools {
+			margin-left: auto;
+			gap: 3px;
+		}
+		.site-nav {
+			gap: 0;
+			justify-content: space-between;
+		}
+		.site-mark {
+			width: 24px;
+			height: 24px;
 		}
 	}
 </style>

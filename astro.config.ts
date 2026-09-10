@@ -14,15 +14,19 @@ import rehypeExternalLinks from "rehype-external-links";
 import rehypeUnwrapImages from "rehype-unwrap-images";
 // Remark plugins
 import remarkDirective from "remark-directive"; /* Handle ::: directives as nodes */
+import { findSkin } from "./src/skins/registry";
+import { settings } from "./src/data/settings";
+import { siteIconFile } from "./src/data/site-assets";
+import { rehypeReadableOverflow } from "./src/plugins/rehype-readable-overflow";
 import { remarkAdmonitions } from "./src/plugins/remark-admonitions"; /* Add admonitions */
 import { remarkGithubCard } from "./src/plugins/remark-github-card";
 import { remarkReadingTime } from "./src/plugins/remark-reading-time";
-import { siteIconFile } from "./src/data/site-assets";
 import { expressiveCodeOptions, siteConfig, siteShortName } from "./src/site.config";
 
 // https://astro.build/config
 export default defineConfig({
 	site: siteConfig.url,
+	devToolbar: { enabled: false },
 	image: {
 		domains: [
 			"webmention.io",
@@ -43,7 +47,9 @@ export default defineConfig({
 		sitemap(),
 		mdx(),
 		robotsTxt({
-			policy: [{ userAgent: "*", disallow: "/" }],
+			policy: [
+				settings.indexable ? { userAgent: "*", allow: "/" } : { userAgent: "*", disallow: "/" },
+			],
 			sitemap: false,
 		}),
 		webmanifest({
@@ -71,8 +77,8 @@ export default defineConfig({
 				},
 			],
 			start_url: "/",
-			background_color: "#1d1f21",
-			theme_color: "#7c3aed",
+			background_color: findSkin(settings.defaultSkin)!.palette.dark.hull,
+			theme_color: findSkin(settings.defaultSkin)!.palette.light.accent,
 			display: "standalone",
 			config: {
 				insertFaviconLinks: false,
@@ -93,6 +99,7 @@ export default defineConfig({
 				},
 			],
 			rehypeUnwrapImages,
+			rehypeReadableOverflow,
 		],
 		remarkPlugins: [remarkReadingTime, remarkDirective, remarkGithubCard, remarkAdmonitions],
 		remarkRehype: {

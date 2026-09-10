@@ -1,19 +1,26 @@
 ---
 import BaseHead from "@/components/BaseHead.astro";
+import PhotoViewer from "@/components/gallery/PhotoViewer.astro";
 import Footer from "@/components/layout/Footer.astro";
 import Header from "@/components/layout/Header.astro";
 import SkipLink from "@/components/SkipLink.astro";
 import ThemeProvider from "@/components/ThemeProvider.astro";
+import { isSampleContent, settings } from "@/data/settings";
 import { defaultLang, htmlLang, type Lang } from "@/i18n/config";
 import { getLangFromUrl, useTranslations } from "@/i18n/utils";
+import SkinProvider from "@/skins/SkinProvider.astro";
+import SkinSlot from "@/skins/SkinSlot.astro";
 import type { SiteMeta } from "@/types";
 
 interface Props {
 	meta: SiteMeta;
 	lang?: Lang;
 	wide?: boolean;
+	home?: boolean;
+	reading?: boolean;
 }
 
+const sample = isSampleContent();
 const lang = Astro.props.lang ?? getLangFromUrl(Astro.url) ?? defaultLang;
 const t = useTranslations(lang);
 
@@ -22,7 +29,11 @@ const {
 } = Astro.props;
 ---
 
-<html class="scroll-smooth" lang={htmlLang[lang]}>
+<html
+	lang={htmlLang[lang]}
+	data-skin={settings.defaultSkin}
+	data-default-skin={settings.defaultSkin}
+>
 	<head>
 		<BaseHead
 			articleDate={articleDate}
@@ -31,86 +42,35 @@ const {
 			title={title}
 			lang={lang}
 		/>
+		<SkinProvider />
 		<ThemeProvider />
 	</head>
-	<body
-		class="bg-global-bg text-global-text mx-auto flex h-dvh w-full min-w-0 max-w-5xl flex-col overflow-hidden px-4 pt-8 font-mono text-sm font-normal antialiased sm:px-8 sm:pt-16"
-	>
+	<body class:list={[{ "is-home": Astro.props.home, "is-reading": Astro.props.reading }]}>
 		<SkipLink lang={lang} />
+		<SkinSlot position="surround" lang={lang} />
+		{
+			sample && (
+				<p class="sample-banner">
+					{lang === "zh"
+						? "示例站点 · 此处使用虚构资料与示例内容"
+						: "Demo site · Fictional profile and sample content"}
+				</p>
+			)
+		}
 		<Header lang={lang} />
-		<div class="page-scroll">
-			<main id="main" class="site-main">
-				<slot />
-			</main>
-			<Footer />
-		</div>
-		<dialog class="note-zoom" id="note-zoom" onclick="this.close()">
-			<img alt="" />
-		</dialog>
-		<script is:inline type="speculationrules">
-			{
-				"prefetch": [
-					{
-						"where": {
-							"href_matches": "/*"
-						},
-						"eagerness": "immediate"
-					}
-				],
-				"prerender": [
-					{
-						"where": {
-							"href_matches": "/*"
-						},
-						"eagerness": "moderate"
-					}
-				]
-			}
-		</script>
+		<main
+			id="main"
+			tabindex="-1"
+			class:list={[
+				"site-main",
+				{ "site-main--home": Astro.props.home, "site-main--reading": Astro.props.reading },
+			]}
+		>
+			<SkinSlot position="content-start" lang={lang} />
+			<slot />
+		</main>
+		<Footer lang={lang} home={!!Astro.props.home} />
+		<SkinSlot position="page-end" lang={lang} home={!!Astro.props.home} />
+		<PhotoViewer lang={lang} />
 	</body>
 </html>
-
-<style>
-	.page-scroll {
-		display: flex;
-		flex: 1 1 auto;
-		flex-direction: column;
-		width: 100%;
-		min-width: 0;
-		min-height: 0;
-		overflow-x: clip;
-		overflow-y: auto;
-		overscroll-behavior: contain;
-		-webkit-overflow-scrolling: touch;
-		padding-bottom: 1.5rem;
-		scrollbar-width: none;
-		-ms-overflow-style: none;
-	}
-
-	.page-scroll::-webkit-scrollbar {
-		display: none;
-		width: 0;
-		height: 0;
-		background: transparent;
-	}
-
-	:global(html),
-	:global(body) {
-		scrollbar-width: none;
-		-ms-overflow-style: none;
-	}
-
-	:global(html::-webkit-scrollbar),
-	:global(body::-webkit-scrollbar) {
-		display: none;
-		width: 0;
-		height: 0;
-	}
-
-	.site-main {
-		flex: 1 0 auto;
-		width: 100%;
-		max-width: 100%;
-		min-width: 0;
-	}
-</style>

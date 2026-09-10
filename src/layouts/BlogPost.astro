@@ -1,10 +1,9 @@
 ---
 import { type CollectionEntry, render } from "astro:content";
-
-import FloatingBack from "@/components/FloatingBack.astro";
 import Masthead from "@/components/blog/Masthead.astro";
 import TOC from "@/components/blog/TOC.astro";
 import WebMentions from "@/components/blog/webmentions/index.astro";
+import FloatingBack from "@/components/FloatingBack.astro";
 import MusicPlayer from "@/components/MusicPlayer.astro";
 import { resolvePostMusic } from "@/data/music";
 import { defaultLang, type Lang } from "@/i18n/config";
@@ -32,6 +31,7 @@ const showMusicSlot = Boolean(postSongs) || Astro.slots.has("music");
 ---
 
 <BaseLayout
+	reading
 	lang={lang}
 	meta={{
 		articleDate,
@@ -44,17 +44,13 @@ const showMusicSlot = Boolean(postSongs) || Astro.slots.has("music");
 		<div id="blog-hero" class="mb-12">
 			<Masthead content={post} readingTimeMinutes={readingTimeMinutes} lang={lang} />
 		</div>
-		<div class="flex flex-col gap-10 lg:flex-row lg:items-start">
+		<div class="reading-layout">
 			{!!headings.length && <TOC headings={headings} lang={lang} />}
-			<div
-				class="prose prose-sm max-w-none min-w-0 w-full grow prose-headings:font-semibold prose-headings:text-accent-2 prose-headings:before:absolute prose-headings:before:-ms-4 prose-headings:before:text-muted prose-headings:hover:before:text-accent sm:prose-headings:before:content-['#'] sm:prose-th:before:content-none"
-			>
+			<div class="reading-body prose">
 				{
 					showMusicSlot && (
 						<aside class="not-prose mb-8" data-pagefind-ignore>
-							<slot name="music">
-								{postSongs && <MusicPlayer songs={postSongs} lang={lang} />}
-							</slot>
+							<slot name="music">{postSongs && <MusicPlayer songs={postSongs} lang={lang} />}</slot>
 						</aside>
 					)
 				}

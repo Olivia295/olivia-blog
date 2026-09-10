@@ -1,33 +1,13 @@
 ---
+import type { Lang } from "@/i18n/config";
 import { siteConfig } from "@/site.config";
 
-const year = new Date().getFullYear();
+interface Props {
+	lang?: Lang;
+	home?: boolean | undefined;
+}
 ---
 
 <footer class="site-footer">
-	<p>
-		&copy; {siteConfig.author}
-		{year}
-		<span aria-hidden="true"> · </span>
-		{siteConfig.title}
-	</p>
+	<p>© {new Date().getFullYear()} {siteConfig.author}</p>
 </footer>
-
-<style>
-	.site-footer {
-		width: 100%;
-		padding: 2.5rem 0 0.5rem;
-		text-align: center;
-	}
-
-	.site-footer p {
-		margin: 0 auto;
-		width: 100%;
-		text-align: center;
-		font-size: 0.7rem;
-		font-weight: 400;
-		letter-spacing: 0.04em;
-		color: var(--color-muted);
-		opacity: 0.55;
-	}
-</style>

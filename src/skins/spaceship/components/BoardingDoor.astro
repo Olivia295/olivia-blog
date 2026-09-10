@@ -1,0 +1,60 @@
+---
+interface Props {
+	side: "left" | "right";
+}
+const { side } = Astro.props;
+const left = side === "left";
+const edge = "M500 0V190L526 226V358L480 402V598L526 642V774L500 810V1000";
+const outline = `${edge}${left ? "H0V0" : "H1000V0"}Z`;
+const metal = `boarding-metal-${side}`;
+const clip = `boarding-clip-${side}`;
+const grain = `boarding-grain-${side}`;
+---
+
+<svg
+	class:list={["boarding-door", `boarding-door--${side}`]}
+	viewBox="0 0 1000 1000"
+	preserveAspectRatio="none"
+	aria-hidden="true"
+>
+	<defs>
+		<linearGradient id={metal} x1={left ? "0%" : "100%"} x2={left ? "100%" : "0%"} y1="0%" y2="25%">
+			<stop offset="0" stop-color="var(--hull)"></stop>
+			<stop offset="0.35" stop-color="var(--metal-bottom)"></stop>
+			<stop offset="0.48" stop-color="var(--metal-top)"></stop>
+			<stop offset="0.56" stop-color="var(--metal-bottom)"></stop>
+			<stop offset="1" stop-color="var(--hull)"></stop>
+		</linearGradient>
+		<pattern id={grain} width="5" height="5" patternUnits="userSpaceOnUse">
+			<path d="M0 1H5" stroke="var(--hull-edge)" stroke-opacity=".12" stroke-width=".5"></path>
+		</pattern>
+		<clipPath id={clip}><path d={outline}></path></clipPath>
+	</defs>
+	<path d={outline} fill={`url(#${metal})`}></path>
+	<g clip-path={`url(#${clip})`}>
+		<path d={outline} fill={`url(#${grain})`}></path>
+		<path
+			d={left
+				? "M22 22H452V166L474 198M22 978H452V834L474 802"
+				: "M978 22H548V166L526 198M978 978H548V834L526 802"}
+			class="door-panel-outline"></path>
+		<path
+			d={left ? "M42 250H338L410 322V678L338 750H42" : "M958 250H662L590 322V678L662 750H958"}
+			class="door-panel-inset"></path>
+		<path
+			d={left
+				? "M52 284H304M52 296H278M52 704H278M52 716H304"
+				: "M948 284H696M948 296H722M948 704H722M948 716H696"}
+			class="door-vents"></path>
+		{
+			[216, 784].map((y) => (
+				<g class="door-coupling-pin">
+					<rect x={left ? 448 : 498} y={y - 13} width="54" height="26" rx="3" />
+					<path d={`M${left ? 456 : 510} ${y - 6}h30m-30 6h30m-30 6h30`} />
+				</g>
+			))
+		}
+		<path d={edge} class="door-seal-shadow"></path>
+		<path d={edge} class="door-seal-light"></path>
+	</g>
+</svg>

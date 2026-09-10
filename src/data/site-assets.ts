@@ -19,6 +19,8 @@ const HERO_CANDIDATES = [
 	"site/home-hero.jpeg",
 	"site/home-hero.png",
 	"site/home-hero.webp",
+	"site/home-hero.svg",
+	"site/home-hero.avif",
 	"home-hero.jpg",
 ];
 
@@ -38,7 +40,7 @@ function publicUrl(rel: string): string {
 }
 
 function firstPublic(candidates: string[], fallback: string): string {
-	const list = bare ? candidates.filter((rel) => !rel.startsWith("site/")) : candidates;
+	const list = bare ? [] : candidates.filter((rel) => rel.startsWith("site/"));
 	for (const rel of list) {
 		if (existsSync(path.join(root, "public", rel))) return publicUrl(rel);
 	}
@@ -46,13 +48,13 @@ function firstPublic(candidates: string[], fallback: string): string {
 }
 
 /** Header mark. Content `site/logo.*` wins; `public/logo.png` is the source default. */
-export const siteLogoSrc = firstPublic(LOGO_CANDIDATES, "/logo.png");
+export const siteLogoSrc = firstPublic(LOGO_CANDIDATES, "/defaults/icon.svg");
 
 /** Home hero. Content `site/home-hero.*` wins; `public/home-hero.jpg` is the source default. */
-export const siteHeroSrc = firstPublic(HERO_CANDIDATES, "/home-hero.jpg");
+export const siteHeroSrc = firstPublic(HERO_CANDIDATES, "/defaults/portrait.svg");
 
 /** Browser tab / favicon. Content `site/icon.*` or `site/favicon.*` wins. */
-export const siteIconSrc = firstPublic(ICON_CANDIDATES, "/icon.svg");
+export const siteIconSrc = firstPublic(ICON_CANDIDATES, "/defaults/icon.svg");
 
 export function siteIconMime(src = siteIconSrc): string {
 	const ext = path.extname(src).toLowerCase();

@@ -1,11 +1,15 @@
 ---
-import PageLayout from "@/layouts/Base.astro";
+import { settings } from "@/data/settings";
+import { skins, findSkin } from "@/skins/registry";
 import { defaultLang } from "@/i18n/config";
 import { localePath, useTranslations } from "@/i18n/utils";
+import PageLayout from "@/layouts/Base.astro";
 import { siteConfig } from "@/site.config";
 
 const lang = defaultLang;
 const t = useTranslations(lang);
+const skinCopies = Object.fromEntries(skins.map((skin) => [skin.id, skin.copy ?? {}]));
+const skinCopy = findSkin(settings.defaultSkin)?.copy ?? {};
 
 const meta = {
 	description: t("404.body"),
@@ -21,12 +25,12 @@ const postsZh = localePath("zh", "/posts/");
 <PageLayout lang={lang} meta={meta}>
 	<section class="not-found motion-soft-pop" data-404>
 		<p class="not-found__code" aria-hidden="true">{t("404.code")}</p>
-		<h1 class="title not-found__heading">{t("404.heading")}</h1>
-		<p class="not-found__body" data-404-body>{t("404.body")}</p>
+		<h1 class="title not-found__heading">{skinCopy.notFoundHeading?.[lang] ?? t("404.heading")}</h1>
+		<p class="not-found__body" data-404-body>{skinCopy.notFoundBody?.[lang] ?? t("404.body")}</p>
 
 		<div class="not-found__actions">
 			<a class="not-found__btn not-found__btn--primary motion-press" href={homeZh} data-404-home>
-				{t("404.home")}
+				{skinCopy.notFoundHome?.[lang] ?? t("404.home")}
 			</a>
 			<a class="not-found__btn motion-press" href={blogsZh} data-404-blogs>
 				{t("404.blogs")}
@@ -47,20 +51,20 @@ const postsZh = localePath("zh", "/posts/");
 </PageLayout>
 
 {/* Localize CTAs from cookie / path when possible (static 404 is zh by default). */}
-<script is:inline>
+<script is:inline define:vars={{ skinCopies }}>
 	(function () {
 		const ui = {
 			zh: {
 				heading: "这里什么都没有",
-				body: "这道菜不在菜单上。回厨房看看，或者换条路。",
-				home: "回厨房首页",
+				body: "这个页面暂时没有内容。回到首页，或者看看其他分享。",
+				home: "返回首页",
 				blogs: "去看文章",
-				posts: "去看短记",
+				posts: "去看动态",
 			},
 			en: {
-				heading: "Nothing cooking here",
-				body: "This dish isn't on the menu. Head back to the Spaceship, or try another path.",
-				home: "Back to Spaceship",
+				heading: "Page not found",
+				body: "This page is unavailable. Head home, or browse another story.",
+				home: "Back home",
 				blogs: "Browse blogs",
 				posts: "Browse posts",
 			},
@@ -89,10 +93,15 @@ const postsZh = localePath("zh", "/posts/");
 		const blogs = root.querySelector("[data-404-blogs]");
 		const posts = root.querySelector("[data-404-posts]");
 
-		if (heading) heading.textContent = copy.heading;
-		if (body) body.textContent = copy.body;
+		const updateSkinCopy = () => {
+			const themed = skinCopies[document.documentElement.dataset.skin] || {};
+			if (heading) heading.textContent = themed.notFoundHeading?.[lang] || copy.heading;
+			if (body) body.textContent = themed.notFoundBody?.[lang] || copy.body;
+			if (home) home.textContent = themed.notFoundHome?.[lang] || copy.home;
+		};
+		updateSkinCopy();
+		document.addEventListener("skin-applied", updateSkinCopy);
 		if (home) {
-			home.textContent = copy.home;
 			home.setAttribute("href", "/" + lang + "/");
 		}
 		if (blogs) {
@@ -120,29 +129,16 @@ const postsZh = localePath("zh", "/posts/");
 
 	.not-found__code {
 		margin: 0;
-		font-size: clamp(3.5rem, 14vw, 6rem);
-		font-weight: 700;
-		line-height: 1;
-		letter-spacing: -0.04em;
-		color: color-mix(in oklch, var(--color-accent) 55%, var(--color-global-text));
-		opacity: 0.35;
 		user-select: none;
-		animation: Spaceship-fade-up 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
 	}
 
 	.not-found__heading {
 		margin: 0;
-		font-size: clamp(1.35rem, 4.5vw, 1.85rem);
-		animation: Spaceship-fade-up 0.7s cubic-bezier(0.22, 1, 0.36, 1) 0.08s both;
 	}
 
 	.not-found__body {
 		margin: 0;
 		max-width: 28rem;
-		line-height: 1.7;
-		opacity: 0.78;
-		font-size: 0.95rem;
-		animation: Spaceship-fade-up 0.7s cubic-bezier(0.22, 1, 0.36, 1) 0.14s both;
 	}
 
 	.not-found__actions {
@@ -150,7 +146,6 @@ const postsZh = localePath("zh", "/posts/");
 		flex-wrap: wrap;
 		gap: 0.6rem;
 		margin-top: 1.25rem;
-		animation: Spaceship-fade-up 0.7s cubic-bezier(0.22, 1, 0.36, 1) 0.2s both;
 	}
 
 	.not-found__btn {
@@ -159,52 +154,18 @@ const postsZh = localePath("zh", "/posts/");
 		justify-content: center;
 		min-height: 2.75rem;
 		padding: 0.55rem 1rem;
-		border-radius: 999px;
-		border: 1px solid color-mix(in oklch, var(--color-global-text) 14%, transparent);
-		background: color-mix(in oklch, var(--color-global-text) 5%, transparent);
-		color: inherit;
-		text-decoration: none;
-		font-weight: 600;
-		font-size: 0.85rem;
-		transition:
-			background 0.2s ease,
-			border-color 0.2s ease,
-			transform 0.2s ease;
-	}
-
-	.not-found__btn:hover {
-		border-color: color-mix(in oklch, var(--color-accent) 45%, transparent);
-		background: color-mix(in oklch, var(--color-accent) 12%, transparent);
-	}
-
-	.not-found__btn--primary {
-		background: color-mix(in oklch, var(--color-accent) 18%, transparent);
-		border-color: color-mix(in oklch, var(--color-accent) 40%, transparent);
-		color: var(--color-accent-2);
-	}
-
-	:global(html[data-theme="dark"]) .not-found__btn--primary {
-		color: var(--color-accent);
 	}
 
 	.not-found__lang {
 		margin: 1.5rem 0 0;
-		font-size: 0.8rem;
-		opacity: 0.65;
-		animation: Spaceship-fade-up 0.7s cubic-bezier(0.22, 1, 0.36, 1) 0.28s both;
 	}
 
 	.not-found__lang a {
-		color: var(--color-accent);
 		text-underline-offset: 2px;
 	}
 
 	.not-found__brand {
 		margin: 2rem 0 0;
-		font-size: 0.75rem;
-		letter-spacing: 0.08em;
-		text-transform: uppercase;
-		opacity: 0.4;
 	}
 
 	@media (max-width: 639px) {
@@ -214,16 +175,6 @@ const postsZh = localePath("zh", "/posts/");
 		}
 		.not-found__btn {
 			width: 100%;
-		}
-	}
-
-	@media (prefers-reduced-motion: reduce) {
-		.not-found__code,
-		.not-found__heading,
-		.not-found__body,
-		.not-found__actions,
-		.not-found__lang {
-			animation: none !important;
 		}
 	}
 </style>

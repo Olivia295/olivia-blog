@@ -1,0 +1,78 @@
+---
+import Boarding from "./components/Boarding.astro";
+import CabinActions from "./components/CabinActions.astro";
+import MotionToggle from "./components/MotionToggle.astro";
+import SpaceScene from "./components/SpaceScene.astro";
+import { siteHangarSrc } from "./assets";
+import { settings } from "@/data/settings";
+import type { Lang } from "@/i18n/config";
+interface Props {
+	position: string;
+	lang: Lang;
+	home?: boolean;
+}
+const { position, lang, home } = Astro.props;
+---
+
+{
+	position === "surround" && (
+		<div
+			class="ship-surround"
+			data-space-enabled={String(settings.scene.motion)}
+			aria-hidden="true"
+		>
+			<div class="surround-window surround-window-left">
+				<SpaceScene />
+			</div>
+			<div class="surround-window surround-window-right">
+				<SpaceScene variant="right" />
+			</div>
+		</div>
+	)
+}
+{position === "content-start" && <div class="content-soft-edge" aria-hidden="true" />}
+{
+	position === "page-end" && (
+		<>
+			<MotionToggle lang={lang} />
+			{home && settings.boarding && <Boarding lang={lang} />}
+		</>
+	)
+}
+{
+	position === "home-background" && (
+		<>
+			<div class="hangar-backdrop" aria-hidden="true">
+				<img src={siteHangarSrc} width="1774" height="887" alt="" decoding="async" loading="lazy" />
+			</div>
+			<SpaceScene class="hangar-traffic" />
+		</>
+	)
+}
+{
+	position === "home-eyebrow" && (
+		<span class="cabin-eyebrow">
+			<i class="cabin-lamp" aria-hidden="true" />A LITTLE HOME, SOMEWHERE IN SPACE
+		</span>
+	)
+}
+{
+	position === "home-status" && (
+		<span class="scene-status">
+			<i class="cabin-lamp" aria-hidden="true" />
+			{lang === "zh" ? "日常航行中" : "A little life in transit"}
+		</span>
+	)
+}
+{
+	position === "home-controls" && (
+		<section
+			class="home-cabin-controls"
+			data-cabin-console
+			hidden
+			aria-label={lang === "zh" ? "舱内控制" : "Cabin controls"}
+		>
+			<CabinActions lang={lang} home />
+		</section>
+	)
+}

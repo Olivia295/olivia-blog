@@ -1,0 +1,20 @@
+---
+import type { Lang } from "@/i18n/config";
+import { settings } from "@/data/settings";
+
+interface Props {
+	lang: Lang;
+	home?: boolean;
+}
+const { lang } = Astro.props;
+---
+
+<div class="cabin-actions">
+	{
+		settings.boarding && (
+			<button class="metal-button" type="button" data-replay-boarding hidden>
+				{lang === "zh" ? "↻ 重新登船" : "↻ Replay boarding"}
+			</button>
+		)
+	}
+</div>

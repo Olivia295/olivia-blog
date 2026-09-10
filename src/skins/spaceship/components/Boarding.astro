@@ -1,0 +1,45 @@
+---
+import BoardingDoor from "./BoardingDoor.astro";
+import { siteConfig } from "@/site.config";
+import type { Lang } from "@/i18n/config";
+
+interface Props {
+	lang: Lang;
+}
+const { lang } = Astro.props;
+---
+
+<dialog id="boarding" aria-labelledby="boarding-title" class="boarding">
+	<div class="boarding-veil" aria-hidden="true"></div>
+	<BoardingDoor side="left" /><BoardingDoor side="right" />
+	<div class="boarding-frame" aria-hidden="true"></div>
+	<div class="boarding-ident" aria-hidden="true">
+		<span>AIRLOCK / 01</span><span>{siteConfig.title}</span>
+	</div>
+	<div class="boarding-coupler" aria-hidden="true">
+		<svg class="coupler-ring" viewBox="0 0 120 120" fill="none">
+			<circle cx="60" cy="60" r="56" stroke="currentColor" stroke-width="1" opacity=".45"></circle>
+			<circle
+				cx="60"
+				cy="60"
+				r="48"
+				stroke="currentColor"
+				stroke-width="3"
+				stroke-dasharray="58 17.4"></circle>
+			<path d="M60 9v10M60 101v10M9 60h10M101 60h10" stroke="currentColor" stroke-width="3"></path>
+		</svg>
+		<div class="coupler-core"><span></span><span></span></div>
+		<i class="coupler-light"></i>
+	</div>
+	<div class="boarding-message">
+		<span class="boarding-eyebrow"
+			>{lang === "zh" ? "舱门连接已就绪" : "AIRLOCK CONNECTION READY"}</span
+		>
+		<h2 id="boarding-title">{lang === "zh" ? "欢迎登船" : "Welcome aboard"}</h2>
+		<p>{lang === "zh" ? "另一段航程，从这里开始。" : "Another journey begins here."}</p>
+		<div class="boarding-progress" aria-hidden="true"><span></span></div>
+	</div>
+	<button type="button" id="skip-boarding"
+		>{lang === "zh" ? "跳过登船动画" : "Skip boarding"} →</button
+	>
+</dialog>

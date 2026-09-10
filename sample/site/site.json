@@ -1,0 +1,89 @@
+{
+	"title": "小小飞船",
+	"shortName": "Little Ship",
+	"author": "旅人",
+	"url": "https://example.com/",
+	"description": "文字、照片与生活片刻，收在一艘小小的飞船里。",
+	"intro": {
+		"zh": "写字、散步、收集路上的风景。欢迎来到我的小小飞船。",
+		"en": "Writing, walking, and collecting little views along the way. Welcome aboard my little ship."
+	},
+	"boarding": true,
+	"indexable": false,
+	"recentLimit": 12,
+	"sections": {
+		"blogs": true,
+		"posts": true,
+		"gallery": true,
+		"about": true,
+		"hideEmpty": false
+	},
+	"colors": {
+		"light": {
+			"hull": "#cbd0d3",
+			"surface": "#f4f6f7",
+			"text": "#252b31",
+			"muted": "#53616c",
+			"accent": "#825024"
+		},
+		"dark": {
+			"hull": "#181e25",
+			"surface": "#242c34",
+			"text": "#edf1f4",
+			"muted": "#b5c1cb",
+			"accent": "#eabb84"
+		}
+	},
+	"content": {
+		"directory": "",
+		"autoDiscoverSibling": true,
+		"legacy": false
+	},
+	"profile": {
+		"name": "旅人",
+		"role": {
+			"zh": "写字的人，也是在路上的人。",
+			"en": "A writer, and a wanderer."
+		},
+		"bio": {
+			"zh": [
+				"我喜欢慢慢走，也喜欢把路上遇见的事情记下来。这个角落收藏长文、随手记和相册。",
+				"在下一次出发之前，泡杯茶，一起看看最近的风景。"
+			],
+			"en": [
+				"I like taking the long way home and writing about the things I find. This little corner holds essays, notes, and albums.",
+				"Before the next journey, let’s have a cup of tea and look at the view."
+			]
+		},
+		"portraitAlt": {
+			"zh": "小小飞船的窗景插画",
+			"en": "An illustrated window aboard the little ship"
+		},
+		"facts": {
+			"zh": [
+				{
+					"label": "喜欢",
+					"value": "散步、阅读、摄影"
+				}
+			],
+			"en": [
+				{
+					"label": "Enjoys",
+					"value": "Walking, reading, photography"
+				}
+			]
+		},
+		"links": []
+	},
+	"home": {
+		"notes": 3,
+		"articles": 5,
+		"portraitAlt": {
+			"zh": "",
+			"en": ""
+		}
+	},
+	"scene": {
+		"motion": true
+	}
+}

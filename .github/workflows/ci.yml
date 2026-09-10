@@ -10,25 +10,27 @@ permissions:
   contents: read
 
 jobs:
-  lint:
-    name: Check for build and type issues
+  verify:
     runs-on: ubuntu-latest
-
+    env:
+      CONTENT_MODE: sample
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v6
-
-      - name: Setup node
-        uses: actions/setup-node@v6
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
         with:
           node-version: 22
           cache: npm
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Run Astro check
-        run: npx astro check
-
-      - name: Run Astro build
-        run: npm run build
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npm run content:sync
+      - run: npm run check
+      - run: npm test
+      - run: npm run build
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: verification
+          path: |
+            artifacts/
+            playwright-report/
+            test-results/

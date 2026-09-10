@@ -1,5 +1,5 @@
 {
-	"name": "astro-cactus",
+	"name": "personal-spaceship",
 	"type": "module",
 	"version": "7.0.0",
 	"private": false,
@@ -7,15 +7,25 @@
 		"postinstall": "npm rebuild sharp --force",
 		"dev": "node scripts/sync-content.mjs && astro dev",
 		"dev:bare": "BARE=1 astro dev",
-		"dev:local": "CONTENT_DIR=../olivia-blog-content node scripts/sync-content.mjs && astro dev --host",
+		"dev:local": "node scripts/sync-content.mjs && astro dev --host",
 		"start": "astro dev",
 		"content:sync": "node scripts/sync-content.mjs",
 		"build": "node scripts/sync-content.mjs && astro build",
-		"postbuild": "pagefind --site dist",
+		"postbuild": "pagefind --site dist --silent",
 		"preview": "astro preview",
 		"check": "astro check && biome check",
 		"lint": "biome check --write",
-		"format": "prettier -w . --cache"
+		"format": "prettier -w . --cache",
+		"test:stage1": "playwright test stage1",
+		"test:stage2": "node --experimental-strip-types --test tests/unit/timeline.test.mjs tests/unit/note-preview.test.mjs && playwright test stage2",
+		"test:stage3": "playwright test stage3",
+		"test:stage4": "node --experimental-strip-types --test tests/unit/config.test.mjs tests/unit/sync.test.mjs && node scripts/test-template.mjs",
+		"test:stage5": "playwright test stage5",
+		"test:unit": "node --experimental-strip-types --test tests/unit/*.test.mjs",
+		"test:browser": "playwright test",
+		"test": "npm run test:unit && node scripts/test-template.mjs && npm run test:browser",
+		"dev:sample": "CONTENT_MODE=sample node scripts/sync-content.mjs && CONTENT_MODE=sample astro dev",
+		"build:sample": "CONTENT_MODE=sample node scripts/sync-content.mjs && CONTENT_MODE=sample astro build && pagefind --site dist --silent"
 	},
 	"dependencies": {
 		"@astrojs/markdown-remark": "^7.0.0",
@@ -43,13 +53,16 @@
 		"sharp": "^0.34.5",
 		"tailwindcss": "^4.2.1",
 		"unified": "^11.0.5",
-		"unist-util-visit": "^5.1.0"
+		"unist-util-visit": "^5.1.0",
+		"rehype-raw": "7.0.0"
 	},
 	"devDependencies": {
 		"@astrojs/check": "^0.9.7",
+		"@axe-core/playwright": "^4.13.0",
 		"@biomejs/biome": "^2.4.7",
 		"@iconify-json/mdi": "^1.2.2",
 		"@pagefind/default-ui": "^1.4.0",
+		"@playwright/test": "^1.63.0",
 		"@resvg/resvg-js": "^2.6.2",
 		"@tailwindcss/typography": "^0.5.19",
 		"@types/hast": "^3.0.4",
@@ -63,12 +76,7 @@
 		"typescript": "^5.9.3"
 	},
 	"pnpm": {
-		"onlyBuiltDependencies": [
-			"@biomejs/biome",
-			"@tailwindcss/oxide",
-			"esbuild",
-			"sharp"
-		],
+		"onlyBuiltDependencies": ["@biomejs/biome", "@tailwindcss/oxide", "esbuild", "sharp"],
 		"overrides": {
 			"sharp": "^0.34.5"
 		}

@@ -51,3 +51,14 @@ public/media/**
 .env
 .env.*
 !.env.example
+
+# test evidence is generated locally
+artifacts/
+test-results/
+playwright-report/
+.test-dist/
+public/__test__/
+.content-state.json
+.sync-stage-*/
+src/content/tag/**
+!src/content/tag/.gitkeep

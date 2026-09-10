@@ -1,6 +1,6 @@
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync } from "node:fs";
 import path from "node:path";
-import { siteHeroSrc, siteLogoSrc } from "@/data/site-assets";
+import { settings } from "@/data/settings";
 
 /**
  * Public fake defaults (this file is on GitHub).
@@ -13,8 +13,6 @@ const PORTRAIT_CANDIDATES = [
 	"site/about.jpeg",
 	"site/about.png",
 	"site/about.webp",
-	"about.jpg",
-	"about.png",
 ];
 
 function publicExists(rel: string): boolean {
@@ -22,6 +20,7 @@ function publicExists(rel: string): boolean {
 }
 
 function firstPortrait(preferred?: string): string {
+	if (process.env.BARE === "1") return "/defaults/portrait.svg";
 	if (preferred) {
 		const name = preferred.replace(/^\/+/, "").replace(/^site\//, "");
 		const rel = `site/${name}`;
@@ -30,106 +29,11 @@ function firstPortrait(preferred?: string): string {
 	for (const rel of PORTRAIT_CANDIDATES) {
 		if (publicExists(rel)) return `/${rel.replace(/^\/+/, "")}`;
 	}
-	if (publicExists(siteLogoSrc)) return siteLogoSrc;
-	return siteHeroSrc;
+	return "/defaults/portrait.svg";
 }
 
-export type ProfileLink = {
-	id: string;
-	label: string;
-	href: string;
-	icon: string;
-};
-
-export type ProfileFact = {
-	label: string;
-	value: string;
-};
-
-export type ProfileCopy = {
-	name: string;
-	role: { zh: string; en: string };
-	bio: { zh: string[]; en: string[] };
-	portraitAlt: { zh: string; en: string };
-	facts: { zh: ProfileFact[]; en: ProfileFact[] };
-	links: ProfileLink[];
-	/** Filename in `site/`, e.g. `about.jpg`. */
-	portrait?: string | undefined;
-};
-
-const defaults: ProfileCopy = {
-	name: "Astro Cactus",
-	role: {
-		zh: "这是占位简介，不是真实资料。",
-		en: "Placeholder bio — not real profile data.",
-	},
-	bio: {
-		zh: [
-			"仓库里的关于页只用假数据。真正的名字、简介和外链在私有内容库里。",
-			"本地或部署时会从 olivia-blog-content/site/about.json 覆盖这里。",
-		],
-		en: [
-			"The About page in this repo uses fake data only. Real copy lives in the private content repo.",
-			"Local/dev deploys overlay olivia-blog-content/site/about.json on top of this file.",
-		],
-	},
-	portraitAlt: {
-		zh: "占位头像",
-		en: "Placeholder portrait",
-	},
-	facts: {
-		zh: [
-			{ label: "坐标", value: "示例城市" },
-			{ label: "现在", value: "占位一句" },
-			{ label: "语言", value: "中文 / English" },
-			{ label: "这个站", value: "文章 · 短记 · 画廊" },
-		],
-		en: [
-			{ label: "Based", value: "Example City" },
-			{ label: "Now", value: "A placeholder line" },
-			{ label: "Languages", value: "中文 / English" },
-			{ label: "Here", value: "Blogs · Posts · Gallery" },
-		],
-	},
-	links: [
-		{ id: "github", label: "GitHub", href: "https://github.com/", icon: "mdi:github" },
-		{ id: "bilibili", label: "Bilibili", href: "https://space.bilibili.com/", icon: "mdi:television-play" },
-		{ id: "email", label: "Email", href: "mailto:hello@example.com", icon: "mdi:email-outline" },
-		{ id: "x", label: "X", href: "https://x.com/", icon: "mdi:twitter" },
-	],
-};
-
-function loadPrivateAbout(): Partial<ProfileCopy> {
-	const file = path.join(process.cwd(), "src/content/site/about.json");
-	if (!existsSync(file)) return {};
-	try {
-		return JSON.parse(readFileSync(file, "utf8")) as Partial<ProfileCopy>;
-	} catch {
-		return {};
-	}
-}
-
-function mergeProfile(base: ProfileCopy, over: Partial<ProfileCopy>): ProfileCopy {
-	return {
-		name: over.name ?? base.name,
-		role: { ...base.role, ...over.role },
-		bio: {
-			zh: over.bio?.zh?.length ? over.bio.zh : base.bio.zh,
-			en: over.bio?.en?.length ? over.bio.en : base.bio.en,
-		},
-		portraitAlt: { ...base.portraitAlt, ...over.portraitAlt },
-		facts: {
-			zh: over.facts?.zh?.length ? over.facts.zh : base.facts.zh,
-			en: over.facts?.en?.length ? over.facts.en : base.facts.en,
-		},
-		links: over.links?.length ? over.links : base.links,
-		portrait: over.portrait ?? base.portrait,
-	};
-}
-
-const merged = mergeProfile(defaults, loadPrivateAbout());
-
+export type { ProfileCopy, ProfileFact, ProfileLink } from "@/data/settings";
 export const profile = {
-	...merged,
-	portraitSrc: firstPortrait(merged.portrait),
+	...settings.profile,
+	portraitSrc: firstPortrait(settings.profile.portrait),
 };

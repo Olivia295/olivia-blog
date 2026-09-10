@@ -1,0 +1,65 @@
+---
+import { settings } from "@/data/settings";
+import { skins } from "./registry";
+
+// Build-time imports keep each skin's stylesheet in its own folder.
+import.meta.glob("./*/styles.css", { eager: true });
+const ids = skins.map((skin) => skin.id);
+const defaultSkin = settings.defaultSkin;
+const css = skins
+	.map(({ id, palette }) => {
+		const rules = (["light", "dark"] as const).map((mode) => {
+			const p = palette[mode];
+			return `html[data-skin="${id}"]${mode === "dark" ? '[data-theme="dark"]' : ""}{--hull:${p.hull};--skin-surface:${p.surface};--skin-text:${p.text};--skin-muted:${p.muted};--skin-brand:${p.accent}}`;
+		});
+		return (
+			rules.join("") +
+			`html[data-skin="${id}"] [data-skin-layer]:not([data-skin-layer="${id}"]){display:none!important}`
+		);
+	})
+	.join("");
+---
+
+<style is:inline set:html={css}></style>
+<script is:inline define:vars={{ ids, defaultSkin }}>
+	(() => {
+		const root = document.documentElement;
+		const storageKey = "blog-skin";
+		let preference = "";
+		try {
+			preference = localStorage.getItem(storageKey) || "";
+		} catch {}
+		const apply = () => {
+			if (!ids.includes(preference)) preference = "";
+			root.dataset.skin = preference || defaultSkin;
+			root.dataset.skinPreference = preference;
+			for (const layer of document.querySelectorAll("[data-skin-layer]"))
+				layer.inert = layer.dataset.skinLayer !== root.dataset.skin;
+			document.dispatchEvent(
+				new CustomEvent("skin-applied", { detail: { skin: root.dataset.skin } }),
+			);
+		};
+		apply();
+		document.addEventListener("skin-change", (event) => {
+			const next = event.detail?.skin;
+			if (next !== "" && !ids.includes(next)) return;
+			preference = next;
+			try {
+				if (preference) localStorage.setItem(storageKey, preference);
+				else localStorage.removeItem(storageKey);
+			} catch {}
+			apply();
+		});
+		document.addEventListener("DOMContentLoaded", apply, { once: true });
+		window.addEventListener("pageshow", apply);
+		window.addEventListener("storage", (event) => {
+			if (event.key === storageKey || event.key === null) {
+				preference = event.newValue || "";
+				apply();
+			}
+		});
+	})();
+</script>
+<script>
+	import "./runtime";
+</script>

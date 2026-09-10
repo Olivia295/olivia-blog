@@ -1,29 +1,20 @@
-import { existsSync, readFileSync } from "node:fs";
-import path from "node:path";
 import { type CollectionEntry, getCollection } from "astro:content";
 import { isBarePreview } from "@/data/bare";
-
-function loadSeriesOrder(): string[] {
-	const file = path.join(process.cwd(), "src/content/site/series.json");
-	if (!existsSync(file)) return [];
-	try {
-		const data = JSON.parse(readFileSync(file, "utf8")) as unknown;
-		if (Array.isArray(data)) return data.map((name) => String(name).trim()).filter(Boolean);
-		if (data && typeof data === "object" && Array.isArray((data as { order?: unknown }).order)) {
-			return (data as { order: unknown[] }).order.map((name) => String(name).trim()).filter(Boolean);
-		}
-	} catch {
-		return [];
-	}
-	return [];
-}
+import { seriesCatalog, seriesInfo } from "@/data/site-series";
 
 /** filter out draft posts based on the environment */
 export async function getAllBlogs(): Promise<CollectionEntry<"blog">[]> {
 	if (isBarePreview()) return [];
-	return await getCollection("blog", ({ data }) => {
+	const blogs = await getCollection("blog", ({ data }) => {
 		return import.meta.env.PROD ? !data.draft : true;
 	});
+	return blogs.map((blog) => ({
+		...blog,
+		data: {
+			...blog.data,
+			series: [...new Set(blog.data.series.map((name) => seriesInfo(name).zh))],
+		},
+	}));
 }
 
 /** Get tag metadata by tag name */
@@ -53,11 +44,13 @@ export function groupBlogsBySeries(
 	for (const blog of blogs) {
 		const names = blogSeries(blog);
 		if (!names.length) {
-			(grouped[uncategorized] ??= []).push(blog);
+			grouped[uncategorized] ??= [];
+			grouped[uncategorized].push(blog);
 			continue;
 		}
 		for (const key of names) {
-			(grouped[key] ??= []).push(blog);
+			grouped[key] ??= [];
+			grouped[key].push(blog);
 		}
 	}
 	return grouped;
@@ -69,7 +62,7 @@ export function getNamedSeries(blogs: CollectionEntry<"blog">[]): string[] {
 	for (const blog of blogs) {
 		for (const name of blogSeries(blog)) names.add(name);
 	}
-	const order = loadSeriesOrder();
+	const order = seriesCatalog.map((entry) => entry.zh);
 	return [...names].sort((a, b) => {
 		const ia = order.indexOf(a);
 		const ib = order.indexOf(b);
@@ -80,19 +73,9 @@ export function getNamedSeries(blogs: CollectionEntry<"blog">[]): string[] {
 	});
 }
 
-export function getAllTags(blogs: CollectionEntry<"blog">[]) {
-	return blogs.flatMap((blog) => [...blog.data.tags]);
-}
-
-export function getUniqueTags(blogs: CollectionEntry<"blog">[]) {
-	return [...new Set(getAllTags(blogs))];
-}
-
-export function getUniqueTagsWithCount(blogs: CollectionEntry<"blog">[]): [string, number][] {
-	return [
-		...getAllTags(blogs).reduce(
-			(acc, t) => acc.set(t, (acc.get(t) ?? 0) + 1),
-			new Map<string, number>(),
-		),
-	].sort((a, b) => b[1] - a[1]);
+export function getSeriesWithCount(blogs: CollectionEntry<"blog">[]): [string, number][] {
+	return getNamedSeries(blogs).map((name) => [
+		name,
+		blogs.filter((blog) => blogSeries(blog).includes(name)).length,
+	]);
 }

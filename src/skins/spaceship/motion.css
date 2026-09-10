@@ -1,0 +1,156 @@
+/* Shared motion — desktop + mobile. Respects prefers-reduced-motion. */
+
+@keyframes Spaceship-fade-up {
+	from {
+		opacity: 0;
+		transform: translateY(12px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+@keyframes Spaceship-fade-in {
+	from {
+		opacity: 0;
+	}
+	to {
+		opacity: 1;
+	}
+}
+
+@keyframes Spaceship-soft-pop {
+	from {
+		opacity: 0;
+		transform: scale(0.97);
+	}
+	to {
+		opacity: 1;
+		transform: scale(1);
+	}
+}
+
+@layer components {
+	:where(html[data-skin="spaceship"]) .motion-fade-up {
+		/* forwards only — never leave content stuck at opacity:0 if animation is skipped/late */
+		animation: Spaceship-fade-up 0.65s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+	}
+
+	:where(html[data-skin="spaceship"]) .motion-fade-in {
+		animation: Spaceship-fade-in 0.5s ease forwards;
+	}
+
+	:where(html[data-skin="spaceship"]) .motion-soft-pop {
+		animation: Spaceship-soft-pop 0.55s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+	}
+
+	/* Stagger children (notes feed, grids) */
+	:where(html[data-skin="spaceship"]) .motion-stagger > * {
+		animation: Spaceship-fade-up 0.55s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+	}
+	:where(html[data-skin="spaceship"]) .motion-stagger > *:nth-child(1) {
+		animation-delay: 0.04s;
+	}
+	:where(html[data-skin="spaceship"]) .motion-stagger > *:nth-child(2) {
+		animation-delay: 0.1s;
+	}
+	:where(html[data-skin="spaceship"]) .motion-stagger > *:nth-child(3) {
+		animation-delay: 0.16s;
+	}
+	:where(html[data-skin="spaceship"]) .motion-stagger > *:nth-child(4) {
+		animation-delay: 0.22s;
+	}
+	:where(html[data-skin="spaceship"]) .motion-stagger > *:nth-child(5) {
+		animation-delay: 0.28s;
+	}
+	:where(html[data-skin="spaceship"]) .motion-stagger > *:nth-child(6) {
+		animation-delay: 0.34s;
+	}
+	:where(html[data-skin="spaceship"]) .motion-stagger > *:nth-child(n + 7) {
+		animation-delay: 0.4s;
+	}
+
+	/* Interactive press feedback (works on touch) */
+	:where(html[data-skin="spaceship"]) .motion-press {
+		transition:
+			transform 0.2s cubic-bezier(0.22, 1, 0.36, 1),
+			opacity 0.2s ease,
+			box-shadow 0.2s ease;
+	}
+	:where(html[data-skin="spaceship"]) .motion-press:active {
+		transform: scale(0.98);
+	}
+
+	@media (prefers-reduced-motion: reduce), (scripting: none) {
+		:where(html[data-skin="spaceship"]) .motion-fade-up,
+		:where(html[data-skin="spaceship"]) .motion-fade-in,
+		:where(html[data-skin="spaceship"]) .motion-soft-pop,
+		:where(html[data-skin="spaceship"]) .motion-stagger > * {
+			animation: none !important;
+		}
+		:where(html[data-skin="spaceship"]) .motion-press,
+		:where(html[data-skin="spaceship"]) .motion-press:active {
+			transition: none !important;
+			transform: none !important;
+		}
+	}
+}
+/* Short, bounded responses. Reading backgrounds never run a looping animation. */
+:where(html[data-skin="spaceship"]) .site-main {
+	animation: Spaceship-fade-up 180ms ease-out both;
+}
+:where(html[data-skin="spaceship"]) .site-main--reading {
+	animation: Spaceship-fade-in 140ms ease-out both;
+}
+:where(html[data-skin="spaceship"]) button,
+:where(html[data-skin="spaceship"]) .site-nav__link,
+:where(html[data-skin="spaceship"]) .log-photos a,
+:where(html[data-skin="spaceship"]) .about__link {
+	transition:
+		transform 150ms ease-out,
+		background-color 150ms ease-out,
+		box-shadow 150ms ease-out;
+}
+:where(html[data-skin="spaceship"]) button:active,
+:where(html[data-skin="spaceship"]) .log-photos a:active,
+:where(html[data-skin="spaceship"]) .about__link:active {
+	transform: translateY(1px) scale(0.985);
+}
+:where(html[data-skin="spaceship"]) .site-nav__link:hover,
+:where(html[data-skin="spaceship"]) .site-nav__link:focus-visible {
+	background: color-mix(in srgb, var(--color-brand) 7%, transparent);
+}
+:where(html[data-skin="spaceship"]) .log-photos a:hover {
+	transform: translateY(-2px);
+}
+html[data-skin="spaceship"]::view-transition-old(root) {
+	animation: Spaceship-fade-in 100ms reverse both;
+}
+html[data-skin="spaceship"]::view-transition-new(root) {
+	animation: Spaceship-fade-up 180ms ease-out both;
+}
+@media (prefers-reduced-motion: reduce), (scripting: none) {
+	:where(html[data-skin="spaceship"]) .site-main,
+	:where(html[data-skin="spaceship"]) .site-main--reading {
+		animation: none;
+	}
+	:where(html[data-skin="spaceship"]) button,
+	:where(html[data-skin="spaceship"]) .site-nav__link,
+	:where(html[data-skin="spaceship"]) .log-photos a,
+	:where(html[data-skin="spaceship"]) .about__link {
+		transition: none;
+	}
+	:where(html[data-skin="spaceship"]) button:active,
+	:where(html[data-skin="spaceship"]) .log-photos a:hover,
+	:where(html[data-skin="spaceship"]) .log-photos a:active,
+	:where(html[data-skin="spaceship"]) .about__link:active {
+		transform: none;
+	}
+}
+
+@media (prefers-reduced-motion: reduce), (scripting: none) {
+	:where(html[data-skin="spaceship"]) theme-toggle svg {
+		transition: none;
+	}
+}

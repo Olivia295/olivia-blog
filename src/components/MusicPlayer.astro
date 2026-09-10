@@ -20,7 +20,8 @@ const hasSongs = songs.length > 0;
 const singleTrack = songs.length === 1;
 const displayTitle =
 	songs[0]?.title && !/^bgm$/i.test(songs[0].title) ? songs[0].title : t("music.trackForBlog");
-const displayArtist = songs[0]?.artist && songs[0].artist !== "Unknown Artist" ? songs[0].artist : "";
+const displayArtist =
+	songs[0]?.artist && songs[0].artist !== "Unknown Artist" ? songs[0].artist : "";
 ---
 
 {
@@ -33,40 +34,36 @@ const displayArtist = songs[0]?.artist && songs[0].artist !== "Unknown Artist" ?
 				<p id="current-title" class="current-title">
 					{displayTitle}
 				</p>
-				{
-					displayArtist && (
-						<p id="current-artist" class="current-artist">
-							{displayArtist}
-						</p>
-					)
-				}
+				{displayArtist && (
+					<p id="current-artist" class="current-artist">
+						{displayArtist}
+					</p>
+				)}
 			</div>
 
 			<audio id="audio-player" controls preload="metadata">
 				<source id="audio-source" src={songs[0]?.src} type="audio/mpeg" />
 			</audio>
 
-			{
-				!singleTrack && (
-					<ul class="playlist" role="list">
-						{songs.map((song, index) => (
-							<li>
-								<button
-									type="button"
-									class={index === 0 ? "active" : ""}
-									data-index={index}
-									data-src={song.src}
-									data-title={song.title}
-									data-artist={song.artist}
-								>
-									<span class="song-title">{song.title}</span>
-									<span class="song-artist">{song.artist}</span>
-								</button>
-							</li>
-						))}
-					</ul>
-				)
-			}
+			{!singleTrack && (
+				<ul class="playlist" role="list">
+					{songs.map((song, index) => (
+						<li>
+							<button
+								type="button"
+								class={index === 0 ? "active" : ""}
+								data-index={index}
+								data-src={song.src}
+								data-title={song.title}
+								data-artist={song.artist}
+							>
+								<span class="song-title">{song.title}</span>
+								<span class="song-artist">{song.artist}</span>
+							</button>
+						</li>
+					))}
+				</ul>
+			)}
 		</div>
 	) : null
 }
@@ -122,12 +119,6 @@ const displayArtist = songs[0]?.artist && songs[0].artist !== "Unknown Artist" ?
 		width: min(22rem, 100%);
 		margin-inline: auto;
 		padding: 1.1rem 1.2rem 1.15rem;
-		border-radius: 1.05rem;
-		background: color-mix(in oklch, var(--color-brand) 9%, var(--color-global-bg));
-		border: 1px solid color-mix(in oklch, var(--color-brand) 38%, transparent);
-		box-shadow:
-			inset 0 1px 0 color-mix(in oklch, white 35%, transparent),
-			0 10px 28px color-mix(in oklch, var(--color-brand) 12%, transparent);
 	}
 
 	.music-player__mark {
@@ -136,13 +127,6 @@ const displayArtist = songs[0]?.artist && songs[0].artist !== "Unknown Artist" ?
 		left: 50%;
 		transform: translateX(-50%);
 		padding: 0.12rem 0.55rem;
-		border-radius: 999px;
-		background: var(--color-brand);
-		color: white;
-		font-size: 0.62rem;
-		font-weight: 800;
-		letter-spacing: 0.14em;
-		line-height: 1.2;
 	}
 
 	.now-playing {
@@ -152,29 +136,19 @@ const displayArtist = songs[0]?.artist && songs[0].artist !== "Unknown Artist" ?
 
 	.label {
 		margin: 0 0 0.3rem;
-		font-size: 0.68rem;
-		letter-spacing: 0.08em;
-		font-weight: 700;
-		color: var(--color-brand);
 	}
 
 	.current-title {
 		margin: 0;
-		font-size: 0.95rem;
-		font-weight: 700;
-		line-height: 1.35;
 	}
 
 	.current-artist {
 		margin: 0.2rem 0 0;
-		font-size: 0.8rem;
-		opacity: 0.65;
 	}
 
 	audio {
 		width: 100%;
 		height: 2.35rem;
-		accent-color: var(--color-brand);
 	}
 
 	.playlist {
@@ -191,36 +165,17 @@ const displayArtist = songs[0]?.artist && songs[0].artist !== "Unknown Artist" ?
 
 	.playlist button {
 		width: 100%;
-		border: none;
-		background: transparent;
 		padding: 0.65rem 0.75rem;
-		border-radius: 0.65rem;
 		cursor: pointer;
 		text-align: left;
-		font-family: inherit;
-		color: inherit;
-		transition: background 0.15s ease;
-	}
-
-	.playlist button:hover,
-	.playlist button.active {
-		background: color-mix(in oklch, var(--color-brand) 12%, transparent);
-	}
-
-	.playlist button.active {
-		box-shadow: inset 2px 0 0 var(--color-brand);
 	}
 
 	.song-title {
 		display: block;
-		font-size: 0.85rem;
-		font-weight: 600;
 	}
 
 	.song-artist {
 		display: block;
 		margin-top: 0.15rem;
-		font-size: 0.75rem;
-		opacity: 0.6;
 	}
 </style>

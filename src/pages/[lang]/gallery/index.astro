@@ -3,8 +3,8 @@ import FloatingBack from "@/components/FloatingBack.astro";
 import PageHeader from "@/components/PageHeader.astro";
 import { buildPhotoSrcSet, getPhotoAlbums, photoThumbUrl } from "@/data/gallery";
 import { pageLead } from "@/data/page-copy";
-import { getStaticLangPaths, localePath, useTranslations } from "@/i18n/utils";
 import type { Lang } from "@/i18n/config";
+import { getStaticLangPaths, localePath, useTranslations } from "@/i18n/utils";
 import PageLayout from "@/layouts/Base.astro";
 
 export function getStaticPaths() {
@@ -42,7 +42,7 @@ const meta = {
 							</header>
 							<div class="set__preview">
 								{preview.map((image) => {
-									const thumb = photoThumbUrl(image.src, 600);
+									const thumb = photoThumbUrl(image.previewSrc ?? image.src, 600);
 									const srcset = buildPhotoSrcSet(image.src, [400, 600, 900]);
 									return (
 										<span class="set__thumb">
@@ -70,17 +70,11 @@ const meta = {
 </PageLayout>
 
 <style>
-	.empty {
-		opacity: 0.75;
-	}
-
 	.set {
 		display: block;
 		min-width: 0;
 		max-width: 100%;
 		margin-bottom: 2.5rem;
-		color: inherit;
-		text-decoration: none;
 	}
 
 	.set__head {
@@ -94,14 +88,6 @@ const meta = {
 
 	.set__title {
 		margin: 0;
-		font-size: 1.2rem;
-		font-weight: 700;
-	}
-
-	.set__meta {
-		font-size: 0.8rem;
-		font-weight: 600;
-		color: var(--color-brand);
 	}
 
 	.set__preview {
@@ -118,8 +104,6 @@ const meta = {
 		display: block;
 		overflow: hidden;
 		aspect-ratio: 1;
-		border-radius: 0.7rem;
-		background: color-mix(in oklch, var(--color-global-text) 6%, transparent);
 	}
 
 	.set__thumb img {
@@ -127,10 +111,6 @@ const meta = {
 		width: 100%;
 		height: 100%;
 		object-fit: cover;
-	}
-
-	.set:hover .set__title {
-		color: var(--color-brand);
 	}
 
 	@media (min-width: 860px) {

@@ -1,0 +1,45 @@
+---
+import type { Lang } from "@/i18n/config";
+import { useTranslations } from "@/i18n/utils";
+
+interface Props {
+	lang: Lang;
+}
+const { lang } = Astro.props;
+const t = useTranslations(lang);
+---
+
+<dialog
+	id="photo-viewer"
+	class="photo-viewer"
+	aria-label={lang === "zh" ? "照片浏览器" : "Photo viewer"}
+	data-error={lang === "zh"
+		? "图片暂时无法加载。请重试，或打开原图。"
+		: "The photo could not load. Retry or open the original."}
+	data-fallback={lang === "zh" ? "照片" : "Photo"}
+>
+	<div class="viewer-toolbar">
+		<span class="viewer-counter" aria-live="polite"></span><div class="viewer-tools">
+			<button type="button" data-viewer-fullscreen>{lang === "zh" ? "全屏" : "Full screen"}</button
+			><button type="button" data-viewer-close autofocus
+				>{t("gallery.closePreview")} <span aria-hidden="true">×</span></button>
+		</div>
+	</div>
+	<div class="viewer-stage">
+		<button type="button" data-viewer-prev aria-label={t("gallery.prev")}>←</button><div
+			class="viewer-image-wrap"
+		>
+			<img class="viewer-image" alt="" /><div class="viewer-error" hidden role="status">
+				<p></p><button type="button" data-viewer-retry>{lang === "zh" ? "重试" : "Retry"}</button><a
+					data-viewer-original
+					target="_blank"
+					rel="noopener noreferrer">{lang === "zh" ? "打开原图" : "Open original"}</a>
+			</div>
+		</div><button type="button" data-viewer-next aria-label={t("gallery.next")}>→</button>
+	</div>
+	<p class="viewer-caption"></p>
+</dialog>
+<script>
+	import { initPhotoViewer } from "@/scripts/photo-viewer";
+	initPhotoViewer();
+</script>

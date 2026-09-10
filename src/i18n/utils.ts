@@ -1,5 +1,5 @@
-import { defaultLang, isLang, languages, type Lang } from "./config";
-import { ui, type UIKey } from "./ui";
+import { defaultLang, isLang, type Lang, languages } from "./config";
+import { type UIKey, ui } from "./ui";
 
 export function useTranslations(lang: Lang) {
 	return function t(key: UIKey, vars?: Record<string, string | number>): string {

@@ -1,57 +1,18 @@
-import { existsSync, readFileSync } from "node:fs";
-import path from "node:path";
 import type { AstroExpressiveCodeOptions } from "astro-expressive-code";
 import type { SiteConfig } from "@/types";
 
-/**
- * Public GitHub defaults — no personal identity.
- * Vercel/local overlay: gitignored `src/content/site/site.json`
- * from the private content repo (`site/site.json`).
- */
-const defaults: SiteConfig & { shortName?: string } = {
-	url: "https://example.com/",
-	title: "Astro Cactus",
-	author: "Guest",
-	description: "A small static site.",
+import { settings } from "./data/settings";
+import { makeOverflowReadable } from "./plugins/rehype-readable-overflow";
+export const siteConfig: SiteConfig = {
+	url: settings.url,
+	title: settings.title,
+	author: settings.author,
+	description: settings.description,
 	lang: "zh-CN",
 	ogLocale: "zh_CN",
-	date: {
-		locale: "zh-CN",
-		options: {
-			day: "numeric",
-			month: "short",
-			year: "numeric",
-		},
-	},
+	date: { locale: "zh-CN", options: { year: "numeric", month: "short", day: "numeric" } },
 };
-
-type SiteOverlay = Partial<Pick<SiteConfig, "url" | "title" | "author" | "description">> & {
-	shortName?: string;
-};
-
-function loadSiteOverlay(): SiteOverlay {
-	const file = path.join(process.cwd(), "src/content/site/site.json");
-	if (!existsSync(file)) return {};
-	try {
-		return JSON.parse(readFileSync(file, "utf8")) as SiteOverlay;
-	} catch {
-		return {};
-	}
-}
-
-const overlay = loadSiteOverlay();
-
-export const siteConfig: SiteConfig = {
-	url: overlay.url ?? defaults.url,
-	title: overlay.title ?? defaults.title,
-	author: overlay.author ?? defaults.author,
-	description: overlay.description ?? defaults.description,
-	lang: defaults.lang,
-	ogLocale: defaults.ogLocale,
-	date: defaults.date,
-};
-
-export const siteShortName = overlay.shortName ?? overlay.title ?? defaults.title;
+export const siteShortName = settings.shortName;
 
 /** Bare paths (no locale prefix). Titles come from i18n ui keys. */
 export const menuLinkDefs: {
@@ -67,6 +28,14 @@ export const menuLinkDefs: {
 
 // https://expressive-code.com/reference/configuration/
 export const expressiveCodeOptions: AstroExpressiveCodeOptions = {
+	plugins: [
+		{
+			name: "Keyboard readable code",
+			hooks: {
+				postprocessRenderedBlock: ({ renderData }) => makeOverflowReadable(renderData.blockAst),
+			},
+		},
+	],
 	styleOverrides: {
 		borderRadius: "4px",
 		codeFontFamily:

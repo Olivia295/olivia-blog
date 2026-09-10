@@ -8,7 +8,7 @@ type CopyFile = Partial<Record<PageCopyId, Partial<Record<Lang, string>>>>;
 
 function loadCopy(): CopyFile {
 	const file = path.join(process.cwd(), "src/content/site/copy.json");
-	if (!existsSync(file)) return {};
+	if (process.env.BARE === "1" || !existsSync(file)) return {};
 	try {
 		return JSON.parse(readFileSync(file, "utf8")) as CopyFile;
 	} catch {

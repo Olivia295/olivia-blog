@@ -17,7 +17,11 @@ const { Content } = await render(post);
 const tags = resolvePostTags(post.data.tags, lang);
 ---
 
-<article class:list={["note-card", { "note-card--plain": plain }]} id={`post-${post.id}`} data-pagefind-body>
+<article
+	class:list={["note-card", { "note-card--plain": plain }]}
+	id={`post-${post.id}`}
+	data-pagefind-body
+>
 	{
 		tags.length > 0 && (
 			<ul class="note-card__tags" aria-label={lang === "en" ? "Tags" : "标签"}>
@@ -46,36 +50,6 @@ const tags = resolvePostTags(post.data.tags, lang);
 	/>
 </article>
 
-<script>
-	const zoom = document.getElementById("note-zoom") as HTMLDialogElement | null;
-	const zoomImg = zoom?.querySelector("img");
-
-	document.querySelectorAll<HTMLElement>(".note-card__body").forEach((body) => {
-		if (body.dataset.shotsPacked === "true") return;
-		const imgs = [...body.querySelectorAll<HTMLImageElement>("img")];
-		body.dataset.shotsPacked = "true";
-		if (!imgs.length) return;
-
-		const row = document.createElement("div");
-		row.className = "note-shots";
-		for (const img of imgs) {
-			const parent = img.parentElement;
-			const cell = document.createElement("span");
-			cell.className = "note-shots__cell";
-			cell.append(img);
-			row.append(cell);
-			if (parent?.tagName === "P" && parent !== body && !parent.textContent?.trim()) parent.remove();
-			img.addEventListener("click", () => {
-				if (!zoom || !zoomImg) return;
-				zoomImg.src = img.currentSrc || img.src;
-				zoomImg.alt = img.alt;
-				zoom.showModal();
-			});
-		}
-		body.append(row);
-	});
-</script>
-
 <style>
 	.note-card {
 		position: relative;
@@ -83,10 +57,7 @@ const tags = resolvePostTags(post.data.tags, lang);
 		gap: 0.7rem;
 		min-width: 0;
 		max-width: 100%;
-		padding: 2.35rem 1.1rem 0.85rem;
-		border-radius: 1.05rem;
-		background: color-mix(in oklch, var(--color-global-text) 3.5%, transparent);
-		border: 1px solid color-mix(in oklch, var(--color-global-text) 6%, transparent);
+		padding: 1.1rem;
 	}
 
 	.note-card:not(:has(.note-card__tags)) {
@@ -95,15 +66,10 @@ const tags = resolvePostTags(post.data.tags, lang);
 
 	.note-card--plain {
 		padding: 0 0 1.1rem;
-		border: none;
-		border-radius: 0;
-		background: transparent;
 	}
 
 	.note-card__tags {
-		position: absolute;
-		top: 0.62rem;
-		left: 0.7rem;
+		position: static;
 		display: flex;
 		flex-wrap: wrap;
 		gap: 0.35rem;
@@ -122,39 +88,10 @@ const tags = resolvePostTags(post.data.tags, lang);
 		align-items: center;
 		min-height: 1.35rem;
 		padding: 0.12rem 0.55rem;
-		border-radius: 999px;
-		font-size: 0.68rem;
-		font-weight: 700;
-		letter-spacing: 0.06em;
-		line-height: 1;
-	}
-
-	.note-tag--excerpt {
-		color: color-mix(in oklch, var(--color-brand) 72%, var(--color-global-text));
-		background: color-mix(in oklch, var(--color-brand) 12%, transparent);
-	}
-
-	.note-tag--note {
-		color: color-mix(in oklch, var(--color-global-text) 78%, transparent);
-		background: color-mix(in oklch, var(--color-global-text) 8%, transparent);
-	}
-
-	.note-tag--rec {
-		color: oklch(0.52 0.12 75);
-		background: color-mix(in oklch, oklch(0.78 0.12 75) 28%, transparent);
-	}
-
-	.note-tag--other {
-		color: var(--color-muted);
-		background: color-mix(in oklch, var(--color-global-text) 6%, transparent);
 	}
 
 	.note-card__date {
 		justify-self: end;
-		font-size: 0.72rem;
-		opacity: 0.48;
-		font-weight: 500;
-		letter-spacing: 0.02em;
 	}
 
 	.note-card__body {
@@ -167,11 +104,9 @@ const tags = resolvePostTags(post.data.tags, lang);
 		max-width: 100%;
 		aspect-ratio: 1;
 		margin: 0.85rem 0.45rem 0 0;
-		border-radius: 0.65rem;
 		object-fit: cover;
 		vertical-align: top;
 		cursor: zoom-in;
-		background: color-mix(in oklch, var(--color-global-text) 6%, transparent);
 	}
 
 	.note-card__body :global(.note-shots) {
@@ -187,8 +122,6 @@ const tags = resolvePostTags(post.data.tags, lang);
 		min-width: 0;
 		aspect-ratio: 1;
 		overflow: hidden;
-		border-radius: 0.65rem;
-		background: color-mix(in oklch, var(--color-global-text) 6%, transparent);
 	}
 
 	.note-card__body :global(.note-shots img) {
@@ -203,9 +136,5 @@ const tags = resolvePostTags(post.data.tags, lang);
 
 	.note-card__body :global(p:last-child) {
 		margin-bottom: 0;
-	}
-
-	.note-card__body :global(a) {
-		color: var(--color-link);
 	}
 </style>

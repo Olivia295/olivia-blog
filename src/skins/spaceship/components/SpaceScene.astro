@@ -1,0 +1,79 @@
+---
+interface Props {
+	class?: string;
+	variant?: "left" | "right";
+}
+// Four silhouettes share a restrained material palette; flights have ample gaps between them.
+const hulls = {
+	shuttle: "M12 22 32 15 44 3 57 3 61 13 90 19 98 23 75 28 59 28 45 36 31 34 37 25 12 25Z",
+	cargo: "M9 12 28 7H66L77 15 94 18 99 24 79 29H28L9 24Z",
+	explorer: "M4 21 35 16 57 5 63 6 59 15 95 19 100 22 58 25 63 35 56 35 34 26 4 25Z",
+	delta: "M10 30 50 3 62 3 99 21 64 27 52 36 32 27Z",
+};
+const colors = ["#b7c5d1", "#b98068", "#749cb8", "#c6ad73", "#a5b5ad"];
+const flights = [
+	{ kind: "shuttle", color: 0, top: 36, depart: 6, reading: 15, escort: false },
+	{ kind: "cargo", color: 1, top: 62, depart: 48, reading: 80, escort: true },
+	{ kind: "explorer", color: 2, top: 25, depart: 88, reading: 148, escort: true },
+	{ kind: "delta", color: 3, top: 48, depart: 128, reading: 211, escort: false },
+] as const;
+const planets = [
+	{ color: "#7899ae", shade: "#263c57", size: 66, top: 16, depart: 32, ring: false },
+	{ color: "#c39679", shade: "#553941", size: 102, top: 56, depart: 112, ring: true },
+	{ color: "#a7aaa1", shade: "#404e61", size: 40, top: 40, depart: 192, ring: false },
+];
+const offset = Astro.props.variant === "right" ? 20 : 0;
+---
+
+<div class:list={["space-scene", Astro.props.class]} aria-hidden="true" data-space-active="false">
+	<div class="space-dust"></div>
+	{
+		planets.map((planet) => (
+			<div
+				class:list={["passing-planet", { "passing-planet--ringed": planet.ring }]}
+				style={`--planet-color:${planet.color};--planet-shade:${planet.shade};--planet-size:${planet.size}px;top:${planet.top}%;--planet-departure:${planet.depart + offset}s;--reading-planet-departure:${(planet.depart + offset) * 1.5}s;`}
+			>
+				<span class="planet-body" />
+				{planet.ring && <span class="planet-ring" />}
+			</div>
+		))
+	}
+	{
+		flights.map((flight) => (
+			<div
+				class="passing-ship"
+				data-craft={flight.kind}
+				style={`top:${flight.top}%;--departure:${flight.depart + offset}s;--reading-departure:${flight.reading + offset}s;--flight-width:${flight.escort ? 118 : 76}px;`}
+			>
+				<svg class="craft-main" viewBox="0 0 100 40" width="76" height="30" fill="none">
+					<path
+						d={hulls[flight.kind]}
+						fill={colors[(flight.color + (offset ? 1 : 0)) % colors.length]}
+					/>
+					<path d="m20 21 30-6 31 7-35 5-9-3Z" fill="#283f50" />
+					<path d="m61 14 20 5-21 1Z" fill="#d1e2ef" />
+					<path d="M13 22H3" stroke="#ecc086" stroke-width="2" />
+					<circle cx="71" cy="23" r="1.6" fill="#f2d5a7" />
+					{flight.kind === "cargo" && (
+						<path d="M29 11v15M40 11v15M51 11v15M62 11v15" stroke="#d3b9aa" stroke-width="2" />
+					)}
+				</svg>
+				{flight.escort &&
+					[0, 1].map((index) => (
+						<svg
+							class={`craft-escort craft-escort--${index}`}
+							viewBox="0 0 100 40"
+							width="30"
+							height="12"
+							fill="none"
+						>
+							<path d={hulls.delta} fill={colors[(flight.color + index + 2) % colors.length]} />
+							<path d="m38 18 33 3-32 4Z" fill="#273c50" />
+							<path d="M13 22H3" stroke="#bcd9eb" stroke-width="3" />
+						</svg>
+					))}
+			</div>
+		))
+	}
+	<span class="meteor meteor-one"></span><span class="meteor meteor-two"></span>
+</div>

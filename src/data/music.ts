@@ -1,5 +1,5 @@
-import musicManifest from "./music.json";
 import { resolveMediaUrl } from "@/utils/media";
+import musicManifest from "./music.json";
 
 export type Song = {
 	id?: string | undefined;

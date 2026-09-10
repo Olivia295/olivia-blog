@@ -1,0 +1,1108 @@
+html[data-skin="spaceship"] {
+	--hull: #cbd0d3;
+	--hull-edge: #929fa9;
+	--panel-border: #adb8c1;
+	--seam: #d5dde3;
+	--window-rim: #73818c;
+	--metal-top: #eef2f4;
+	--metal-bottom: #cbd4da;
+	--mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+	background: var(--hull);
+}
+html[data-skin="spaceship"][data-theme="dark"] {
+	--hull: #181e25;
+	--hull-edge: #596876;
+	--panel-border: #536170;
+	--seam: #424f5b;
+	--window-rim: #61717f;
+	--metal-top: #374450;
+	--metal-bottom: #222c36;
+}
+:where(html[data-skin="spaceship"]) body {
+	background: linear-gradient(90deg, #00000008, transparent 12% 88%, #00000008), var(--hull);
+}
+:where(html[data-skin="spaceship"]) .ship-surround {
+	position: fixed;
+	z-index: 0;
+	inset: calc(var(--header-height, 66px) + 28px) 14px 24px;
+	pointer-events: none;
+	border: 1px solid var(--hull-edge);
+	border-radius: 40px 40px 8px 8px;
+	box-shadow: inset 0 0 0 4px color-mix(in srgb, var(--hull-edge) 16%, transparent);
+}
+:where(html[data-skin="spaceship"]) .ship-surround:before,
+:where(html[data-skin="spaceship"]) .ship-surround:after {
+	content: "";
+	position: absolute;
+	top: 18px;
+	bottom: 24px;
+	width: max(0px, calc((100vw - var(--content-width)) / 2 - var(--window-gap) - 28px));
+	background:
+		radial-gradient(circle at 32% 20%, #ffffffa0 0 1px, transparent 2px),
+		radial-gradient(circle at 70% 60%, #bdcfdf75 0 1px, transparent 2px),
+		linear-gradient(135deg, #192d3c, #0b141e 75%);
+	background-size:
+		109px 181px,
+		141px 251px,
+		100% 100%;
+	border: 3px solid var(--window-rim);
+	border-radius: 28px 5px 5px 8px;
+	box-shadow:
+		inset 0 0 18px #000,
+		0 0 0 1px var(--hull-edge);
+}
+:where(html[data-skin="spaceship"]) .ship-surround:before {
+	left: 12px;
+}
+:where(html[data-skin="spaceship"]) .ship-surround:after {
+	right: 12px;
+	transform: scaleX(-1);
+}
+:where(html[data-skin="spaceship"]) .site-main {
+	background: var(--color-global-bg);
+	border: 1px solid var(--panel-border);
+	border-radius: 8px;
+	box-shadow: 0 10px 30px #1726350a;
+}
+:where(html[data-skin="spaceship"]) .site-main:before,
+:where(html[data-skin="spaceship"]) .site-main:after {
+	content: "⊖";
+	position: absolute;
+	top: 10px;
+	font: 12px var(--mono);
+	color: var(--hull-edge);
+}
+:where(html[data-skin="spaceship"]) .site-main:before {
+	left: 13px;
+}
+:where(html[data-skin="spaceship"]) .site-main:after {
+	right: 13px;
+}
+:where(html[data-skin="spaceship"]) .site-main--home {
+	background: none;
+	border: 0;
+	box-shadow: none;
+}
+:where(html[data-skin="spaceship"]) .skip-link {
+	background: var(--color-global-bg);
+}
+:where(html[data-skin="spaceship"]) .ship-window {
+	color: #f3f5f6;
+	background: #101b25;
+	border: 3px solid var(--window-rim);
+	border-radius: 28px 28px 12px 12px;
+	box-shadow:
+		0 0 0 1px var(--hull-edge),
+		inset 0 0 0 3px #232c34,
+		0 18px 36px #16212d25;
+}
+:where(html[data-skin="spaceship"]) .hangar-backdrop {
+	position: absolute;
+	z-index: -2;
+	inset: 0;
+	background: linear-gradient(90deg, #07101980, transparent 65%), #111b23;
+	pointer-events: none;
+}
+html[data-skin="spaceship"][data-theme="dark"] .hangar-backdrop {
+	filter: brightness(0.78);
+}
+:where(html[data-skin="spaceship"]) .foyer-copy {
+	text-shadow: 0 2px 18px #071019;
+}
+:where(html[data-skin="spaceship"]) .foyer-copy h1 {
+	font-family: Georgia, "Songti SC", serif;
+	font-size: clamp(2.5rem, 4.5vw, 4.2rem);
+	font-weight: 400;
+	letter-spacing: -0.035em;
+	line-height: 1.2;
+}
+:where(html[data-skin="spaceship"]) .foyer-copy p {
+	font-size: 16px;
+	color: #e3e8eb;
+	line-height: 1.9;
+}
+:where(html[data-skin="spaceship"]) .foyer-copy .welcome-link {
+	color: #f4c794;
+	border-bottom: 1px solid #bb986e;
+	font-size: 14px;
+}
+:where(html[data-skin="spaceship"]) .cabin-eyebrow {
+	font: 10px / 1.8 var(--mono);
+	letter-spacing: 0.12em;
+	color: #f4cd93;
+}
+:where(html[data-skin="spaceship"]) .cabin-lamp {
+	display: inline-block;
+	background: #efb965;
+	width: 5px;
+	height: 5px;
+	border-radius: 50%;
+	box-shadow: 0 0 12px #edb85c;
+	margin-right: 10px;
+}
+:where(html[data-skin="spaceship"]) .hero-portrait {
+	background: linear-gradient(120deg, #e2e9ed, #606f7a 45%, #b8c3ca 60%, #35444f);
+	border: 1px solid #c1cbd1;
+	border-radius: 8px;
+	box-shadow: 8px 24px 40px #0008;
+}
+:where(html[data-skin="spaceship"]) .hero-portrait img {
+	border-radius: 3px;
+}
+:where(html[data-skin="spaceship"]) .scene-status {
+	position: absolute;
+	bottom: 20px;
+	left: 28px;
+	font: 10px / 1.8 var(--mono);
+	letter-spacing: 0.1em;
+	color: #dde4e9;
+}
+:where(html[data-skin="spaceship"]) .recent-column {
+	background: var(--color-global-bg);
+	border: 1px solid var(--panel-border);
+	border-radius: 9px;
+	box-shadow:
+		inset 0 1px color-mix(in srgb, var(--metal-top) 80%, transparent),
+		0 8px 18px #26313b08;
+}
+:where(html[data-skin="spaceship"]) .section-heading {
+	border-bottom: 1px solid var(--seam);
+}
+:where(html[data-skin="spaceship"]) .section-heading h2 {
+	font-size: 22px;
+	font-weight: 600;
+}
+:where(html[data-skin="spaceship"]) .section-heading > span {
+	font: 10px / 1.8 var(--mono);
+	letter-spacing: 0.1em;
+	color: var(--color-muted);
+}
+:where(html[data-skin="spaceship"]) .log-entry {
+	border-bottom: 1px solid var(--seam);
+}
+:where(html[data-skin="spaceship"]) .note-preview-text {
+	font-size: 15px;
+	line-height: 1.9;
+}
+:where(html[data-skin="spaceship"]) .preview-photo {
+	border: 3px solid var(--metal-bottom);
+	border-radius: 6px;
+}
+:where(html[data-skin="spaceship"]) .photo-count {
+	font: 11px / 1.8 var(--mono);
+	color: var(--color-muted);
+}
+:where(html[data-skin="spaceship"]) .preview-meta time,
+:where(html[data-skin="spaceship"]) .article-preview time {
+	font: 11px / 1.8 var(--mono);
+	color: var(--color-muted);
+}
+:where(html[data-skin="spaceship"]) .preview-detail {
+	font-size: 12px;
+	color: var(--color-brand);
+}
+:where(html[data-skin="spaceship"]) .preview-tags {
+	color: var(--color-brand);
+	font-size: 11px;
+	line-height: 1.8;
+}
+:where(html[data-skin="spaceship"]) .article-preview h3 {
+	font-size: 17px;
+	font-weight: 600;
+	line-height: 1.6;
+}
+:where(html[data-skin="spaceship"]) .article-preview h3 a:hover,
+:where(html[data-skin="spaceship"]) .preview-detail:hover,
+:where(html[data-skin="spaceship"]) .home-more:hover {
+	color: var(--color-brand);
+	text-decoration: underline;
+}
+:where(html[data-skin="spaceship"]) .recent-empty {
+	font-size: 15px;
+	line-height: 1.9;
+	color: var(--color-muted);
+}
+:where(html[data-skin="spaceship"]) .home-cabin-controls {
+	width: min(100% - 64px, var(--content-width));
+	margin: 28px auto 0;
+	padding: 22px 0;
+	display: flex;
+	justify-content: center;
+	gap: 16px;
+	align-items: center;
+	flex-wrap: wrap;
+	border-top: 1px solid var(--hull-edge);
+}
+:where(html[data-skin="spaceship"]) .cabin-actions {
+	display: flex;
+	gap: 12px;
+	flex-wrap: wrap;
+}
+:where(html[data-skin="spaceship"]) .metal-button {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 9px;
+	min-height: 44px;
+	padding: 10px 20px;
+	border: 1px solid var(--hull-edge);
+	border-radius: 7px;
+	color: var(--color-global-text);
+	background: linear-gradient(to bottom, var(--metal-top), var(--metal-bottom));
+	box-shadow:
+		inset 0 1px color-mix(in srgb, var(--metal-top), white 20%),
+		0 2px 3px #17263512;
+	font-size: 13px;
+}
+:where(html[data-skin="spaceship"]) .metal-button:hover {
+	border-color: var(--color-brand);
+	box-shadow:
+		inset 0 1px var(--metal-top),
+		0 0 12px color-mix(in srgb, var(--color-brand) 15%, transparent);
+}
+:where(html[data-skin="spaceship"]) [data-replay-boarding][hidden] {
+	display: none;
+}
+:where(html[data-skin="spaceship"]) .reading-body {
+	font-size: 17px;
+	line-height: 1.95;
+}
+:where(html[data-skin="spaceship"]) .reading-body blockquote {
+	border-left: 2px solid var(--color-brand);
+	background: color-mix(in srgb, var(--color-brand) 5%, transparent);
+	font-style: normal;
+}
+:where(html[data-skin="spaceship"]) .reading-body img {
+	border-radius: 4px;
+}
+:where(html[data-skin="spaceship"]) .reading-body h2 {
+	font-size: 1.45em;
+}
+:where(html[data-skin="spaceship"]) .reading-body h3 {
+	font-size: 1.2em;
+}
+:where(html[data-skin="spaceship"]) #blog-hero h1 {
+	font-family: Georgia, "Songti SC", serif;
+	font-size: clamp(1.8rem, 3vw, 2.7rem);
+	line-height: 1.4;
+	font-weight: 500;
+}
+:where(html[data-skin="spaceship"]) #blog-hero p,
+:where(html[data-skin="spaceship"]) #blog-hero time {
+	font: 12px / 1.8 var(--mono);
+	color: var(--color-muted);
+}
+:where(html[data-skin="spaceship"]) .article-toc {
+	font-size: 12px;
+}
+:where(html[data-skin="spaceship"]) .article-toc summary {
+	font-size: 14px;
+	font-weight: 600;
+}
+:where(html[data-skin="spaceship"]) .article-toc a {
+	line-height: 1.7;
+}
+:where(html[data-skin="spaceship"]) .article-toc a:hover {
+	color: var(--color-brand);
+}
+:where(html[data-skin="spaceship"]) .note-card__date {
+	opacity: 1 !important;
+	color: var(--color-muted);
+}
+:where(html[data-skin="spaceship"]) .post-tabs__item {
+	opacity: 1 !important;
+	color: var(--color-muted) !important;
+}
+:where(html[data-skin="spaceship"]) .note-tag--rec {
+	color: var(--color-brand) !important;
+}
+
+:where(html[data-skin="spaceship"]) .site-footer {
+	border-top: 1px solid var(--hull-edge);
+	background: var(--hull);
+	color: var(--color-global-text);
+	font: 11px / 1.9 var(--mono);
+}
+@media (max-width: 1100px) {
+	:where(html[data-skin="spaceship"]) .ship-surround {
+		display: none;
+	}
+}
+@media (max-width: 859px) {
+	:where(html[data-skin="spaceship"]) .foyer-copy h1 {
+		font-size: 48px;
+	}
+	:where(html[data-skin="spaceship"]) .hangar-backdrop {
+		background-position: 45% center;
+	}
+}
+@media (max-width: 800px) {
+	:where(html[data-skin="spaceship"]) .article-toc {
+		border-block: 1px solid var(--seam);
+	}
+}
+@media (max-width: 600px) {
+	:where(html[data-skin="spaceship"]) .ship-window {
+		border-radius: 20px 20px 10px 10px;
+	}
+	:where(html[data-skin="spaceship"]) .foyer-copy h1 {
+		font-size: 42px;
+	}
+	:where(html[data-skin="spaceship"]) .foyer-copy p {
+		font-size: 15px;
+	}
+	:where(html[data-skin="spaceship"]) .cabin-eyebrow {
+		font-size: 9px;
+		letter-spacing: 0.07em;
+	}
+	:where(html[data-skin="spaceship"]) .section-heading h2 {
+		font-size: 20px;
+	}
+	:where(html[data-skin="spaceship"]) .section-heading > span {
+		font-size: 9px;
+	}
+	:where(html[data-skin="spaceship"]) .reading-body {
+		font-size: 16px;
+	}
+	:where(html[data-skin="spaceship"]) .reading-body pre {
+		font-size: 12px;
+	}
+	:where(html[data-skin="spaceship"]) .home-cabin-controls .cabin-actions {
+		justify-content: center;
+	}
+	:where(html[data-skin="spaceship"]) .home-cabin-controls .metal-button {
+		padding-inline: 14px;
+	}
+}
+:where(html[data-skin="spaceship"]) .note-card__body .note-photo {
+	border: 0;
+	border-radius: 6px;
+}
+:where(html[data-skin="spaceship"]) .note-card__body .note-photo img {
+	border-radius: 0;
+}
+:where(html[data-skin="spaceship"]) .photo-viewer {
+	background: #101a1ef5;
+	color: #f3ede1;
+	border: 0;
+}
+:where(html[data-skin="spaceship"]) .photo-viewer::backdrop {
+	background: #0b1216;
+}
+:where(html[data-skin="spaceship"]) .viewer-counter {
+	font: 13px var(--mono);
+}
+:where(html[data-skin="spaceship"]) .photo-viewer button,
+:where(html[data-skin="spaceship"]) .viewer-error a {
+	border: 1px solid #727a76;
+	border-radius: 5px;
+	color: #f3ede1;
+	background: #273337;
+	font-size: 14px;
+}
+:where(html[data-skin="spaceship"]) .photo-viewer button:disabled {
+	opacity: 0.4;
+}
+:where(html[data-skin="spaceship"]) .photo-viewer :focus-visible {
+	outline-color: #f2c384;
+}
+:where(html[data-skin="spaceship"]) .viewer-stage > button {
+	font-size: 24px;
+}
+:where(html[data-skin="spaceship"]) .viewer-image {
+	border-radius: 3px;
+}
+:where(html[data-skin="spaceship"]) .viewer-caption {
+	font-size: 14px;
+}
+:where(html[data-skin="spaceship"]) .viewer-error {
+	line-height: 2;
+}
+:where(html[data-skin="spaceship"]) .boarding {
+	--boarding-light: #e7b777;
+	position: fixed;
+	inset: 0;
+	max-width: none;
+	max-height: none;
+	width: 100%;
+	height: 100dvh;
+	margin: 0;
+	padding: 0;
+	border: 0;
+	background: transparent;
+	overflow: hidden;
+	color: var(--color-global-text);
+}
+:where(html[data-skin="spaceship"]) .boarding::backdrop {
+	background: transparent;
+}
+:where(html[data-skin="spaceship"]) .boarding[open] {
+	display: grid;
+	place-items: center;
+}
+:where(html[data-skin="spaceship"]) .boarding-veil {
+	position: absolute;
+	inset: 0;
+	background: #0b141d;
+}
+:where(html[data-skin="spaceship"]) .boarding-door {
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+	overflow: visible;
+}
+:where(html[data-skin="spaceship"]) .boarding-door path {
+	vector-effect: non-scaling-stroke;
+}
+:where(html[data-skin="spaceship"]) .door-panel-outline {
+	fill: none;
+	stroke: var(--hull-edge);
+	stroke-width: 1;
+}
+:where(html[data-skin="spaceship"]) .door-panel-inset {
+	fill: color-mix(in srgb, var(--hull-edge) 10%, transparent);
+	stroke: var(--hull-edge);
+	stroke-width: 1;
+}
+:where(html[data-skin="spaceship"]) .door-vents {
+	fill: none;
+	stroke: var(--window-rim);
+	stroke-width: 2;
+	opacity: 0.6;
+}
+:where(html[data-skin="spaceship"]) .door-coupling-pin rect {
+	fill: var(--window-rim);
+	stroke: var(--hull-edge);
+	stroke-width: 1;
+}
+:where(html[data-skin="spaceship"]) .door-coupling-pin path {
+	fill: none;
+	stroke: var(--metal-top);
+	stroke-width: 1;
+	opacity: 0.7;
+}
+:where(html[data-skin="spaceship"]) .door-seal-shadow {
+	fill: none;
+	stroke: #07111b;
+	stroke-width: 10;
+}
+:where(html[data-skin="spaceship"]) .door-seal-light {
+	fill: none;
+	stroke: var(--boarding-light);
+	stroke-width: 2;
+	filter: drop-shadow(0 0 5px #e7b777b0);
+}
+:where(html[data-skin="spaceship"]) .boarding-frame {
+	position: absolute;
+	inset: 14px;
+	border: 1px solid var(--hull-edge);
+	border-radius: 14px;
+	box-shadow:
+		0 0 0 7px #07111b30,
+		inset 0 0 0 5px #07111b18;
+	pointer-events: none;
+}
+:where(html[data-skin="spaceship"]) .boarding-ident {
+	position: absolute;
+	inset: 38px 40px auto;
+	display: flex;
+	justify-content: space-between;
+	gap: 24px;
+	font: 10px / 1.6 var(--mono);
+	letter-spacing: 0.15em;
+	text-transform: uppercase;
+	color: var(--color-muted);
+}
+:where(html[data-skin="spaceship"]) .boarding-ident span:last-child {
+	text-align: right;
+	overflow-wrap: anywhere;
+}
+:where(html[data-skin="spaceship"]) .boarding-coupler {
+	position: absolute;
+	left: 50%;
+	top: 50%;
+	width: 120px;
+	height: 120px;
+	margin: -60px 0 0 -60px;
+	border: 1px solid var(--window-rim);
+	border-radius: 50%;
+	background: radial-gradient(
+		circle,
+		var(--metal-bottom) 0 54%,
+		#15222e 55% 62%,
+		var(--metal-top) 63%
+	);
+	box-shadow:
+		0 9px 28px #06111a55,
+		inset 0 1px 2px #ffffff50;
+	color: var(--boarding-light);
+}
+:where(html[data-skin="spaceship"]) .coupler-ring {
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+}
+:where(html[data-skin="spaceship"]) .coupler-core {
+	position: absolute;
+	inset: 30%;
+	display: flex;
+	gap: 3px;
+	transform: rotate(-45deg);
+}
+:where(html[data-skin="spaceship"]) .coupler-core span {
+	flex: 1;
+	background: linear-gradient(135deg, var(--metal-top), var(--window-rim));
+	border: 1px solid var(--hull-edge);
+	border-radius: 3px;
+	box-shadow: 2px 3px 5px #07121c55;
+}
+:where(html[data-skin="spaceship"]) .coupler-light {
+	position: absolute;
+	left: calc(50% - 3px);
+	bottom: 20%;
+	width: 6px;
+	height: 6px;
+	border-radius: 50%;
+	background: var(--boarding-light);
+	box-shadow: 0 0 12px var(--boarding-light);
+}
+:where(html[data-skin="spaceship"]) .boarding-message {
+	position: absolute;
+	left: 50%;
+	top: calc(50% + 90px);
+	width: min(460px, calc(100% - 48px));
+	transform: translateX(-50%);
+	text-align: center;
+	pointer-events: none;
+}
+:where(html[data-skin="spaceship"]) .boarding-eyebrow {
+	font: 10px / 1.5 var(--mono);
+	letter-spacing: 0.2em;
+	color: var(--color-muted);
+}
+:where(html[data-skin="spaceship"]) .boarding-message h2 {
+	font: 600 clamp(30px, 4vw, 46px) / 1.2 var(--font-sans, sans-serif);
+	margin: 12px 0;
+	letter-spacing: 0.04em;
+}
+:where(html[data-skin="spaceship"]) .boarding-message p {
+	font-size: 13px;
+	line-height: 1.7;
+	color: var(--color-muted);
+	margin: 0;
+}
+:where(html[data-skin="spaceship"]) .boarding-progress {
+	width: 100px;
+	height: 2px;
+	margin: 24px auto 0;
+	background: var(--hull-edge);
+	overflow: hidden;
+}
+:where(html[data-skin="spaceship"]) .boarding-progress span {
+	display: block;
+	height: 100%;
+	background: var(--boarding-light);
+	transform-origin: left;
+}
+:where(html[data-skin="spaceship"]) .boarding > button {
+	position: absolute;
+	right: max(32px, env(safe-area-inset-right));
+	bottom: max(30px, env(safe-area-inset-bottom));
+	min-height: 44px;
+	padding: 10px 18px;
+	background: linear-gradient(to bottom, var(--metal-top), var(--metal-bottom));
+	color: var(--color-global-text);
+	border: 1px solid var(--hull-edge);
+	border-radius: 7px;
+	box-shadow: 0 3px 14px #07121c25;
+	font-size: 12px;
+	z-index: 2;
+}
+:where(html[data-skin="spaceship"]) .boarding :focus-visible {
+	outline: 2px solid var(--color-brand);
+	outline-offset: 4px;
+}
+:where(html[data-skin="spaceship"]) .boarding[open] .boarding-door--left {
+	animation: spaceship-coupled-door-left 2.6s cubic-bezier(0.65, 0, 0.2, 1) both;
+}
+:where(html[data-skin="spaceship"]) .boarding[open] .boarding-door--right {
+	animation: spaceship-coupled-door-right 2.6s cubic-bezier(0.65, 0, 0.2, 1) both;
+}
+:where(html[data-skin="spaceship"]) .boarding[open] .boarding-veil {
+	animation: spaceship-boarding-veil 2.6s both;
+}
+:where(html[data-skin="spaceship"]) .boarding[open] .boarding-message,
+:where(html[data-skin="spaceship"]) .boarding[open] .boarding-ident {
+	animation: spaceship-boarding-message 2.6s both;
+}
+:where(html[data-skin="spaceship"]) .boarding[open] .boarding-frame {
+	animation: spaceship-boarding-frame 2.6s both;
+}
+:where(html[data-skin="spaceship"]) .boarding[open] .boarding-coupler {
+	animation: spaceship-coupler-release 2.6s both;
+}
+:where(html[data-skin="spaceship"]) .boarding[open] .coupler-ring {
+	animation: spaceship-coupler-unlock 2.6s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+:where(html[data-skin="spaceship"]) .boarding[open] .boarding-progress span {
+	animation: spaceship-boarding-progress 1s ease-out both;
+}
+@keyframes spaceship-coupled-door-left {
+	0%,
+	18% {
+		transform: translateX(0);
+	}
+	26%,
+	32% {
+		transform: translateX(-0.8%);
+	}
+	86%,
+	100% {
+		transform: translateX(-57%);
+	}
+}
+@keyframes spaceship-coupled-door-right {
+	0%,
+	18% {
+		transform: translateX(0);
+	}
+	26%,
+	32% {
+		transform: translateX(0.8%);
+	}
+	86%,
+	100% {
+		transform: translateX(57%);
+	}
+}
+@keyframes spaceship-coupler-unlock {
+	0%,
+	10% {
+		transform: rotate(0);
+	}
+	30%,
+	100% {
+		transform: rotate(90deg);
+	}
+}
+@keyframes spaceship-coupler-release {
+	0%,
+	24% {
+		opacity: 1;
+		transform: scale(1);
+	}
+	38%,
+	100% {
+		opacity: 0;
+		transform: scale(0.8);
+	}
+}
+@keyframes spaceship-boarding-message {
+	0%,
+	32% {
+		opacity: 1;
+	}
+	50%,
+	100% {
+		opacity: 0;
+	}
+}
+@keyframes spaceship-boarding-veil {
+	0%,
+	36% {
+		opacity: 1;
+	}
+	86%,
+	100% {
+		opacity: 0;
+	}
+}
+@keyframes spaceship-boarding-frame {
+	0%,
+	70% {
+		opacity: 1;
+	}
+	96%,
+	100% {
+		opacity: 0;
+	}
+}
+@keyframes spaceship-boarding-progress {
+	from {
+		transform: scaleX(0);
+	}
+	to {
+		transform: scaleX(1);
+	}
+}
+@media (max-width: 600px) {
+	:where(html[data-skin="spaceship"]) .boarding-ident {
+		inset: 28px 28px auto;
+		font-size: 9px;
+		gap: 16px;
+	}
+	:where(html[data-skin="spaceship"]) .boarding-ident span:last-child {
+		max-width: 160px;
+	}
+	:where(html[data-skin="spaceship"]) .boarding > button {
+		right: max(24px, env(safe-area-inset-right));
+		bottom: max(24px, env(safe-area-inset-bottom));
+	}
+}
+@media (max-height: 560px) {
+	:where(html[data-skin="spaceship"]) .boarding-coupler {
+		top: 34%;
+		width: 80px;
+		height: 80px;
+		margin: -40px 0 0 -40px;
+	}
+	:where(html[data-skin="spaceship"]) .boarding-message {
+		top: calc(34% + 58px);
+	}
+	:where(html[data-skin="spaceship"]) .boarding-message h2 {
+		font-size: 26px;
+	}
+	:where(html[data-skin="spaceship"]) .boarding-message p,
+	:where(html[data-skin="spaceship"]) .boarding-progress {
+		display: none;
+	}
+}
+@media (prefers-reduced-motion: reduce) {
+	:where(html[data-skin="spaceship"]) .boarding[open] *,
+	:where(html[data-skin="spaceship"]) .boarding[open] .boarding-progress span {
+		animation: none;
+	}
+}
+@media (max-width: 600px) {
+	:where(html[data-skin="spaceship"]) .viewer-stage > button {
+		background: #273337dd;
+	}
+	:where(html[data-skin="spaceship"]) .viewer-caption {
+		font-size: 12px;
+	}
+}
+@media (prefers-reduced-motion: reduce) {
+	:where(html[data-skin="spaceship"]) .boarding-door,
+	:where(html[data-skin="spaceship"]) .boarding-message {
+		animation: none;
+	}
+	:where(html[data-skin="spaceship"]) .ship-window,
+	:where(html[data-skin="spaceship"]) .window-planet {
+		animation: none;
+	}
+}
+:where(html[data-skin="spaceship"]) .sample-banner {
+	font: 11px / 1.8 var(--mono);
+	color: var(--color-global-text);
+	background: color-mix(in srgb, var(--color-global-bg) 65%, var(--hull));
+	border-bottom: 1px solid var(--hull-edge);
+}
+
+:where(html[data-skin="spaceship"]) .site-footer [data-replay-boarding][hidden] {
+	display: none;
+}
+:where(html[data-skin="spaceship"]) .ship-surround:before,
+:where(html[data-skin="spaceship"]) .ship-surround:after {
+	display: none;
+}
+:where(html[data-skin="spaceship"]) .surround-window {
+	position: absolute;
+	top: 18px;
+	bottom: 24px;
+	width: max(0px, calc((100vw - var(--content-width)) / 2 - var(--window-gap) - 28px));
+	overflow: hidden;
+	background:
+		radial-gradient(circle at 32% 20%, #ffffffa0 0 1px, transparent 2px),
+		radial-gradient(circle at 70% 60%, #bdcfdf75 0 1px, transparent 2px),
+		linear-gradient(135deg, #192d3c, #0b141e 75%);
+	background-size:
+		109px 181px,
+		141px 251px,
+		100% 100%;
+	border: 3px solid var(--window-rim);
+	border-radius: 28px 5px 5px 8px;
+	box-shadow:
+		inset 0 0 18px #000,
+		0 0 0 1px var(--hull-edge);
+}
+:where(html[data-skin="spaceship"]) .surround-window-left {
+	left: 12px;
+}
+:where(html[data-skin="spaceship"]) .surround-window-right {
+	right: 12px;
+	border-radius: 5px 28px 8px 5px;
+}
+:where(html[data-skin="spaceship"]) .space-scene {
+	position: absolute;
+	inset: 0;
+	overflow: hidden;
+	pointer-events: none;
+	--scene-width: 600px;
+	--ship-cycle: 160s;
+	--ship-delay: 6s;
+	--meteor-cycle: 47s;
+	--traffic-opacity: 0.85;
+}
+:where(html[data-skin="spaceship"]) .hangar-traffic {
+	z-index: -1;
+	inset: 22% 18% 44% 19%;
+	opacity: 0.45;
+}
+:where(html[data-skin="spaceship"]) .space-dust {
+	position: absolute;
+	inset: -4%;
+	opacity: 0.38;
+	background:
+		radial-gradient(circle at 22% 32%, #c4ddf6 0 1px, transparent 2px),
+		radial-gradient(circle at 66% 68%, #eef4ff 0 1px, transparent 1.8px);
+	background-size:
+		231px 113px,
+		179px 197px;
+	animation: spaceship-space-drift 110s linear infinite;
+	animation-play-state: paused;
+}
+:where(html[data-skin="spaceship"]) .passing-ship {
+	position: absolute;
+	left: -140px;
+	top: 46%;
+	width: var(--flight-width, 76px);
+	height: 46px;
+	opacity: 0;
+	filter: drop-shadow(0 0 4px #c6daee40);
+	animation: spaceship-ship-pass var(--ship-cycle) linear var(--departure, 6s) infinite;
+	animation-play-state: paused;
+}
+:where(html[data-skin="spaceship"]) .meteor {
+	position: absolute;
+	left: -120px;
+	top: 18%;
+	width: 110px;
+	height: 1px;
+	opacity: 0;
+	background: linear-gradient(90deg, transparent, #e4edf5);
+	box-shadow: 0 0 4px #a8cfef;
+	animation: spaceship-meteor-pass var(--meteor-cycle) linear 14s infinite;
+	animation-play-state: paused;
+	transform: rotate(16deg);
+}
+:where(html[data-skin="spaceship"]) .meteor-two {
+	top: 58%;
+	width: 65px;
+	animation-delay: 34s;
+	animation-duration: 63s;
+}
+:where(html[data-skin="spaceship"]) .craft-main {
+	width: 76px;
+	height: 30px;
+}
+:where(html[data-skin="spaceship"]) .craft-escort {
+	position: absolute;
+	width: 30px;
+	height: 12px;
+}
+:where(html[data-skin="spaceship"]) .craft-escort--0 {
+	left: 72px;
+	top: -6px;
+}
+:where(html[data-skin="spaceship"]) .craft-escort--1 {
+	left: 84px;
+	top: 32px;
+}
+:where(html[data-skin="spaceship"]) body:not(.is-home) .passing-ship {
+	animation-delay: var(--reading-departure);
+}
+:where(html[data-skin="spaceship"]) .passing-planet {
+	position: absolute;
+	left: -160px;
+	width: var(--planet-size);
+	height: var(--planet-size);
+	opacity: 0;
+	animation: spaceship-planet-pass 240s linear var(--planet-departure) infinite;
+	animation-play-state: paused;
+}
+:where(html[data-skin="spaceship"]) .planet-body {
+	position: absolute;
+	inset: 0;
+	border-radius: 50%;
+	background:
+		radial-gradient(circle at 28% 26%, #ffffff45, transparent 38%),
+		linear-gradient(125deg, var(--planet-color) 10%, var(--planet-shade) 65%, #060e19 96%);
+	box-shadow:
+		inset -5px -4px 12px #0005,
+		0 0 9px #b7c8dd12;
+}
+:where(html[data-skin="spaceship"]) .planet-ring {
+	position: absolute;
+	inset: 30% -32%;
+	border: 5px solid color-mix(in srgb, var(--planet-color) 58%, transparent);
+	border-left-width: 9px;
+	border-bottom-width: 9px;
+	border-radius: 50%;
+	transform: rotate(-24deg);
+	box-shadow: 0 0 0 2px #dec3b229;
+}
+:where(html[data-skin="spaceship"]) body:not(.is-home) .passing-planet {
+	animation-duration: 360s;
+	animation-delay: var(--reading-planet-departure);
+}
+@keyframes spaceship-planet-pass {
+	0% {
+		transform: translateX(0) translateY(0);
+		opacity: 0;
+	}
+	3%,
+	19% {
+		opacity: var(--traffic-opacity);
+	}
+	25%,
+	100% {
+		transform: translateX(calc(var(--scene-width) + 320px)) translateY(22px);
+		opacity: 0;
+	}
+}
+:where(html[data-skin="spaceship"]) .surround-window-right .space-scene {
+	transform: scaleX(-1);
+}
+:where(html[data-skin="spaceship"]) body:not(.is-home) .space-scene {
+	--ship-cycle: 260s;
+	--ship-delay: 15s;
+	--meteor-cycle: 89s;
+	--traffic-opacity: 0.3;
+}
+:where(html[data-skin="spaceship"]) body:not(.is-home) .space-dust {
+	opacity: 0.15;
+}
+:where(html[data-skin="spaceship"]) .space-scene[data-space-active="true"] .passing-planet,
+:where(html[data-skin="spaceship"]) .space-scene[data-space-active="true"] .passing-ship,
+:where(html[data-skin="spaceship"]) .space-scene[data-space-active="true"] .meteor,
+:where(html[data-skin="spaceship"]) .space-scene[data-space-active="true"] .space-dust {
+	animation-play-state: running;
+}
+@keyframes spaceship-ship-pass {
+	0% {
+		transform: translateX(0);
+		opacity: 0;
+	}
+	1%,
+	15% {
+		opacity: var(--traffic-opacity);
+	}
+	18%,
+	100% {
+		transform: translateX(calc(var(--scene-width) + 280px)) translateY(-18px);
+		opacity: 0;
+	}
+}
+@keyframes spaceship-meteor-pass {
+	0% {
+		transform: translateX(0) rotate(16deg);
+		opacity: 0;
+	}
+	1% {
+		opacity: 0.6;
+	}
+	6%,
+	100% {
+		transform: translateX(calc(var(--scene-width) + 240px)) translateY(65px) rotate(16deg);
+		opacity: 0;
+	}
+}
+@keyframes spaceship-space-drift {
+	to {
+		transform: translate3d(15px, 8px, 0);
+	}
+}
+:where(html[data-skin="spaceship"]) .site-main[data-header-overlap="true"] {
+	mask-image: linear-gradient(
+		to bottom,
+		transparent var(--content-hidden-edge),
+		#000 var(--content-soft-edge)
+	);
+}
+:where(html[data-skin="spaceship"]) .content-soft-edge {
+	overflow-anchor: none;
+	position: absolute;
+	z-index: 3;
+	top: var(--content-hidden-edge, 0px);
+	left: 0;
+	right: 0;
+	height: 44px;
+	pointer-events: none;
+	backdrop-filter: blur(4px);
+	mask-image: linear-gradient(#000, transparent);
+	visibility: hidden;
+}
+:where(html[data-skin="spaceship"]) .site-main[data-header-overlap="true"] .content-soft-edge {
+	visibility: visible;
+}
+:where(html[data-skin="spaceship"]) .motion-toggle {
+	position: fixed;
+	left: max(16px, env(safe-area-inset-left));
+	bottom: max(18px, env(safe-area-inset-bottom));
+	z-index: 95;
+	border-radius: 999px;
+	padding: 10px 14px;
+	font-size: 12px;
+	box-shadow: 0 4px 18px #101b2926;
+}
+:where(html[data-skin="spaceship"]) .motion-toggle[hidden],
+:where(html[data-skin="spaceship"]) body:has(dialog[open]) .motion-toggle {
+	display: none;
+}
+:where(html[data-skin="spaceship"]) .metal-button:disabled {
+	cursor: default;
+	color: var(--color-muted);
+}
+:where(html[data-skin="spaceship"]) [data-cabin-console][hidden] {
+	display: none;
+}
+@media (max-width: 859px) {
+	:where(html[data-skin="spaceship"]) .hangar-traffic {
+		left: 0;
+		right: 0;
+	}
+	:where(html[data-skin="spaceship"]) .passing-ship,
+	:where(html[data-skin="spaceship"]) .passing-planet {
+		scale: 0.8;
+	}
+}
+@media (prefers-reduced-motion: reduce), (scripting: none) {
+	:where(html[data-skin="spaceship"]) .passing-ship,
+	:where(html[data-skin="spaceship"]) .passing-planet,
+	:where(html[data-skin="spaceship"]) .meteor,
+	:where(html[data-skin="spaceship"]) .space-dust {
+		animation: none;
+	}
+	:where(html[data-skin="spaceship"]) .content-soft-edge {
+		backdrop-filter: none;
+	}
+}
+html[data-skin="spaceship"][data-space-motion="paused"] .site-main {
+	animation: none;
+}
+:where(html[data-skin="spaceship"]) .hangar-backdrop {
+	background: #111b23;
+}
+:where(html[data-skin="spaceship"]) .hangar-backdrop img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	object-position: center;
+	display: block;
+}
+:where(html[data-skin="spaceship"]) .hangar-backdrop:after {
+	content: "";
+	position: absolute;
+	inset: 0;
+	background: linear-gradient(90deg, #07101980, transparent 65%);
+}
+@media (max-width: 859px) {
+	:where(html[data-skin="spaceship"]) .hangar-backdrop img {
+		object-position: 45% center;
+	}
+}
+:where(html[data-skin="spaceship"]) .surround-window {
+	border-top-color: color-mix(in srgb, var(--window-rim) 70%, var(--metal-top));
+}

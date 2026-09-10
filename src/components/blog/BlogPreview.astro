@@ -24,7 +24,7 @@ const href = localePath(lang, `/blogs/${post.id}/`);
 	omitYear={omitYear}
 />
 <Tag>
-	{post.data.draft && <span class="text-red-500">(Draft) </span>}
+	{post.data.draft && <span class="draft-label">(Draft) </span>}
 	<a class="cactus-link" href={href}>
 		{post.data.title}
 	</a>

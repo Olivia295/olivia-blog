@@ -1,0 +1,67 @@
+@import "./cabin.css";
+@import "./components.css";
+@import "./motion.css";
+
+html[data-skin="spaceship"] {
+	--skin-font: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
+	--skin-font-size: 16px;
+	--skin-focus-radius: 3px;
+}
+html[data-skin="spaceship"] .skin-preference {
+	border-top: 1px solid var(--seam);
+}
+html[data-skin="spaceship"] .skin-preference label {
+	font-weight: 700;
+	font-size: 0.85rem;
+}
+html[data-skin="spaceship"] .skin-preference select {
+	color: var(--color-global-text);
+	background: linear-gradient(var(--metal-top), var(--metal-bottom));
+	border: 1px solid var(--hull-edge);
+	border-radius: 7px;
+	font: inherit;
+}
+html[data-skin="spaceship"] .skin-preference option {
+	color: var(--color-global-text);
+	background: var(--color-global-bg);
+}
+html[data-skin="spaceship"] .skin-preference p {
+	color: var(--color-muted);
+	font-size: 0.8rem;
+}
+
+html[data-skin="spaceship"] {
+	--skin-code-border: 1px dotted #666;
+	--skin-code-radius: 2px;
+	--skin-rule-style: dashed;
+	--skin-table-border: 1px dashed #666;
+	--skin-search-bg: var(--color-global-bg);
+	--skin-search-border: color-mix(in srgb, var(--color-global-text) 32%, transparent);
+}
+html[data-skin="spaceship"] .draft-label {
+	color: #ef4444;
+}
+html[data-skin="spaceship"] .post-badge {
+	color: var(--color-quote);
+	background: color-mix(in srgb, var(--color-quote) 5%, transparent);
+	border-radius: 8px;
+}
+html[data-skin="spaceship"] .search-dialog {
+	color: var(--color-global-text);
+	background: var(--color-global-bg);
+	border: 1px solid var(--skin-search-border);
+	box-shadow: 0 1px 3px #0002;
+}
+html[data-skin="spaceship"] .search-dialog::backdrop {
+	backdrop-filter: blur(8px);
+}
+html[data-skin="spaceship"] .search-close {
+	color: var(--color-global-text);
+	background: color-mix(in srgb, var(--color-global-text) 12%, var(--color-global-bg));
+	border-radius: 6px;
+}
+@media (min-width: 640px) {
+	html[data-skin="spaceship"] .search-dialog {
+		border-radius: 6px;
+	}
+}

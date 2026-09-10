@@ -1,190 +1,111 @@
-<div align="center">
-  <img alt="Astro Cactus logo" src="https://github.com/user-attachments/assets/92dfbabf-ca65-4bf6-991d-9a71e5319880" width="70" />
-</div>
-<h1 align="center">
-  Astro Cactus
-</h1>
+# Personal Spaceship · 私人飞船
 
-Astro Cactus is a simple opinionated starter built with [Astro](https://astro.build). Use it to create an easy-to-use blog or website.
+一艘银灰色、有人生活的私人飞船。半现实的停机舱与完整个人插画构成首页，窗外有缓缓经过的飞船和流星，窗内收藏文章、动态和相册。基于 Astro，默认生成静态网站；中英文导航、日间／夜间照明、首次登船动画、搜索、RSS 与照片浏览器均已集成。
 
-## Table Of Contents
+## 启动
 
-1. [Key Features](#key-features)
-2. [Demo](#demo-)
-3. [Quick start](#quick-start)
-4. [Preview](#preview)
-5. [Commands](#commands)
-6. [Configure](#configure)
-7. [Updating](#updating)
-8. [Adding posts, notes, and tags](#adding-posts-notes-and-tags)
-   - [Post Frontmatter](#post-frontmatter)
-   - [Note Frontmatter](#note-frontmatter)
-   - [Tag Frontmatter](#tag-frontmatter)
-   - [Frontmatter Snippets](#frontmatter-snippets)
-9. [Pagefind search](#pagefind-search)
-10. [Analytics](#analytics)
-11. [Deploy](#deploy)
-12. [Acknowledgment](#acknowledgment)
+需要 Node.js 22.14 或更新版本，以及 npm。
 
-## Key Features
-
-- Astro v6 Fast 🚀
-- Tailwind v4
-- Accessible, semantic HTML markup
-- Responsive & SEO-friendly
-- Dark & Light mode
-- MD & [MDX](https://docs.astro.build/en/guides/markdown-content/#mdx-only-features) posts & notes
-  - Includes [Admonitions](https://astro-cactus.chriswilliams.dev/posts/markdown-elements/admonitions/)
-- [Satori](https://github.com/vercel/satori) for creating open graph png images
-- [Automatic RSS feeds](https://docs.astro.build/en/guides/rss)
-- [Webmentions](https://webmention.io/)
-- Auto-generated:
-  - [sitemap](https://docs.astro.build/en/guides/integrations-guide/sitemap/)
-  - [robots.txt](https://github.com/alextim/astro-lib/blob/main/packages/astro-robots-txt/README.md)
-  - [web app manifest](https://github.com/alextim/astro-lib/blob/main/packages/astro-webmanifest/README.md)
-- [Pagefind](https://pagefind.app/) static search library integration
-- [Astro Icon](https://github.com/natemoo-re/astro-icon) svg icon component
-- [Expressive Code](https://expressive-code.com/) code blocks and syntax highlighter
-
-## Demo 💻
-
-Check out the [Demo](https://astro-cactus.chriswilliams.dev/), hosted on Netlify
-
-## Quick start
-
-[Create a new repo](https://github.com/chrismwilliams/astro-theme-cactus/generate) from this template.
-
-```bash
-# npm 7+
-npm create astro@latest -- --template chrismwilliams/astro-theme-cactus
-
-# pnpm
-pnpm dlx create-astro --template chrismwilliams/astro-theme-cactus
+```sh
+npm ci
+npm run dev
 ```
 
-[![Deploy with Netlify](https://www.netlify.com/img/deploy/button.svg)](https://app.netlify.com/start/deploy?repository=https://github.com/chrismwilliams/astro-theme-cactus) [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fchrismwilliams%2Fastro-theme-cactus&project-name=astro-theme-cactus)
+首次复制模板且没有个人内容源时，会自动载入 `sample/` 的完整示例博客。示例页明确标有“示例飞船”，使用虚构的“旅人”资料和原创插画。
 
-## Preview
+```sh
+npm run dev:sample    # 强制中性示例，忽略个人内容目录
+npm run dev:bare      # 中性空外壳，不展示文章／动态／相册
+npm run build        # 同步内容、构建页面、建立搜索索引
+npm run preview      # 浏览构建后的静态网站（含搜索）
+```
 
-![Astro Theme Cactus in a light theme mode](https://github.com/chrismwilliams/astro-theme-cactus/assets/12715988/84c89d42-4525-4674-b10c-6d6ebdc06382)
+## 换成自己的飞船
 
-![Astro Theme Cactus in a dark theme mode](https://github.com/chrismwilliams/astro-theme-cactus/assets/12715988/e0e575e2-445f-4c2d-a812-b5b53d2d9031)
+1. 复制网站模板，运行 `npm ci`。
+2. 把 `sample/` 复制到网站外的个人内容目录，例如 `../my-content`。
+3. 在网站的 `spaceship.config.json` 中设置 `content.directory`；在个人目录的 `site/site.json` 中修改名字、简介、配色、社交链接和栏目。示例的 `site/site.json` 已列出完整设置。
+4. 编辑个人目录中的文章、动态和相册。运行 `npm run dev` 预览，运行 `npm run build` 得到可部署的 `dist/`。
 
-## Commands
+本项目继续支持 `olivia-blog` 与相邻 `olivia-blog-content` 两个目录。当没有显式设置路径，且相邻内容目录是 Git 仓库时，会自动使用它。不要编辑网站生成的 `src/content/` 或 `public/site/`。
 
-Replace pnpm with your choice of npm / yarn
+## 集中设置
 
-| Command          | Action                                                         |
-| :--------------- | :------------------------------------------------------------- |
-| `pnpm install`   | Installs dependencies                                          |
-| `pnpm dev`       | Starts local dev server at `localhost:3000`                    |
-| `pnpm build`     | Build your production site to `./dist/`                        |
-| `pnpm postbuild` | Pagefind script to build the static search of your blog posts  |
-| `pnpm preview`   | Preview your build locally, before deploying                   |
-| `pnpm sync`      | Generate types based on your config in `src/content/config.ts` |
+`spaceship.config.json` 是网站基础设置，个人内容目录的 `site/site.json` 覆盖其中的字段。对象逐项合并；数组整体替换，`[]` 可以清空社交链接、简介或资料项目。旧的 `site/about.json`、`site/copy.json` 仍可读取；集中设置中的 `profile`、`intro` 优先。
 
-## Configure
+| 设置 | 用途 |
+| --- | --- |
+| `title`、`shortName`、`author`、`url`、`description` | 站名、作者、正式域名和页面信息 |
+| `intro.zh`、`intro.en` | 首页个人介绍 |
+| `profile` | 名字、角色、简介、资料、头像文件名、社交链接 |
+| `defaultSkin` | 站点默认皮肤，`spaceship` 或 `minimal`；访客可在关于页底部选择 |
+| `sections` | 文章、动态、相册、关于的导航与首页入口；`hideEmpty` 自动隐藏没有内容的栏目入口 |
+| `boarding` | 是否开启首页登船动画和重播入口 |
+| `home.notes`、`home.articles` | 首页短记／文章数量，默认 3／5（各 1–20）；电脑双栏等高，手机先短记后文章 |
+| `home.portraitAlt.zh`、`home.portraitAlt.en` | 首页图片的具体说明；留空则使用基础说明 |
+| `scene.motion` | 是否启用窗外飞船、流星和星光；默认 `true` |
+| `indexable` | 是否允许搜索引擎收录；默认 `false`，准备公开后设为 `true` |
+| `content.directory` | 相对于网站目录的内容源路径，也支持绝对路径 |
+| `content.autoDiscoverSibling` | 是否自动发现相邻的 `olivia-blog-content` |
+| `content.legacy` | 仅为旧版 `post/` 长文、`note/` 短记格式开启 |
 
-- Edit the template's config file `src/site.config.ts`
-  - **Important**: set the url property with your own domain.
-  - Modify the settings for markdown code blocks, generated by [Expressive Code](https://expressive-code.com). Astro Cactus has both a dark (dracula) and light (github-light) theme. You can find more options [@ expressive-code](https://expressive-code.com/guides/themes/#available-themes).
-- Update file `astro.config.ts`
-  - [astro-webmanifest options](https://github.com/alextim/astro-lib/blob/main/packages/astro-webmanifest/README.md)
-- Replace & update files within the `/public` folder:
-  - icon.svg - used as the source to create favicons & manifest icons
-  - social-card.png - used as the default og:image
-- Modify file `src/styles/global.css` with your own light and dark styles, and customise [Tailwind's theme settings](https://tailwindcss.com/docs/theme#customizing-your-theme).
-- Edit social links in `src/components/SocialList.astro` to add/replace your media profile. Icons can be found @ [icones.js.org](https://icones.js.org/), per [Astro Icon's instructions](https://www.astroicon.dev/guides/customization/#find-an-icon-set).
-- Create/edit posts & notes for your blog within `src/content/post/` & `src/content/note/` with .md/mdx file(s). See [below](#adding-posts-notes-and-tags) for more details.
-  - Read [this post](http://astro-cactus.chriswilliams.dev/posts/webmentions/) for adding webmentions to your site.
-  - Add any custom Tag pages for related blog posts in `/src/content/tag/`, ensuring that the file name is the same as the tag.
-- OG Image:
-  - If you would like to change the style of the generated image the Satori library creates, open up `src/pages/og-image/[slug].png.ts` to the markup function where you can edit the html/tailwind-classes as necessary. You can use this [playground](https://og-playground.vercel.app/) to aid your design.
-  - You can also create your own og images and skip satori generating it for you by adding an ogImage property in the frontmatter with a link to the asset, an example can be found in `src/content/post/social-image.md`. More info on frontmatter can be found [below](#post-frontmatter)
-- Optional:
-  - Fonts: This theme sets the body element to the font family `font-mono`, in `src/layouts/Base.astro` on the `<body>`. You can change fonts by removing the variant `font-mono`, after which TailwindCSS will default to the `font-sans` [font family stack](https://tailwindcss.com/docs/font-family).
+旧的 `recentLimit` 仍可读取以兼容已有设置，第二轮首页改用 `home.notes` 和 `home.articles`。
 
-## Updating
+改配色后请运行浏览器无障碍测试，确保文字对比度合格。栏目开关控制导航和首页，保留旧文章链接的可访问性。
 
-If you've forked the template, you can [sync the fork](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks/syncing-a-fork) with your own project, remembering to **not** click Discard Changes as you will lose your own.
+## 内容格式与同步
 
-If you have a template repository, you can add this template as a remote, [as discussed here](https://stackoverflow.com/questions/56577184/github-pull-changes-from-a-template-repository).
+完整格式和同步边界见 [内容指南](docs/CONTENT.md)。简单结构如下：
 
-## Adding posts, notes, and tags
+```text
+my-content/
+  blog/a-journey/index.md
+  post/a-small-moment/index.md
+  gallery/wandering/album.json
+  gallery/wandering/01.jpg
+  site/site.json
+  site/about.jpg
+  site/home-hero.jpg        # 首页右侧图片，完整比例
+  site/hangar.webp          # 可选：替换默认停机舱背景
+```
 
-This theme uses [Content Collections](https://docs.astro.build/en/guides/content-collections/) to organise local Markdown and MDX files, as well as type-checking frontmatter with a schema -> `src/content.config.ts`.
+同步优先级：`CONTENT_MODE=sample` → `CONTENT_DIR` → `content.directory` → `CONTENT_REPO` → 相邻内容仓库 → 中性示例。显式路径失效会报错，不会保留并展示旧内容冒充新内容。切换源或删除源文件时，相应生成副本会被清理。
 
-Adding a post/note/tag is as simple as adding your .md(x) files to either `src/content/post`, `src/content/note`, and `src/content/tag` folders, the filename of which will be used as the slug/url.
+`npm run content:sync` 可单独同步。正在运行的开发服务器若需要读取刚在外部目录修改的内容，先同步；修改站点设置后重启开发服务器。
 
-The Tag collection allows you to override the content for generated tag pages. For example the template includes `src/content/tag/test.md` which overrides the content shown in `your-domain.com/tags/test`.
+## 体验约定
 
-> **Note**
-> For a tag page to work, the file name (`src/content/tag/*`) must also be in a post's [tags frontmatter.](#post-frontmatter)
+首次进入首页时，舱窗在约 2.6 秒内开启，可用按钮或 Escape 跳过；重访立即显示内容。重新登船仅在首页底部提供；全站左下角提供暂停／恢复动效按钮，全屏照片和登船期间隐藏。导航中已移除“舱内控制”。暂停偏好在同一浏览器跨页、刷新后保留；减少动画优先于网站偏好。文章直链立即阅读。减少动画模式取消登船及位移动效。音频必须手动播放。
 
-The posts/notes/tags included with this template are there as an example of how to structure your frontmatter. Additionally, the [Astro docs](https://docs.astro.build/en/guides/markdown-content/) has a detailed section on markdown pages.
+首页显示最新短记和文章；相册仍由主导航进入。短记预览最多四行、一张照片及照片总数，完整正文和其余照片从“阅读短记”或照片数量入口打开。文章标题最多两行，最多三个标签。内容不足时按实际数量展示；没有内容的栏目按 `sections.hideEmpty` 设置处理。
 
-### Post Frontmatter
+窗外首次飞船约 6–10 秒内出现，飞行一次约 26 秒，间歇出现流星；阅读页频率和亮度降低。离屏和后台时场景时钟暂停。
 
-| Property (\* required) | Description                                                                                                                                                                                                                                                                                                  |
-| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| title \*               | Self explanatory. Used as the text link to the post, the h1 on the posts' page, and the pages title property. Has a max length of 60 chars, set in `src/content/config.ts`                                                                                                                                   |
-| description \*         | Similar to above, used as the seo description property. Has a min length of 50 and a max length of 160 chars, set in the post schema.                                                                                                                                                                        |
-| publishDate \*         | Again pretty simple. To change the date format/locale, currently **en-GB**, update the date option in `src/site.config.ts`. Note you can also pass additional options to the component `<FormattedDate>` if required.                                                                                        |
-| updatedDate            | This is an optional date representing when a post has been updated, in the same format as the publishDate.                                                                                                                                                                                                   |
-| tags                   | Tags are optional with any created post. Any new tag(s) will be shown in `your-domain.com/posts` & `your-domain.com/tags`, and generate the page(s) `your-domain.com/tags/[yourTag]`                                                                                                                         |
-| coverImage             | This is an optional object that will add a cover image to the top of a post. Include both a `src`: "_path-to-image_" and `alt`: "_image alt_". You can view an example in `src/content/post/cover-image.md`.                                                                                                 |
-| ogImage                | This is an optional property. An OG Image will be generated automatically for every post where this property **isn't** provided. If you would like to create your own for a specific post, include this property and a link to your image, the theme will then skip automatically generating one.            |
-| draft                  | This is an optional property as it is set to false by default in the schema. By adding true, the post will be filtered out of the production build in a number of places, inc. getAllPosts() calls, og-images, rss feeds, and generated page[s]. You can view an example in `src/content/post/draft-post.md` |
+网站使用整页滚动。页脚在短页位于视口底部，在长页跟随内容，不覆盖正文。手机目录默认折叠，电脑目录可固定在正文旁。相册支持点击／键盘 Enter 打开、左右方向键、Home／End、滑动、全屏和明确的关闭按钮；关闭后焦点返回原图。图片失败时可重试或打开原图。无 JavaScript 时，文章、导航和相册原图链接仍可使用。
 
-### Note Frontmatter
+## 验证
 
-| Property (\* required) | Description                                                                                                           |
-| ---------------------- | --------------------------------------------------------------------------------------------------------------------- |
-| title \*               | Used as the link text to the note, the pages title property, and the h1 of said note page. Has a max length 60 chars. |
-| description            | Optional. Used for the head meta description property.                                                                |
-| publishDate \*         | ISO 8601 format with offsets allowed.                                                                                 |
+```sh
+npx playwright install chromium  # CI/Linux 首次运行浏览器测试需要
+npm run check
+npm run test:stage1
+npm run test:stage2
+npm run test:stage3
+npm run test:stage4
+npm run test:stage5
+npm test
+```
 
-### Tag Frontmatter
+浏览器测试优先使用本机 Chrome，也可用 `PLAYWRIGHT_CHROMIUM_EXECUTABLE` 指定路径。测试会先构建隔离的 `.test-dist/`，再测试生产页面；测试用长文、四条长短记和静音音轨在构建后自动清理。全套测试还会创建临时网站目录、实际运行 `npm ci`，验证示例启动、自定义设置、空栏目及内容隔离。
 
-| Property (\* required) | Description                                                                                             |
-| ---------------------- | ------------------------------------------------------------------------------------------------------- |
-| title                  | Optional. Used as the h1 on the tags' page, and the pages title property. Has a max length of 60 chars. |
-| description            | Optional. Used for the head meta description and the first paragraph under the h1.                      |
+静态设计源在 `docs/design/`。截图、测试报告和测量数据生成在 `artifacts/`、`playwright-report/`，不进入公开模板。五阶段验收记录见 [开发验收](docs/VERIFICATION.md)。
 
-### Frontmatter snippets
+## 发布
 
-Astro Cactus includes a helpful VSCode snippet which creates a frontmatter 'stub' for posts and note's, found here -> `.vscode/post.code-snippets`. Start typing the word `frontmatter` on your newly created .md(x) file to trigger it. Visual Studio Code snippets appear in IntelliSense via (⌃Space) on mac, (Ctrl+Space) on windows.
+把 `dist/` 发布到支持静态网站的托管服务，或在 Vercel 使用构建命令 `npm run build`、输出目录 `dist`。需要私有内容仓库时，通过部署环境设置 `CONTENT_REPO`，并配置只读凭据 `CONTENT_SSH_KEY` 或 `CONTENT_REPO_TOKEN`。不要把凭据提交进仓库。该实现没有执行线上发布。
 
-## Pagefind search
+模板沿用 Astro Cactus 的内容与工具基础，保留原有许可和致谢。新增示例文字、图标与插画随本仓库许可证提供。
 
-This integration brings a static search feature for searching blog posts and notes. In its current form, pagefind only works once the site has been built. This theme adds a postbuild script that should be run after Astro has built the site. You can preview locally by running both build && postbuild.
+文章分类使用双语 `series`，在内容目录的 `site/series.json` 集中维护名称及翻译；文章不再填写 `tags`。具体格式与历史链接兼容见 [内容指南](docs/CONTENT.md)。
 
-Search results only includes pages from posts and notes. If you would like to include other/all your pages, remove/re-locate the attribute `data-pagefind-body` to the article tag found in `src/layouts/BlogPost.astro` and `src/components/note/Note.astro`.
-
-It also allows you to filter posts by tags added in the frontmatter of blog posts. If you would rather remove this, remove the data attribute `data-pagefind-filter="tag"` from the link in `src/components/blog/Masthead.astro`.
-
-If you would rather not include this integration, simply remove the component `src/components/Search.astro`, and uninstall both `@pagefind/default-ui` & `pagefind` from package.json. You will also need to remove the postbuild script from here as well.
-
-You can reduce the initial css payload of your css, [as demonstrated here](https://github.com/chrismwilliams/astro-theme-cactus/pull/145#issue-1943779868), by lazy loading the web components styles.
-
-## Analytics
-
-You may want to track the number of visitors you receive to your blog/website in order to understand trends and popular posts/pages you've created. There are a number of providers out there one could use, including web hosts such as [vercel](https://vercel.com/analytics), [netlify](https://www.netlify.com/products/analytics/), and [cloudflare](https://www.cloudflare.com/web-analytics/).
-
-This theme/template doesn't include a specific solution due to there being a number of use cases and/or options which some people may or may not use.
-
-You may be asked to included a snippet inside the **HEAD** tag of your website when setting it up, which can be found in `src/layouts/Base.astro`. Alternatively, you can add the snippet in `src/components/BaseHead.astro`.
-
-## Deploy
-
-[Astro docs](https://docs.astro.build/en/guides/deploy/) has a great section and breakdown of how to deploy your own Astro site on various platforms and their idiosyncrasies.
-
-By default the site will be built (see [Commands](#commands) section above) to a `/dist` directory.
-
-## Acknowledgment
-
-This theme was inspired by [Hexo Theme Cactus](https://github.com/probberechts/hexo-theme-cactus)
-
-## License
-
-MIT
+皮肤的配色与外观在各自的 `src/skins/<id>/` 内维护，详见 [皮肤维护](docs/SKINS.md)。

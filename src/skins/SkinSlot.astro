@@ -1,0 +1,28 @@
+---
+import { skins } from "./registry";
+import { settings } from "@/data/settings";
+import type { Lang } from "@/i18n/config";
+import type { AstroComponentFactory } from "astro/runtime/server/index.js";
+interface Props {
+	position: string;
+	lang: Lang;
+	home?: boolean;
+}
+const { position, lang, home } = Astro.props;
+const decorations = import.meta.glob<{ default: AstroComponentFactory }>("./*/Decorations.astro", {
+	eager: true,
+});
+---
+
+{
+	skins.map((skin) => {
+		const Component = decorations[`./${skin.id}/Decorations.astro`]?.default;
+		return (
+			Component && (
+				<div class="skin-layer" data-skin-layer={skin.id} inert={skin.id !== settings.defaultSkin}>
+					<Component position={position} lang={lang} home={home} />
+				</div>
+			)
+		);
+	})
+}

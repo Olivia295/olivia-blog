@@ -2,12 +2,13 @@
 import type { CollectionEntry } from "astro:content";
 import type { GetStaticPaths } from "astro";
 import { Icon } from "astro-icon/components";
+import BlogPreview from "@/components/blog/BlogPreview.astro";
 import FloatingBack from "@/components/FloatingBack.astro";
 import PageHeader from "@/components/PageHeader.astro";
-import BlogPreview from "@/components/blog/BlogPreview.astro";
 import { getAllBlogs, getNamedSeries, groupBlogsByYear } from "@/data/blog";
 import { pageLead } from "@/data/page-copy";
-import { languages, type Lang } from "@/i18n/config";
+import { seriesInfo, seriesLabel } from "@/data/site-series";
+import { type Lang, languages } from "@/i18n/config";
 import { localePath, useTranslations } from "@/i18n/utils";
 import PageLayout from "@/layouts/Base.astro";
 import { collectionDateSort } from "@/utils/date";
@@ -50,7 +51,9 @@ const meta = {
 		<div class="blogs-list">
 			{
 				descYearKeys.length === 0 && (
-					<p class="text-muted mb-8" data-panel="all">{t("blogs.empty")}</p>
+					<p class="text-muted mb-8" data-panel="all">
+						{t("blogs.empty")}
+					</p>
 				)
 			}
 			<div data-panel="all">
@@ -74,8 +77,8 @@ const meta = {
 			</div>
 			{
 				seriesNames.map((name) => (
-					<div data-panel={name} hidden>
-						<h2 class="title mb-6 text-lg">{name}</h2>
+					<div data-panel={seriesInfo(name).id} hidden>
+						<h2 class="title mb-6 text-lg">{seriesLabel(name, lang)}</h2>
 						<ul class="mt-5 space-y-4 text-start">
 							{postsBySeries.get(name)?.map((p) => (
 								<li class="grid gap-1 sm:grid-cols-[auto_1fr] sm:[&_q]:col-start-2">
@@ -93,12 +96,7 @@ const meta = {
 					<h2 class="title mb-4 text-lg">{t("blogs.series")}</h2>
 					<ul class="series-nav__list" role="list">
 						<li>
-							<button
-								type="button"
-								class="series-nav__btn"
-								data-series="all"
-								aria-pressed="true"
-							>
+							<button type="button" class="series-nav__btn" data-series="all" aria-pressed="true">
 								{t("blogs.all")}
 							</button>
 						</li>
@@ -107,10 +105,16 @@ const meta = {
 								<button
 									type="button"
 									class="series-nav__btn"
-									data-series={name}
+									data-series={seriesInfo(name).id}
+									data-aliases={JSON.stringify([
+										name,
+										seriesInfo(name).en,
+										...seriesInfo(name).aliases,
+										...seriesInfo(name).legacyTags,
+									])}
 									aria-pressed="false"
 								>
-									{name}
+									{seriesLabel(name, lang)}
 								</button>
 							</li>
 						))}
@@ -127,7 +131,14 @@ const meta = {
 	if (board) {
 		const buttons = board.querySelectorAll<HTMLButtonElement>(".series-nav__btn");
 		const setSeries = (series: string) => {
-			const next = series || "all";
+			const match = [...buttons].find(
+				(button) =>
+					button.dataset.series === series ||
+					(JSON.parse(button.dataset.aliases || "[]") as string[]).some(
+						(alias) => alias.toLowerCase() === series.toLowerCase(),
+					),
+			);
+			const next = match?.dataset.series || "all";
 			board.setAttribute("data-series", next);
 			buttons.forEach((btn) => {
 				btn.setAttribute("aria-pressed", String(btn.dataset.series === next));
@@ -144,8 +155,7 @@ const meta = {
 			btn.addEventListener("click", () => setSeries(btn.dataset.series || "all"));
 		});
 		const initial = new URLSearchParams(window.location.search).get("series");
-		const known = initial && [...buttons].some((btn) => btn.dataset.series === initial);
-		if (known && initial) setSeries(initial);
+		if (initial) setSeries(initial);
 	}
 </script>
 
@@ -178,18 +188,8 @@ const meta = {
 
 	.series-nav__btn {
 		padding: 0.2rem 0.05rem 0.3rem;
-		border: none;
-		background: transparent;
-		color: var(--color-muted);
 		cursor: pointer;
-		font: inherit;
-		font-weight: 700;
 		white-space: nowrap;
-	}
-
-	.series-nav__btn[aria-pressed="true"] {
-		color: var(--color-brand);
-		box-shadow: inset 0 -2px 0 var(--color-brand);
 	}
 
 	@media (min-width: 640px) {

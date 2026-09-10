@@ -1,7 +1,7 @@
-import type { APIRoute } from "astro";
 import rss from "@astrojs/rss";
-import { resolvePostTags } from "@/data/post-tags";
+import type { APIRoute } from "astro";
 import { getAllPosts } from "@/data/post";
+import { resolvePostTags } from "@/data/post-tags";
 import { isLang, languages } from "@/i18n/config";
 import { useTranslations } from "@/i18n/utils";
 import { siteConfig } from "@/site.config";

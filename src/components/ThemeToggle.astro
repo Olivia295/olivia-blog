@@ -11,7 +11,11 @@ const t = useTranslations(lang);
 ---
 
 <theme-toggle class="ms-0.5 sm:ms-2">
-	<button class="hover:text-accent relative flex h-7 w-7 cursor-pointer items-center justify-center rounded-md sm:h-8 sm:w-8 sm:p-2" type="button">
+	<button
+		disabled
+		class="hover:text-accent relative flex h-7 w-7 cursor-pointer items-center justify-center rounded-md sm:h-8 sm:w-8 sm:p-2"
+		type="button"
+	>
 		<span class="sr-only">{t("theme.toggle")}</span>
 		<svg
 			aria-hidden="true"
@@ -65,7 +69,6 @@ const t = useTranslations(lang);
 </theme-toggle>
 
 <script>
-	// Note that if you fire the theme-change event outside of this component, it will not be reflected in the button's aria-checked attribute. You will need to add an event listener if you want that.
 	import { rootInDarkMode } from "@/utils/domElement";
 
 	class ThemeToggle extends HTMLElement {
@@ -74,8 +77,12 @@ const t = useTranslations(lang);
 			const button = this.querySelector<HTMLButtonElement>("button");
 
 			if (button) {
+				button.disabled = false;
 				// set aria role value
 				button.setAttribute("role", "switch");
+				document.addEventListener("theme-applied", () =>
+					button.setAttribute("aria-checked", String(rootInDarkMode())),
+				);
 				button.setAttribute("aria-checked", String(rootInDarkMode()));
 
 				// button event

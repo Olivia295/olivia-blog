@@ -2,11 +2,13 @@ import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { isBarePreview } from "@/data/bare";
 import { resolveMediaUrl } from "@/utils/media";
+import { isSampleContent } from "./settings";
 
 export type Photo = {
 	slug: string;
 	src: string;
 	alt: string;
+	previewSrc?: string;
 	width?: number;
 	height?: number;
 };
@@ -29,8 +31,7 @@ export function packAlbumRows(photos: Photo[]): AlbumRow[] | null {
 	if (!photosHaveSizes(photos)) return null;
 
 	const mixed =
-		photos.some((photo) => isPortrait(photo)) &&
-		photos.some((photo) => !isPortrait(photo));
+		photos.some((photo) => isPortrait(photo)) && photos.some((photo) => !isPortrait(photo));
 
 	if (!mixed) {
 		const rows: AlbumRow[] = [];
@@ -71,6 +72,8 @@ export type PhotoAlbum = {
 	slug: string;
 	title: string;
 	order?: number;
+	updatedDate?: string;
+	description?: string;
 	photos: Photo[];
 };
 
@@ -89,11 +92,10 @@ function loadPhotosManifest(): PhotosFile {
 export function getPhotoAlbums(): PhotoAlbum[] {
 	if (isBarePreview()) return [];
 	return loadPhotosManifest().albums.map((album) => ({
-		slug: album.slug,
-		title: album.title,
+		...album,
 		photos: album.photos.map((photo) => ({
 			...photo,
-			src: resolveMediaUrl(photo.src),
+			src: isSampleContent() ? photo.src : resolveMediaUrl(photo.src),
 		})),
 	}));
 }

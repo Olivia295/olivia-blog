@@ -1,8 +1,9 @@
 ---
 import { WEBMENTION_PINGBACK, WEBMENTION_URL } from "astro:env/client";
-import { defaultLang, ogLocale, type Lang } from "@/i18n/config";
-import { localePath, useTranslations } from "@/i18n/utils";
+import { settings } from "@/data/settings";
 import { siteIconMime, siteIconSrc } from "@/data/site-assets";
+import { defaultLang, type Lang, ogLocale } from "@/i18n/config";
+import { localePath, useTranslations } from "@/i18n/utils";
 import { siteConfig } from "@/site.config";
 import type { SiteMeta } from "@/types";
 import "@/styles/global.css";
@@ -14,7 +15,7 @@ const { articleDate, description, ogImage, title, lang = defaultLang } = Astro.p
 const titleSeparator = "•";
 const siteTitle = `${title} ${titleSeparator} ${siteConfig.title}`;
 const canonicalURL = new URL(Astro.url.pathname, Astro.site);
-const socialImageURL = new URL(ogImage ? ogImage : "/social-card.png", Astro.url).href;
+const socialImageURL = new URL(ogImage ? ogImage : "/defaults/social-card.png", Astro.url).href;
 const t = useTranslations(lang);
 const blogsRss = localePath(lang, "/rss.xml");
 const postsRss = localePath(lang, "/posts/rss.xml");
@@ -30,7 +31,7 @@ const postsRss = localePath(lang, "/posts/rss.xml");
 	import.meta.env.PROD && (
 		<>
 			{/* Favicon & Apple Icon */}
-			<link rel="icon" href="/favicon-32x32.png" type="image/png" />
+
 			<link href="/icons/apple-touch-icon.png" rel="apple-touch-icon" />
 			{/* Manifest */}
 			<link href="/manifest.webmanifest" rel="manifest" />
@@ -46,8 +47,8 @@ const postsRss = localePath(lang, "/posts/rss.xml");
 <meta content={description} name="description" />
 <meta content={siteConfig.author} name="author" />
 {/* Preview domain: keep out of search indexes until a custom domain. */}
-<meta content="noindex, nofollow" name="robots" />
-<meta content="noindex, nofollow" name="googlebot" />
+<meta content={settings.indexable ? "index, follow" : "noindex, nofollow"} name="robots" />
+<meta content={settings.indexable ? "index, follow" : "noindex, nofollow"} name="googlebot" />
 
 {/* Open Graph / Facebook */}
 <meta content={articleDate ? "article" : "website"} property="og:type" />

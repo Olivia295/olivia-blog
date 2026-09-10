@@ -5,16 +5,11 @@ import FloatingBack from "@/components/FloatingBack.astro";
 import PageHeader from "@/components/PageHeader.astro";
 import Pagination from "@/components/Paginator.astro";
 import Post from "@/components/post/Post.astro";
-import { pageLead } from "@/data/page-copy";
 import { getAllBlogs } from "@/data/blog";
+import { pageLead } from "@/data/page-copy";
 import { getAllPosts, POST_PAGE_SIZE, postsHref } from "@/data/post";
-import {
-	POST_TAB_IDS,
-	postBelongsToTab,
-	postTabLabel,
-	type PostTabId,
-} from "@/data/post-tags";
-import { languages, type Lang } from "@/i18n/config";
+import { POST_TAB_IDS, type PostTabId, postBelongsToTab, postTabLabel } from "@/data/post-tags";
+import { type Lang, languages } from "@/i18n/config";
 import { localePath, useTranslations } from "@/i18n/utils";
 import PageLayout from "@/layouts/Base.astro";
 import { collectionDateSort } from "@/utils/date";
@@ -29,7 +24,13 @@ export async function getStaticPaths() {
 			return Array.from({ length: lastPage }, (_, i) => {
 				const n = i + 1;
 				const page =
-					filter === "all" ? (n === 1 ? undefined : String(n)) : n === 1 ? filter : `${filter}/${n}`;
+					filter === "all"
+						? n === 1
+							? undefined
+							: String(n)
+						: n === 1
+							? filter
+							: `${filter}/${n}`;
 				return {
 					params: { lang, page },
 					props: {
@@ -159,8 +160,6 @@ const paginationProps = {
 		justify-content: center;
 		gap: 0.2rem;
 		padding: 0.28rem;
-		border-radius: 999px;
-		background: color-mix(in oklch, var(--color-global-text) 6%, transparent);
 	}
 
 	.post-tabs__item {
@@ -169,28 +168,5 @@ const paginationProps = {
 		justify-content: center;
 		min-height: 2.05rem;
 		padding: 0.35rem 1.05rem;
-		border-radius: 999px;
-		color: inherit;
-		text-decoration: none;
-		font-size: 0.82rem;
-		font-weight: 650;
-		letter-spacing: 0.02em;
-		opacity: 0.5;
-		transition:
-			opacity 0.15s ease,
-			background 0.15s ease,
-			color 0.15s ease,
-			box-shadow 0.15s ease;
-	}
-
-	.post-tabs__item:hover {
-		opacity: 0.85;
-	}
-
-	.post-tabs__item.is-on {
-		opacity: 1;
-		color: var(--color-brand);
-		background: var(--color-global-bg);
-		box-shadow: 0 1px 8px color-mix(in oklch, var(--color-global-text) 10%, transparent);
 	}
 </style>

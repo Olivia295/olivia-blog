@@ -1,16 +1,14 @@
 ---
 import type { GetStaticPaths } from "astro";
-import { getAllBlogs, getUniqueTags } from "@/data/blog";
+import { legacySeriesLinks } from "@/data/site-series";
 import { languages } from "@/i18n/config";
-
-export const getStaticPaths = (async () => {
-	const uniqueTags = getUniqueTags(await getAllBlogs());
-	return languages.flatMap((lang) => [
-		{ params: { lang, path: undefined }, redirect: `/${lang}/blogs/` },
-		...uniqueTags.map((tag) => ({
+export const getStaticPaths = (async () =>
+	languages.flatMap((lang) => [
+		{ params: { lang, path: undefined }, props: { destination: `/${lang}/blogs/` } },
+		...legacySeriesLinks().map(({ tag, id }) => ({
 			params: { lang, path: tag },
-			redirect: encodeURI(`/${lang}/blogs/`),
+			props: { destination: `/${lang}/blogs/?series=${encodeURIComponent(id)}` },
 		})),
-	]);
-}) satisfies GetStaticPaths;
+	])) satisfies GetStaticPaths;
+return Astro.redirect(Astro.props.destination, 301);
 ---

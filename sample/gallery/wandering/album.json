@@ -1,0 +1,18 @@
+{
+	"slug": "wandering",
+	"title": "散步时收集的光",
+	"description": "以原创插画代替真实照片的示例相册。",
+	"updatedDate": "2026-09-03T17:00:00+08:00",
+	"order": 1,
+	"photoDetails": {
+		"01-coast.svg": {
+			"alt": "蓝绿色海湾与沙色海岸的几何插画"
+		},
+		"02-evening.svg": {
+			"alt": "暖橙天空下的山脊插画"
+		},
+		"03-window.svg": {
+			"alt": "一扇望向星空的舷窗插画"
+		}
+	}
+}

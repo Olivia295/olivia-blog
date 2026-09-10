@@ -28,19 +28,17 @@ const { nextUrl, prevUrl, pages = [] } = Astro.props;
 					←
 				</span>
 			)}
-			{
-				pages.map((item) =>
-					item.current ? (
-						<span class="pager__dot pager__dot--now" aria-current="page">
-							{item.number}
-						</span>
-					) : (
-						<a class="pager__dot" href={item.href}>
-							{item.number}
-						</a>
-					),
-				)
-			}
+			{pages.map((item) =>
+				item.current ? (
+					<span class="pager__dot pager__dot--now" aria-current="page">
+						{item.number}
+					</span>
+				) : (
+					<a class="pager__dot" href={item.href}>
+						{item.number}
+					</a>
+				),
+			)}
 			{nextUrl ? (
 				<a class="pager__arrow" href={nextUrl.url} aria-label={nextUrl.text}>
 					→
@@ -71,32 +69,9 @@ const { nextUrl, prevUrl, pages = [] } = Astro.props;
 		min-width: 2rem;
 		height: 2rem;
 		padding: 0 0.4rem;
-		border-radius: 999px;
-		font-size: 0.8rem;
-		font-weight: 600;
-		color: inherit;
-		text-decoration: none;
-		opacity: 0.55;
-		transition:
-			opacity 0.15s ease,
-			background 0.15s ease,
-			color 0.15s ease;
-	}
-
-	.pager__arrow:hover,
-	.pager__dot:hover {
-		opacity: 1;
-		background: color-mix(in oklch, var(--color-global-text) 6%, transparent);
-	}
-
-	.pager__dot--now {
-		opacity: 1;
-		color: var(--color-brand);
-		background: color-mix(in oklch, var(--color-brand) 12%, transparent);
 	}
 
 	.pager__arrow--off {
-		opacity: 0.18;
 		pointer-events: none;
 	}
 </style>
