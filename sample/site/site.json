@@ -78,6 +78,10 @@
 	"home": {
 		"notes": 3,
 		"articles": 5,
+		"greeting": {
+			"zh": "你好，我是",
+			"en": "Hello, I’m"
+		},
 		"portraitAlt": {
 			"zh": "",
 			"en": ""

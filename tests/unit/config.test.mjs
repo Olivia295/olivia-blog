@@ -54,6 +54,29 @@ test("homepage defaults and partial owner settings preserve 3 notes, 5 articles 
 	assert.equal(result.home.portraitAlt.zh, "原来的插画");
 	assert.equal(result.scene.motion, false);
 });
+test("homepage greeting reads content overrides with language and legacy defaults", async () => {
+	const root = await fixture();
+	try {
+		await writeFile(
+			path.join(root, "src/content/site/site.json"),
+			JSON.stringify({ home: { greeting: { zh: "欢迎光临，我是" } } }),
+		);
+		const result = readSettings(root, {});
+		assert.deepEqual(result.home.greeting, { zh: "欢迎光临，我是", en: "Hello, I’m" });
+		assert.equal(result.home.notes, 3);
+		assert.equal(readSettings(root, { CONTENT_MODE: "sample" }).home.greeting.zh, "你好，我是");
+		assert.deepEqual(parseSettings({ ...neutral, home: {} }).home.greeting, {
+			zh: "你好，我是",
+			en: "Hello, I’m",
+		});
+		assert.deepEqual(
+			parseSettings({ ...neutral, home: undefined }).home.greeting,
+			parseSettings({ ...neutral, home: {} }).home.greeting,
+		);
+	} finally {
+		await rm(root, { recursive: true, force: true });
+	}
+});
 test("sample and bare modes never read personal identity or settings", async () => {
 	const root = await fixture();
 	try {

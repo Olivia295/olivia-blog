@@ -70,6 +70,8 @@ music: false
 
 首页默认展示 3 条最新短记、5 篇最新文章，可在 `home.notes`、`home.articles` 调整。`home.portraitAlt` 提供中英文图片说明，`scene.motion` 控制窗景动效。短记正文预览在构建时提取，保留全文入口；照片只预览首张，数量链接可进入完整短记。
 
+首页大标题第一行由 `home.greeting.zh`、`home.greeting.en` 控制，例如 `"home": { "greeting": { "zh": "欢迎光临，我是", "en": "Hello, I’m" } }`。仅覆盖一种语言时，另一种沿用模板默认文案；旧配置不填写此字段仍可正常使用。第二行姓名沿用 `profile.name`（兼容 `site/about.json` 的 `name`），换行及装饰圆点保持原样。所有皮肤共用这些文字，内容按纯文本显示。
+
 ## 替换规则
 
 - `blog/`、`post/`、`tag/`、`site/` 是权威来源，缺失或清空会清除相应生成副本。

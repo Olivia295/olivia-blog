@@ -41,9 +41,15 @@ const settingsSchema = z.object({
 		.object({
 			notes: z.number().int().min(1).max(20).default(3),
 			articles: z.number().int().min(1).max(20).default(5),
+			greeting: localized.default({ zh: "你好，我是", en: "Hello, I’m" }),
 			portraitAlt: localized.default({ zh: "", en: "" }),
 		})
-		.default({ notes: 3, articles: 5, portraitAlt: { zh: "", en: "" } }),
+		.default({
+			notes: 3,
+			articles: 5,
+			greeting: { zh: "你好，我是", en: "Hello, I’m" },
+			portraitAlt: { zh: "", en: "" },
+		}),
 	scene: z.object({ motion: z.boolean().default(true) }).default({ motion: true }),
 	sections: z.object({
 		blogs: z.boolean(),
