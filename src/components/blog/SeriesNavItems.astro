@@ -1,0 +1,61 @@
+---
+import { seriesInfo, seriesLabel } from "@/data/site-series";
+import type { Lang } from "@/i18n/config";
+
+interface Props {
+	names: string[];
+	counts: Record<string, number>;
+	lang: Lang;
+	parent?: string;
+}
+const { names, counts, lang, parent } = Astro.props;
+const entries = names.map(seriesInfo).filter((entry) => entry.parent === parent);
+---
+
+{
+	entries.map((entry) => (
+		<li>
+			<button
+				type="button"
+				class="series-nav__btn"
+				data-series={entry.id}
+				data-parent={entry.parent}
+				data-label={seriesLabel(entry.id, lang)}
+				data-aliases={JSON.stringify([entry.zh, entry.en, ...entry.aliases, ...entry.legacyTags])}
+				aria-pressed="false"
+			>
+				<span>{seriesLabel(entry.id, lang)}</span>
+				<span class="series-nav__count" aria-hidden="true">
+					{counts[entry.zh] || 0}
+				</span>
+			</button>
+			{names.some((name) => seriesInfo(name).parent === entry.id) && (
+				<ul class="series-nav__children" role="list">
+					<Astro.self names={names} counts={counts} lang={lang} parent={entry.id} />
+				</ul>
+			)}
+		</li>
+	))
+}
+
+<style>
+	.series-nav__children {
+		margin: 0 0 0.5rem 0.4rem;
+		padding-left: 0.85rem;
+		border-left: 1px solid color-mix(in srgb, currentColor 16%, transparent);
+		list-style: none;
+	}
+	.series-nav__btn {
+		display: flex;
+		align-items: baseline;
+		gap: 0.6rem;
+		min-height: 44px;
+		padding: 0.5rem 0;
+		text-align: start;
+		cursor: pointer;
+	}
+	.series-nav__count {
+		color: var(--color-muted);
+		font-size: 0.75rem;
+	}
+</style>

@@ -1,6 +1,6 @@
 ---
 import { getAllBlogs, getSeriesWithCount } from "@/data/blog";
-import { seriesHref, seriesLabel } from "@/data/site-series";
+import { seriesHref, seriesPath } from "@/data/site-series";
 import type { Lang } from "@/i18n/config";
 import { useTranslations } from "@/i18n/utils";
 
@@ -43,7 +43,11 @@ const tags = getSeriesWithCount(await getAllBlogs());
 									class:list={["tag-picker__link", { "is-current": current === tag }]}
 									href={seriesHref(tag, lang)}
 								>
-									<span>{seriesLabel(tag, lang)}</span>
+									<span>
+										{seriesPath(tag)
+											.map((entry) => entry[lang])
+											.join(" / ")}
+									</span>
 									<span class="tag-picker__count">
 										{count} {t("tags.count")}
 									</span>

@@ -30,7 +30,9 @@ const choose = async (skin) => {
 };
 try {
 	await goto("/zh/about/");
-	assert.equal(await current(), "spaceship");
+	const defaultSkin = await page.getAttribute("html", "data-default-skin");
+	assert.ok(["minimal", "spaceship"].includes(defaultSkin));
+	assert.equal(await current(), defaultSkin);
 	assert.equal(await page.locator("#skin-select option").count(), 3);
 	await choose("minimal");
 	assert.equal(await page.evaluate(() => localStorage.getItem("blog-skin")), "minimal");
@@ -39,8 +41,9 @@ try {
 	await goto("/en/about/");
 	assert.equal(await current(), "minimal");
 	await choose("");
-	assert.equal(await current(), "spaceship");
+	assert.equal(await current(), defaultSkin);
 	assert.equal(await page.evaluate(() => localStorage.getItem("blog-skin")), null);
+	await choose("spaceship");
 	await page.locator("#skin-select").focus();
 	await page.keyboard.press("m");
 	await page.keyboard.press("Tab");
@@ -117,7 +120,7 @@ try {
 	assert.equal(await page.getAttribute("html", "data-space-motion"), null);
 	await page.evaluate(() => localStorage.setItem("blog-skin", "retired-skin"));
 	await goto("/zh/about/");
-	assert.equal(await current(), "spaceship");
+	assert.equal(await current(), defaultSkin);
 	await page.addInitScript(() =>
 		Object.defineProperty(window, "localStorage", {
 			get() {
@@ -126,8 +129,10 @@ try {
 		}),
 	);
 	await goto("/zh/about/");
-	await choose("minimal");
-	assert.equal(await current(), "minimal");
+	assert.equal(await current(), defaultSkin);
+	const alternateSkin = defaultSkin === "minimal" ? "spaceship" : "minimal";
+	await choose(alternateSkin);
+	assert.equal(await current(), alternateSkin);
 	assert.deepEqual(errors, []);
 	console.log(
 		"PASS: settings UI, keyboard, persistence, languages, light/dark, desktop/mobile, core pages, photo/search dialogs, boarding cleanup and blocked storage.",

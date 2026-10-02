@@ -1,13 +1,14 @@
 ---
 import type { CollectionEntry } from "astro:content";
 import type { GetStaticPaths } from "astro";
-import { Icon } from "astro-icon/components";
 import BlogPreview from "@/components/blog/BlogPreview.astro";
+import SeriesNavItems from "@/components/blog/SeriesNavItems.astro";
 import FloatingBack from "@/components/FloatingBack.astro";
 import PageHeader from "@/components/PageHeader.astro";
-import { getAllBlogs, getNamedSeries, groupBlogsByYear } from "@/data/blog";
+import RSSLink from "@/components/RSSLink.astro";
+import { blogInSeries, getAllBlogs, getNamedSeries, groupBlogsByYear } from "@/data/blog";
 import { pageLead } from "@/data/page-copy";
-import { seriesInfo, seriesLabel } from "@/data/site-series";
+import { seriesHref, seriesInfo, seriesLabel, seriesPath } from "@/data/site-series";
 import { type Lang, languages } from "@/i18n/config";
 import { localePath, useTranslations } from "@/i18n/utils";
 import PageLayout from "@/layouts/Base.astro";
@@ -30,9 +31,16 @@ const postsBySeries = new Map<string, CollectionEntry<"blog">[]>();
 for (const name of seriesNames) {
 	postsBySeries.set(
 		name,
-		allPostsByDate.filter((post) => post.data.series.includes(name)),
+		allPostsByDate
+			.filter((post) => blogInSeries(post, name))
+			.sort(
+				(a, b) =>
+					a.data.publishDate.getTime() - b.data.publishDate.getTime() ||
+					(a.id < b.id ? -1 : a.id > b.id ? 1 : 0),
+			),
 	);
 }
+const counts = Object.fromEntries([...postsBySeries].map(([name, posts]) => [name, posts.length]));
 
 const meta = {
 	description: t("blogs.description"),
@@ -42,10 +50,7 @@ const meta = {
 
 <PageLayout lang={lang} meta={meta}>
 	<PageHeader title={t("blogs.title")} lead={pageLead("blogs", lang, t("blogs.lead"))}>
-		<a class="text-accent" href={localePath(lang, "/rss.xml")} target="_blank">
-			<span class="sr-only">{t("rss.label")}</span>
-			<Icon aria-hidden="true" class="h-6 w-6" focusable="false" name="mdi:rss" />
-		</a>
+		<RSSLink lang={lang} kind="blogs" />
 	</PageHeader>
 	<div class="blogs-board" data-series="all">
 		<div class="blogs-list">
@@ -78,7 +83,38 @@ const meta = {
 			{
 				seriesNames.map((name) => (
 					<div data-panel={seriesInfo(name).id} hidden>
-						<h2 class="title mb-6 text-lg">{seriesLabel(name, lang)}</h2>
+						<header class="series-intro">
+							{seriesPath(name)
+								.slice(0, -1)
+								.map((parent) => (
+									<a class="series-parent" href={seriesHref(parent.id, lang)}>
+										{parent[lang]} <span aria-hidden="true"> / </span>
+									</a>
+								))}
+							<h2 class="title text-lg">{seriesLabel(name, lang)}</h2>
+							{seriesInfo(name).description?.[lang] && (
+								<p>{seriesInfo(name).description?.[lang]}</p>
+							)}
+							<p class="series-intro__meta">
+								{lang === "zh"
+									? `${postsBySeries.get(name)!.length} 篇文章 · 按发布先后阅读`
+									: `${postsBySeries.get(name)!.length} articles · In reading order`}
+							</p>
+							{postsBySeries.get(name)!.length > 0 ? (
+								<a
+									class="cactus-link"
+									href={localePath(lang, `/blogs/${postsBySeries.get(name)![0]!.id}/`)}
+								>
+									{lang === "zh" ? "从第一篇读起" : "Start with the first story"} →
+								</a>
+							) : (
+								<p class="series-empty">
+									{lang === "zh"
+										? "这里还没有文章，之后慢慢写。"
+										: "No articles yet. Stories will arrive in time."}
+								</p>
+							)}
+						</header>
 						<ul class="mt-5 space-y-4 text-start">
 							{postsBySeries.get(name)?.map((p) => (
 								<li class="grid gap-1 sm:grid-cols-[auto_1fr] sm:[&_q]:col-start-2">
@@ -93,32 +129,28 @@ const meta = {
 		{
 			seriesNames.length > 0 && (
 				<aside class="series-nav" aria-label={t("blogs.series")}>
-					<h2 class="title mb-4 text-lg">{t("blogs.series")}</h2>
-					<ul class="series-nav__list" role="list">
-						<li>
-							<button type="button" class="series-nav__btn" data-series="all" aria-pressed="true">
+					<details class="series-menu" open>
+						<summary>
+							{t("blogs.series")}
+							<span class="series-menu__selection" data-series-selection>
 								{t("blogs.all")}
-							</button>
-						</li>
-						{seriesNames.map((name) => (
+							</span>
+						</summary>
+						<ul class="series-nav__list" role="list">
 							<li>
 								<button
 									type="button"
 									class="series-nav__btn"
-									data-series={seriesInfo(name).id}
-									data-aliases={JSON.stringify([
-										name,
-										seriesInfo(name).en,
-										...seriesInfo(name).aliases,
-										...seriesInfo(name).legacyTags,
-									])}
-									aria-pressed="false"
+									data-series="all"
+									data-label={t("blogs.all")}
+									aria-pressed="true"
 								>
-									{seriesLabel(name, lang)}
+									{t("blogs.all")}
 								</button>
 							</li>
-						))}
-					</ul>
+							<SeriesNavItems names={seriesNames} counts={counts} lang={lang} />
+						</ul>
+					</details>
 				</aside>
 			)
 		}
@@ -129,6 +161,9 @@ const meta = {
 <script>
 	const board = document.querySelector(".blogs-board");
 	if (board) {
+		const menu = board.querySelector<HTMLDetailsElement>(".series-menu");
+		const compact = matchMedia("(max-width: 639px)");
+		if (menu && compact.matches) menu.open = false;
 		const buttons = board.querySelectorAll<HTMLButtonElement>(".series-nav__btn");
 		const setSeries = (series: string) => {
 			const match = [...buttons].find(
@@ -139,6 +174,8 @@ const meta = {
 					),
 			);
 			const next = match?.dataset.series || "all";
+			const label = board.querySelector("[data-series-selection]");
+			if (label) label.textContent = (match || buttons[0])?.dataset.label || "";
 			board.setAttribute("data-series", next);
 			buttons.forEach((btn) => {
 				btn.setAttribute("aria-pressed", String(btn.dataset.series === next));
@@ -152,7 +189,13 @@ const meta = {
 			history.replaceState(null, "", url);
 		};
 		buttons.forEach((btn) => {
-			btn.addEventListener("click", () => setSeries(btn.dataset.series || "all"));
+			btn.addEventListener("click", () => {
+				setSeries(btn.dataset.series || "all");
+				if (menu && compact.matches) {
+					menu.open = false;
+					menu.querySelector("summary")?.focus();
+				}
+			});
 		});
 		const initial = new URLSearchParams(window.location.search).get("series");
 		if (initial) setSeries(initial);
@@ -172,14 +215,36 @@ const meta = {
 
 	.series-nav__list {
 		display: flex;
-		flex-direction: row;
+		flex-direction: column;
 		flex-wrap: nowrap;
 		gap: 0.35rem 0.85rem;
 		margin: 0;
 		padding: 0;
-		overflow-x: auto;
+		max-height: min(60vh, 32rem);
+		overflow: auto;
 		list-style: none;
 		scrollbar-width: none;
+	}
+	.series-menu summary {
+		min-height: 44px;
+		padding-block: 0.6rem;
+		cursor: pointer;
+		font-weight: 600;
+	}
+	.series-menu__selection {
+		margin-left: 0.75rem;
+		color: var(--color-muted);
+		font-size: 0.8rem;
+		font-weight: 400;
+	}
+	.series-parent {
+		display: inline-block;
+		min-height: 32px;
+		font-size: 0.85rem;
+		color: var(--color-muted);
+	}
+	.series-empty {
+		color: var(--color-muted);
 	}
 
 	.series-nav__list::-webkit-scrollbar {
@@ -187,6 +252,7 @@ const meta = {
 	}
 
 	.series-nav__btn {
+		min-height: 44px;
 		padding: 0.2rem 0.05rem 0.3rem;
 		cursor: pointer;
 		white-space: nowrap;
@@ -203,14 +269,14 @@ const meta = {
 		.series-nav {
 			order: 0;
 			position: sticky;
-			top: 1.5rem;
+			top: calc(var(--header-height, 110px) + 24px);
 		}
 
 		.series-nav__list {
 			flex-direction: column;
 			flex-wrap: nowrap;
 			gap: 0.35rem;
-			overflow: visible;
+			max-height: calc(100dvh - var(--header-height, 110px) - 100px);
 		}
 
 		.series-nav__btn {

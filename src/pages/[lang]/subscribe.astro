@@ -1,0 +1,173 @@
+---
+import CopyLink from "@/components/CopyLink.astro";
+import PageHeader from "@/components/PageHeader.astro";
+import { type FeedKind, feedLabel, feedPath } from "@/data/feed-content";
+import type { Lang } from "@/i18n/config";
+import { getStaticLangPaths } from "@/i18n/utils";
+import PageLayout from "@/layouts/Base.astro";
+import { siteConfig } from "@/site.config";
+
+export function getStaticPaths() {
+	return getStaticLangPaths();
+}
+const lang = Astro.params.lang as Lang;
+const zh = lang === "zh";
+const title = zh ? "订阅更新" : "Subscribe to updates";
+const description = zh
+	? "用你喜欢的 RSS 阅读器，慢慢读我的最新分享。"
+	: "Read my latest writing in your favourite RSS reader.";
+const feeds: FeedKind[] = ["all", "blogs", "posts"];
+const descriptions = zh
+	? {
+			all: "文章与随记，一次订阅就能收到。",
+			blogs: "只收长文，留一点安静阅读的时间。",
+			posts: "快录、分享与摘抄，生活里的小片刻。",
+		}
+	: {
+			all: "Writing and notes in one feed.",
+			blogs: "Longer stories, for a quiet moment of reading.",
+			posts: "Everyday notes, excerpts and recommendations.",
+		};
+---
+
+<PageLayout lang={lang} meta={{ title, description }}>
+	<section class="subscriptions">
+		<PageHeader title={title} lead={description} />
+		<p class="subscription-intro">
+			{
+				zh
+					? "RSS 让你在阅读器里查看网站更新。文章与随记都包含全文和图片，无需注册本站账号。"
+					: "RSS brings website updates into your reader. Writing and notes include full text and images, with no account needed here."
+			}
+		</p>
+		<div class="subscription-help">
+			<h2>{zh ? "怎么订阅" : "How to subscribe"}</h2>
+			<ol class="subscription-steps">
+				<li>
+					{
+						zh
+							? "打开你使用的 RSS 阅读器（应用或网页都可以）。"
+							: "Open your RSS reader, either an app or a website."
+					}
+				</li>
+				<li>
+					{
+						zh
+							? "找到「添加订阅」「添加来源」或「Add feed」。"
+							: "Choose Add feed, Add subscription or Add source."
+					}
+				</li>
+				<li>
+					{
+						zh
+							? "复制下方的订阅地址，粘贴到阅读器中并确认添加。"
+							: "Copy a feed address below, paste it into your reader and confirm."
+					}
+				</li>
+			</ol>
+		</div>
+		<div class="subscription-list">
+			{
+				feeds.map((kind) => {
+					const url = new URL(feedPath(kind, lang), siteConfig.url).href;
+					return (
+						<article
+							class="subscription-option"
+							id={`feed-${kind}`}
+							aria-labelledby={`feed-${kind}-title`}
+						>
+							<div class="subscription-heading">
+								<h2 id={`feed-${kind}-title`}>
+									{kind === "all"
+										? zh
+											? "总订阅 · 全部更新"
+											: "All updates"
+										: zh
+											? `仅${feedLabel(kind, lang)}`
+											: feedLabel(kind, lang)}
+								</h2>
+								{kind === "all" && <span>{zh ? "推荐" : "Recommended"}</span>}
+							</div>
+							<p>{descriptions[kind]}</p>
+							<a class="subscription-address" href={url}>
+								{url}
+							</a>
+							<CopyLink url={url} lang={lang} label={zh ? "复制订阅地址" : "Copy feed address"} />
+						</article>
+					);
+				})
+			}
+		</div>
+		<p class="subscription-footnote">
+			{
+				zh
+					? "选一条适合你的订阅就好。总订阅已包含文章和随记，不需要重复添加分类订阅；中英文入口提供相同的原文内容。"
+					: "Choose the feed that suits you. All updates already includes both writing and notes; both language versions contain the same original-language content."
+			}
+		</p>
+	</section>
+</PageLayout>
+
+<style>
+	.subscriptions {
+		max-width: 44rem;
+		margin-inline: auto;
+	}
+	.subscription-intro {
+		max-width: 40rem;
+		margin-bottom: 1.25rem;
+	}
+	.subscription-help {
+		margin-bottom: 2rem;
+	}
+	.subscription-steps {
+		list-style: decimal;
+		padding-left: 1.4rem;
+		margin-top: 0.6rem;
+	}
+	.subscription-steps li + li {
+		margin-top: 0.4rem;
+	}
+	.subscription-list {
+		border-top: 1px solid color-mix(in srgb, var(--color-global-text) 18%, transparent);
+	}
+	.subscription-option {
+		padding-block: 1.5rem;
+		border-bottom: 1px solid color-mix(in srgb, var(--color-global-text) 18%, transparent);
+		min-width: 0;
+		scroll-margin-top: 7rem;
+	}
+	.subscription-heading {
+		display: flex;
+		align-items: baseline;
+		flex-wrap: wrap;
+		gap: 0.5rem 1rem;
+	}
+	h2 {
+		font-size: 1.15rem;
+		font-weight: 600;
+	}
+	.subscription-heading span {
+		color: var(--color-brand);
+		font-size: 0.8rem;
+	}
+	.subscription-option p {
+		margin-block: 0.35rem 0.6rem;
+	}
+	.subscription-address {
+		display: block;
+		width: fit-content;
+		max-width: 100%;
+		min-height: 44px;
+		padding-block: 0.5rem;
+		color: var(--color-brand);
+		text-decoration: underline;
+		text-underline-offset: 4px;
+		overflow-wrap: anywhere;
+	}
+	.subscription-footnote {
+		margin-top: 1.5rem;
+		color: var(--color-muted);
+		font-size: 0.9rem;
+	}
+</style>

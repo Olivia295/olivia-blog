@@ -1,0 +1,16 @@
+---
+import { getAllPosts, noteHref } from "@/data/post";
+import { languages } from "@/i18n/config";
+
+export async function getStaticPaths() {
+	const posts = await getAllPosts();
+	return languages.flatMap((lang) =>
+		posts.map((post) => ({
+			params: { lang, id: post.id },
+			props: { redirectTo: noteHref(lang, post.id) },
+		})),
+	);
+}
+
+return Astro.redirect(Astro.props.redirectTo, 301);
+---

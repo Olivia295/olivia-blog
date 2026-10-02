@@ -1,151 +1,179 @@
 ---
 import type { CollectionEntry } from "astro:content";
-import { Icon } from "astro-icon/components";
 import FloatingBack from "@/components/FloatingBack.astro";
 import PageHeader from "@/components/PageHeader.astro";
-import Pagination from "@/components/Paginator.astro";
 import Post from "@/components/post/Post.astro";
+import RSSLink from "@/components/RSSLink.astro";
 import { getAllBlogs } from "@/data/blog";
 import { pageLead } from "@/data/page-copy";
-import { getAllPosts, POST_PAGE_SIZE, postsHref } from "@/data/post";
-import { POST_TAB_IDS, type PostTabId, postBelongsToTab, postTabLabel } from "@/data/post-tags";
+import { getAllPosts, postsHref } from "@/data/post";
+import { POST_TAB_IDS, postBelongsToTab, postTabLabel } from "@/data/post-tags";
 import { type Lang, languages } from "@/i18n/config";
 import { localePath, useTranslations } from "@/i18n/utils";
 import PageLayout from "@/layouts/Base.astro";
 import { collectionDateSort } from "@/utils/date";
 
 export async function getStaticPaths() {
-	const reserved = new Set<string>([...POST_TAB_IDS, "rss.xml"]);
-	const allNotes = (await getAllPosts()).sort(collectionDateSort);
-	const tabPaths = languages.flatMap((lang) =>
+	const reserved = new Set<string>([...POST_TAB_IDS, "rss.xml", "entry"]);
+	const allNotes = (await getAllPosts()).sort(
+		(a, b) => collectionDateSort(a, b) || a.id.localeCompare(b.id),
+	);
+	const mainPaths = languages.map((lang) => ({
+		params: { lang, page: undefined },
+		props: { entries: allNotes },
+	}));
+	// Keep former category and pagination addresses usable without duplicate reading pages.
+	const oldPageSize = 20;
+	const oldPaths = languages.flatMap((lang) =>
 		POST_TAB_IDS.flatMap((filter) => {
-			const list = allNotes.filter((entry) => postBelongsToTab(entry.data.tags, filter));
-			const lastPage = Math.max(1, Math.ceil(list.length / POST_PAGE_SIZE));
-			return Array.from({ length: lastPage }, (_, i) => {
-				const n = i + 1;
-				const page =
-					filter === "all"
-						? n === 1
-							? undefined
-							: String(n)
-						: n === 1
-							? filter
-							: `${filter}/${n}`;
-				return {
-					params: { lang, page },
-					props: {
-						filter,
-						currentPage: n,
-						lastPage,
-						entries: list.slice(i * POST_PAGE_SIZE, (i + 1) * POST_PAGE_SIZE),
+			const count = allNotes.filter((entry) => postBelongsToTab(entry.data.tags, filter)).length;
+			const pages = Math.max(1, Math.ceil(count / oldPageSize));
+			return Array.from({ length: pages }, (_, i) => i + 1)
+				.filter((n) => filter !== "all" || n > 1)
+				.map((n) => ({
+					params: {
+						lang,
+						page: filter === "all" ? String(n) : n === 1 ? filter : `${filter}/${n}`,
 					},
-				};
-			});
+					props: { redirectTo: postsHref(lang, filter) },
+				}));
 		}),
 	);
 	const blogs = await getAllBlogs();
-	const redirects = languages.flatMap((lang) =>
+	const blogRedirects = languages.flatMap((lang) =>
 		blogs
 			.filter((blog) => !reserved.has(blog.id) && !/^\d+$/.test(blog.id))
 			.map((blog) => ({
 				params: { lang, page: blog.id },
-				props: {
-					filter: "all" as const,
-					currentPage: 1,
-					lastPage: 1,
-					entries: [] as CollectionEntry<"post">[],
-					redirectTo: localePath(lang, `/blogs/${blog.id}/`),
-				},
+				props: { redirectTo: encodeURI(localePath(lang, `/blogs/${blog.id}/`)) },
 			})),
 	);
-	return [...tabPaths, ...redirects];
+	return [...mainPaths, ...oldPaths, ...blogRedirects];
 }
 
-type PageProps = {
-	filter: PostTabId;
-	currentPage: number;
-	lastPage: number;
-	entries: CollectionEntry<"post">[];
-	redirectTo?: string | undefined;
-};
-
+interface Props {
+	entries?: CollectionEntry<"post">[];
+	redirectTo?: string;
+}
+const { entries = [], redirectTo } = Astro.props as Props;
+if (redirectTo) return Astro.redirect(redirectTo, 301);
 const lang = Astro.params.lang as Lang;
 const t = useTranslations(lang);
-const { filter, currentPage, lastPage, entries, redirectTo } = Astro.props as PageProps;
-if (redirectTo) return Astro.redirect(encodeURI(redirectTo), 301);
-const active = filter;
-
-const meta = {
-	description: t("posts.description"),
-	title: t("posts.title"),
-};
-
-const paginationProps = {
-	...(currentPage > 1 && {
-		prevUrl: {
-			text: t("pagination.prev"),
-			url: postsHref(lang, active, currentPage - 1),
-		},
-	}),
-	...(currentPage < lastPage && {
-		nextUrl: {
-			text: t("pagination.next"),
-			url: postsHref(lang, active, currentPage + 1),
-		},
-	}),
-	pages: Array.from({ length: lastPage }, (_, i) => {
-		const n = i + 1;
-		return {
-			number: n,
-			current: n === currentPage,
-			href: postsHref(lang, active, n),
-		};
-	}),
-};
+const meta = { description: t("posts.description"), title: t("posts.title") };
 ---
 
 <PageLayout lang={lang} meta={meta}>
-	<section>
+	<section data-notes data-lang={lang}>
 		<PageHeader title={t("posts.title")} lead={pageLead("posts", lang, t("posts.lead"))}>
-			<a class="text-accent" href={localePath(lang, "/posts/rss.xml")} target="_blank">
-				<span class="sr-only">{t("rss.label")}</span>
-				<Icon aria-hidden="true" class="h-6 w-6" focusable="false" name="mdi:rss" />
-			</a>
+			<RSSLink lang={lang} kind="posts" />
 		</PageHeader>
 
-		<nav class="post-tabs" aria-label={t("posts.title")}>
+		<div class="post-tabs" role="group" aria-label={lang === "en" ? "Filter notes" : "筛选随记"}>
 			<div class="post-tabs__bar">
 				{
 					POST_TAB_IDS.map((id) => (
-						<a
-							class:list={["post-tabs__item", { "is-on": active === id }]}
-							href={postsHref(lang, id, 1)}
-							aria-current={active === id ? "page" : undefined}
+						<button
+							type="button"
+							class:list={["post-tabs__item", { "is-on": id === "all" }]}
+							data-note-filter={id}
+							aria-pressed={id === "all"}
+							aria-controls="note-feed"
+							disabled
 						>
 							{postTabLabel(id, lang)}
-						</a>
+						</button>
 					))
 				}
 			</div>
-		</nav>
+		</div>
 
-		{
-			entries.length === 0 ? (
-				<p class="text-muted">{t("posts.empty")}</p>
-			) : (
-				<ul class="note-feed motion-stagger mt-2 space-y-6 text-start" role="list">
-					{entries.map((entry) => (
-						<li>
-							<Post post={entry} lang={lang} />
-						</li>
-					))}
-				</ul>
-			)
-		}
-		<Pagination {...paginationProps} />
+		<p class="sr-only" role="status" data-note-status></p>
+		<p class="text-muted" data-notes-empty hidden={entries.length > 0}>{t("posts.empty")}</p>
+		<ul
+			id="note-feed"
+			class="note-feed motion-stagger mt-2 space-y-6 text-start"
+			role="list"
+			hidden={entries.length === 0}
+		>
+			{
+				entries.map((entry) => (
+					<li
+						data-note-types={POST_TAB_IDS.filter((id) =>
+							postBelongsToTab(entry.data.tags, id),
+						).join(" ")}
+					>
+						<Post post={entry} lang={lang} />
+					</li>
+				))
+			}
+		</ul>
 	</section>
 	<FloatingBack />
 </PageLayout>
+
+<script>
+	const notes = document.querySelector<HTMLElement>("[data-notes]");
+	if (notes) {
+		const buttons = [...notes.querySelectorAll<HTMLButtonElement>("[data-note-filter]")];
+		const items = [...notes.querySelectorAll<HTMLLIElement>("[data-note-types]")];
+		const feed = notes.querySelector<HTMLUListElement>("#note-feed")!;
+		const empty = notes.querySelector<HTMLElement>("[data-notes-empty]")!;
+		const status = notes.querySelector<HTMLElement>("[data-note-status]")!;
+		const matches = (item: HTMLElement, filter: string) =>
+			item.dataset.noteTypes?.split(" ").includes(filter);
+		const applyFilter = () => {
+			const url = new URL(location.href);
+			let filter = url.searchParams.get("type") || "all";
+			if (!buttons.some((button) => button.dataset.noteFilter === filter)) filter = "all";
+			let target: HTMLElement | null = null;
+			try {
+				target = document.getElementById(decodeURIComponent(url.hash.slice(1)));
+			} catch {
+				// A malformed fragment must not stop filtering or hide the feed.
+			}
+			const targetItem = target?.closest<HTMLElement>("[data-note-types]");
+			if (targetItem && notes.contains(targetItem) && !matches(targetItem, filter)) filter = "all";
+			if (filter === "all") url.searchParams.delete("type");
+			if (url.href !== location.href) history.replaceState(null, "", url);
+			let count = 0;
+			for (const item of items) {
+				item.hidden = !matches(item, filter);
+				if (item.hidden)
+					item.querySelectorAll<HTMLMediaElement>("audio, video").forEach((media) => media.pause());
+				else count++;
+			}
+			for (const button of buttons) {
+				const selected = button.dataset.noteFilter === filter;
+				button.classList.toggle("is-on", selected);
+				button.setAttribute("aria-pressed", String(selected));
+			}
+			feed.hidden = count === 0;
+			empty.hidden = count > 0;
+			status.textContent = notes.dataset.lang === "en" ? `${count} notes` : `${count} 条随记`;
+			if (targetItem && notes.contains(targetItem)) {
+				requestAnimationFrame(() =>
+					target?.scrollIntoView({ block: "start", behavior: "instant" }),
+				);
+			}
+		};
+		for (const button of buttons) {
+			button.disabled = false;
+			button.addEventListener("click", () => {
+				const url = new URL(location.href);
+				const filter = button.dataset.noteFilter!;
+				if (filter === "all") url.searchParams.delete("type");
+				else url.searchParams.set("type", filter);
+				// An explicit filter choice supersedes an earlier entry anchor.
+				url.hash = "";
+				if (url.href !== location.href) history.pushState(null, "", url);
+				applyFilter();
+			});
+		}
+		window.addEventListener("popstate", applyFilter);
+		window.addEventListener("hashchange", applyFilter);
+		applyFilter();
+	}
+</script>
 
 <style>
 	.post-tabs {
@@ -153,7 +181,6 @@ const paginationProps = {
 		justify-content: center;
 		margin: 0 0 1.6rem;
 	}
-
 	.post-tabs__bar {
 		display: flex;
 		flex-wrap: wrap;
@@ -161,12 +188,14 @@ const paginationProps = {
 		gap: 0.2rem;
 		padding: 0.28rem;
 	}
-
 	.post-tabs__item {
 		display: inline-flex;
 		align-items: center;
 		justify-content: center;
-		min-height: 2.05rem;
+		min-height: 44px;
 		padding: 0.35rem 1.05rem;
+	}
+	.post-tabs__item:disabled {
+		cursor: default;
 	}
 </style>

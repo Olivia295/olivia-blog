@@ -119,3 +119,34 @@ test("central profile overrides legacy about data and can clear social links", a
 		await rm(root, { recursive: true, force: true });
 	}
 });
+
+test("shared websites default to empty, reuse safe links and respect profile precedence", async () => {
+	assert.deepEqual(parseSettings(neutral).profile.sharedLinks, []);
+	const shared = { id: "shared", label: "Shared website", href: "https://example.com/" };
+	const parsed = parseSettings(mergeSettings(neutral, { profile: { sharedLinks: [shared] } }));
+	assert.equal(parsed.profile.sharedLinks[0].icon, "mdi:link-variant");
+	assert.deepEqual(parsed.profile.links, parseSettings(neutral).profile.links);
+	assert.throws(() =>
+		parseSettings(
+			mergeSettings(neutral, {
+				profile: { sharedLinks: [{ ...shared, href: "javascript:alert(1)" }] },
+			}),
+		),
+	);
+	const root = await fixture();
+	try {
+		await writeFile(
+			path.join(root, "src/content/site/about.json"),
+			JSON.stringify({ sharedLinks: [shared] }),
+		);
+		assert.equal(readSettings(root, {}).profile.sharedLinks[0].href, shared.href);
+		assert.deepEqual(readSettings(root, { CONTENT_MODE: "sample" }).profile.sharedLinks, []);
+		await writeFile(
+			path.join(root, "src/content/site/site.json"),
+			JSON.stringify({ profile: { sharedLinks: [] } }),
+		);
+		assert.deepEqual(readSettings(root, {}).profile.sharedLinks, []);
+	} finally {
+		await rm(root, { recursive: true, force: true });
+	}
+});

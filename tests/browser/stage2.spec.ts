@@ -5,73 +5,99 @@ import { expect, test } from "@playwright/test";
 test.beforeEach(async ({ page }) => {
 	await page.addInitScript(() => localStorage.setItem("boarding-seen", "1"));
 });
-for (const width of [320, 390, 768, 1440]) {
-	test(`foundation: navigation, grouped summaries and reading at ${width}px`, async ({ page }) => {
-		await page.setViewportSize({ width, height: 1000 });
-		await page.goto("/zh/");
-		await expect(page.locator("#home-name")).toBeVisible();
-		await expect(page.getByRole("heading", { name: "最近短记" })).toBeVisible();
-		await expect(page.getByRole("heading", { name: "最近文章" })).toBeVisible();
-		await expect(page.locator('.log-entry[data-kind="post"]')).toHaveCount(3);
-		await expect(page.locator('.log-entry[data-kind="blog"]')).toHaveCount(5);
-		for (const kind of ["post", "blog"]) {
-			const dates = await page
-				.locator(`.log-entry[data-kind="${kind}"]`)
-				.evaluateAll((nodes) => nodes.map((node) => Date.parse(node.getAttribute("data-date")!)));
-			expect(dates).toEqual([...dates].sort((a, b) => b - a));
-		}
-		await expect(page.locator(".explore-links,.window-sill")).toHaveCount(0);
-		const columns = await page.locator(".recent-column").evaluateAll((nodes) =>
-			nodes.map((el) => {
-				const { x, y, height } = el.getBoundingClientRect();
-				return { x, y, height };
-			}),
-		);
-		if (width >= 860) {
-			expect(columns[0]!.y).toBe(columns[1]!.y);
-			expect(columns[0]!.height).toBe(columns[1]!.height);
-			const bottoms = await page
-				.locator(".recent-column .home-more")
-				.evaluateAll((nodes) => nodes.map((el) => el.getBoundingClientRect().bottom));
-			expect(bottoms[0]).toBe(bottoms[1]);
-		} else {
-			expect(columns[0]!.y + columns[0]!.height).toBeLessThan(columns[1]!.y);
-		}
-		expect(
-			await page
-				.locator(".hero-portrait img")
-				.evaluate(
-					(el: HTMLImageElement) =>
-						el.complete &&
-						el.naturalWidth > 0 &&
-						Math.abs(el.width / el.height - el.naturalWidth / el.naturalHeight) < 0.01,
-				),
-		).toBe(true);
-		expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
-			true,
-		);
-		expect(
-			await page
-				.locator(".site-nav a")
-				.evaluateAll((nodes) => nodes.every((node) => node.getBoundingClientRect().height >= 44)),
-		).toBe(true);
-		await mkdir("artifacts/foundation", { recursive: true });
-		await page.screenshot({ path: `artifacts/foundation/home-${width}.png`, fullPage: true });
-		const articleLink = page.locator('.log-entry[data-kind="blog"] h3 a').first();
-		await articleLink.click();
-		await expect(page.locator(".reading-body")).toBeVisible();
-		await page.goto("/zh/blogs/verification-reading/");
-		await expect(page.locator(".reading-body")).toBeVisible();
-		if (width <= 800) await expect(page.locator(".article-toc")).not.toHaveAttribute("open");
-		expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
-			true,
-		);
-		await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
-		await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(280);
-		await page.locator("#floating-back").click();
-		await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(0);
-		await page.screenshot({ path: `artifacts/foundation/article-${width}.png`, fullPage: true });
-	});
+for (const skin of ["minimal", "spaceship"]) {
+	for (const width of [320, 390, 768, 1440]) {
+		test(`foundation: introduction, recent notes and writing in ${skin} at ${width}px`, async ({
+			page,
+		}) => {
+			await page.addInitScript((name) => localStorage.setItem("blog-skin", name), skin);
+			await page.setViewportSize({ width, height: 1000 });
+			await page.goto("/zh/");
+			await expect(page.locator("#home-name")).toBeVisible();
+			await expect(page.locator(".latest-note")).toHaveCount(0);
+			await expect(page.locator('.ship-window a[href^="/zh/posts/"]')).toHaveCount(0);
+			await expect(page.locator('.site-nav a[href="/zh/posts/"]')).toBeVisible();
+			await expect(page.getByRole("heading", { name: "最近随记" })).toBeVisible();
+			await expect(page.getByRole("heading", { name: "最近文章" })).toBeVisible();
+			await expect(page.locator('.log-entry[data-kind="post"]')).toHaveCount(3);
+			await expect(page.locator('.log-entry[data-kind="blog"]')).toHaveCount(5);
+			for (const kind of ["post", "blog"]) {
+				const dates = await page
+					.locator(`.log-entry[data-kind="${kind}"]`)
+					.evaluateAll((nodes) =>
+						nodes.map((node) => Date.parse(node.getAttribute("data-date") ?? "")),
+					);
+				expect(dates.every(Number.isFinite)).toBe(true);
+				expect(dates).toEqual([...dates].sort((a, b) => b - a));
+			}
+			await expect(page.locator(".explore-links,.window-sill")).toHaveCount(0);
+			await expect(page.locator(".recent-column")).toHaveCount(2);
+			await expect(page.locator(".recent-notes")).toBeVisible();
+			await expect(page.locator(".recent-articles")).toBeVisible();
+			await expect(page.locator(".recent-notes .home-more")).toHaveAttribute("href", "/zh/posts/");
+			const noteColumn = await page.locator(".recent-notes").boundingBox();
+			const articleColumn = await page.locator(".recent-articles").boundingBox();
+			if (!noteColumn || !articleColumn) throw new Error("Both recent-content columns must render");
+			if (width >= 860) {
+				expect(articleColumn.x).toBeGreaterThanOrEqual(noteColumn.x + noteColumn.width);
+				expect(Math.abs(articleColumn.y - noteColumn.y)).toBeLessThanOrEqual(1);
+			} else {
+				expect(articleColumn.y).toBeGreaterThanOrEqual(noteColumn.y + noteColumn.height);
+			}
+			const articles = await page.locator(".recent-articles .log-entry").evaluateAll((nodes) =>
+				nodes.map((el) => {
+					const { x, y, bottom } = el.getBoundingClientRect();
+					return { x, y, bottom };
+				}),
+			);
+			expect(
+				articles.every((item, i) => {
+					const previous = articles[i - 1];
+					return item.x === articles[0]?.x && (!previous || item.y >= previous.bottom);
+				}),
+			).toBe(true);
+			expect(
+				await page
+					.locator(".hero-portrait img")
+					.evaluate(
+						(el: HTMLImageElement) =>
+							el.complete &&
+							el.naturalWidth > 0 &&
+							Math.abs(el.width / el.height - el.naturalWidth / el.naturalHeight) < 0.01,
+					),
+			).toBe(true);
+			expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
+				true,
+			);
+			expect(
+				await page
+					.locator(".site-nav a")
+					.evaluateAll((nodes) => nodes.every((node) => node.getBoundingClientRect().height >= 44)),
+			).toBe(true);
+			await mkdir("artifacts/foundation", { recursive: true });
+			await page.screenshot({
+				path: `artifacts/foundation/home-${skin}-${width}.png`,
+				fullPage: true,
+			});
+			const articleLink = page.locator('.log-entry[data-kind="blog"] h3 a').first();
+			await articleLink.click();
+			await expect(page.locator(".reading-body")).toBeVisible();
+			await page.goto("/zh/blogs/verification-reading/");
+			await expect(page.locator(".reading-body")).toBeVisible();
+			if (width <= 800) await expect(page.locator(".article-toc")).not.toHaveAttribute("open");
+			expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
+				true,
+			);
+			await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+			await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(280);
+			await page.locator("#floating-back").click();
+			await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(0);
+			await page.screenshot({
+				path: `artifacts/foundation/article-${skin}-${width}.png`,
+				fullPage: true,
+			});
+		});
+	}
 }
 test("theme persists, follows system until chosen, and survives blocked storage", async ({
 	page,
@@ -119,29 +145,48 @@ test("long site names and 200% text retain navigation and reflow", async ({ page
 	expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
 });
 
-test("summary bounds preserve full-note access, photo count and natural scrolling", async ({
-	page,
-}) => {
-	await page.setViewportSize({ width: 1440, height: 900 });
-	await page.goto("/zh/");
-	const note = page.locator(".note-preview").first();
-	await expect(note.locator("img")).toHaveCount(1);
-	await expect(note.locator(".photo-count")).toContainText("2 张照片");
-	expect(
-		await note
-			.locator(".note-preview-text")
-			.evaluate(
-				(el) =>
-					el.getBoundingClientRect().height <=
-					Number.parseFloat(getComputedStyle(el).lineHeight) * 4 + 1,
-			),
-	).toBe(true);
-	await note.locator(".preview-detail").click();
-	const full = page.locator("#post-verification-note-0");
-	await expect(full).toBeInViewport();
-	expect(await full.locator(".note-card__body").innerText()).toContain("完整内容仍然可以打开阅读");
-	await expect(full.locator("img")).toHaveCount(2);
-});
+for (const width of [390, 1440]) {
+	test(`note previews and main navigation retain full reading and keyboard photo browsing at ${width}px`, async ({
+		page,
+	}) => {
+		await page.setViewportSize({ width, height: 900 });
+		await page.goto("/zh/");
+		const preview = page.locator(
+			'.note-preview:has(.preview-detail[href="/zh/posts/#post-verification-note-0"])',
+		);
+		await expect(preview.locator(".note-preview-text")).toContainText("完整内容仍然可以打开阅读");
+		await expect(preview.locator(".note-preview-text")).not.toContainText("export const");
+		await expect(preview.locator(".preview-photo")).toHaveCount(1);
+		await preview.locator(".preview-photo").click();
+		await expect(page.locator("#photo-viewer")).toBeVisible();
+		await page.keyboard.press("Escape");
+		await expect(page.locator("#photo-viewer")).not.toBeVisible();
+		await preview.locator(".preview-detail").click();
+		await expect(page).toHaveURL(/\/zh\/posts\/#post-verification-note-0$/);
+		await expect(page.locator("#post-verification-note-0")).toBeVisible();
+		await page.goto("/zh/");
+		await page.locator('.site-nav a[href="/zh/posts/"]').click();
+		await expect(page).toHaveURL(/\/zh\/posts\/$/);
+		const full = page.locator("#post-verification-note-0");
+		await full.scrollIntoViewIfNeeded();
+		await expect(full.locator(".note-card__body")).toContainText("完整内容仍然可以打开阅读");
+		await expect(full.locator(".note-card__body")).not.toContainText("export const");
+		await expect(full.locator("img")).toHaveCount(2);
+		const photo = full.locator(".note-photo").first();
+		await photo.focus();
+		await page.keyboard.press("Enter");
+		await expect(page.locator("#photo-viewer")).toBeVisible();
+		await expect(page.locator(".viewer-counter")).toHaveText("1 / 2");
+		await page.keyboard.press("ArrowRight");
+		await expect(page.locator(".viewer-counter")).toHaveText("2 / 2");
+		await page.keyboard.press("Escape");
+		await expect(page.locator("#photo-viewer")).not.toBeVisible();
+		await expect(photo).toBeFocused();
+		expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
+			true,
+		);
+	});
+}
 test("short-page footer reaches the viewport bottom and long pages never cover content", async ({
 	page,
 }) => {

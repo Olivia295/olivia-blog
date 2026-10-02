@@ -44,6 +44,16 @@ for (const width of [320, 390, 768, 1440]) {
 			await loadVisibleImages(page);
 			await noOverflow(page);
 		}
+		if (width === 320) {
+			await page.goto("/en/about/");
+			await page.addStyleTag({ content: "html { font-size: 200%; }" });
+			await noOverflow(page);
+			expect(
+				await page
+					.locator(".about__fact dd")
+					.evaluateAll((facts) => facts.every((fact) => fact.scrollWidth <= fact.clientWidth)),
+			).toBe(true);
+		}
 		await page.goto("/zh/gallery/");
 		await page.locator("a.set").first().click();
 		await loadVisibleImages(page);
@@ -103,7 +113,7 @@ for (const width of [320, 390, 1440]) {
 		).toBe(true);
 		await noOverflow(page);
 		await page.goto("/zh/");
-		const link = page.locator('.log-entry[data-kind="blog"] h3 a').first();
+		const link = page.locator('.log-entry[data-kind="blog"] h3 a').last();
 		await link.evaluate((el) => el.scrollIntoView({ block: "center", behavior: "instant" }));
 		const position = await page.evaluate(() => scrollY);
 		expect(position).toBeGreaterThan(100);
@@ -123,7 +133,8 @@ for (const width of [320, 390, 1440]) {
 		const dialog = page.locator("site-search dialog");
 		await expect(dialog).toBeVisible();
 		const input = page.locator(".pagefind-ui__search-input");
-		await input.fill("验证");
+		// A specific title fragment stays meaningful as the note archive grows.
+		await input.fill("窄屏阅读");
 		await expect(
 			page.locator('.pagefind-ui__result-link[href="/zh/blogs/verification-reading/"]'),
 		).toBeVisible();
@@ -247,6 +258,7 @@ test("missing routes keep useful, accessible navigation in both languages", asyn
 test("mobile floating controls stay within the viewport and support touch-size actions", async ({
 	page,
 }) => {
+	await page.addInitScript(() => localStorage.setItem("blog-skin", "spaceship"));
 	await page.setViewportSize({ width: 320, height: 780 });
 	await page.emulateMedia({ reducedMotion: "no-preference" });
 	await page.goto("/zh/");
@@ -269,6 +281,7 @@ test("mobile floating controls stay within the viewport and support touch-size a
 test("a stored pause prevents automatic boarding even without a seen marker", async ({ page }) => {
 	await page.emulateMedia({ reducedMotion: "no-preference" });
 	await page.addInitScript(() => {
+		localStorage.setItem("blog-skin", "spaceship");
 		localStorage.removeItem("boarding-seen");
 		localStorage.setItem("spaceship-motion-paused", "1");
 	});
@@ -284,6 +297,7 @@ test("a stored pause prevents automatic boarding even without a seen marker", as
 test("scene setting disables runtime animation and essential copy survives a failed backdrop", async ({
 	page,
 }) => {
+	await page.addInitScript(() => localStorage.setItem("blog-skin", "spaceship"));
 	await page.emulateMedia({ reducedMotion: "no-preference" });
 	await page.route("**/zh/", async (route) => {
 		const response = await route.fetch();
@@ -304,9 +318,10 @@ test("scene setting disables runtime animation and essential copy survives a fai
 	await expect(page.locator(".hero-portrait img")).toBeVisible();
 	await noOverflow(page);
 });
-test("long names and 200 percent text keep portrait, summaries and controls in document flow", async ({
+test("long names and 200 percent text keep portrait, notes, writing and controls in document flow", async ({
 	page,
 }) => {
+	await page.addInitScript(() => localStorage.setItem("blog-skin", "spaceship"));
 	await page.setViewportSize({ width: 390, height: 844 });
 	await page.goto("/en/");
 	await page.locator("#home-name").evaluate((el) => {
@@ -314,6 +329,9 @@ test("long names and 200 percent text keep portrait, summaries and controls in d
 	});
 	await page.addStyleTag({ content: "html{font-size:200%}" });
 	await noOverflow(page);
+	await expect(page.locator(".latest-note")).toHaveCount(0);
+	await expect(page.locator(".recent-notes")).toBeVisible();
+	await expect(page.locator(".recent-articles")).toBeVisible();
 	const regions = await page
 		.locator(".foyer-copy,.hero-portrait,.recent-notes,.recent-articles,.home-cabin-controls")
 		.evaluateAll((nodes) => nodes.map((el) => el.getBoundingClientRect().top));

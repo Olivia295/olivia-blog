@@ -1,6 +1,7 @@
 ---
 import { type CollectionEntry, render } from "astro:content";
 import FormattedDate from "@/components/FormattedDate.astro";
+import Recommendation from "@/components/post/Recommendation.astro";
 import { resolvePostTags } from "@/data/post-tags";
 import { defaultLang, type Lang } from "@/i18n/config";
 import { getLangFromUrl } from "@/i18n/utils";
@@ -8,17 +9,18 @@ import { getLangFromUrl } from "@/i18n/utils";
 type Props = {
 	post: CollectionEntry<"post">;
 	lang?: Lang;
-	plain?: boolean;
 };
 
-const { post, lang: langProp, plain = false } = Astro.props;
+const { post, lang: langProp } = Astro.props;
 const lang = langProp ?? getLangFromUrl(Astro.url) ?? defaultLang;
 const { Content } = await render(post);
 const tags = resolvePostTags(post.data.tags, lang);
+const isExcerpt = tags.some((tag) => tag.id === "excerpt");
+const isShare = !!post.data.recommendation || tags.some((tag) => tag.id === "rec");
 ---
 
 <article
-	class:list={["note-card", { "note-card--plain": plain }]}
+	class:list={["note-card", { "note-card--excerpt": isExcerpt, "note-card--share": isShare }]}
 	id={`post-${post.id}`}
 	data-pagefind-body
 >
@@ -33,21 +35,33 @@ const tags = resolvePostTags(post.data.tags, lang);
 			</ul>
 		)
 	}
+	{
+		post.data.recommendation && (
+			<Recommendation
+				recommendation={post.data.recommendation}
+				lang={lang}
+				postId={post.id}
+				filePath={post.filePath}
+			/>
+		)
+	}
 	<div class="note-card__body prose prose-sm prose-cactus max-w-none">
 		<Content />
 	</div>
-	<FormattedDate
-		class="note-card__date"
-		dateTimeOptions={{
-			hour: "2-digit",
-			minute: "2-digit",
-			year: "numeric",
-			month: "short",
-			day: "numeric",
-		}}
-		date={post.data.publishDate}
-		lang={lang}
-	/>
+	<footer class="note-card__meta">
+		<FormattedDate
+			class="note-card__date"
+			dateTimeOptions={{
+				hour: "2-digit",
+				minute: "2-digit",
+				year: "numeric",
+				month: "short",
+				day: "numeric",
+			}}
+			date={post.data.publishDate}
+			lang={lang}
+		/>
+	</footer>
 </article>
 
 <style>
@@ -64,10 +78,6 @@ const tags = resolvePostTags(post.data.tags, lang);
 		padding-top: 1.05rem;
 	}
 
-	.note-card--plain {
-		padding: 0 0 1.1rem;
-	}
-
 	.note-card__tags {
 		position: static;
 		display: flex;
@@ -78,11 +88,6 @@ const tags = resolvePostTags(post.data.tags, lang);
 		list-style: none;
 	}
 
-	.note-card--plain .note-card__tags {
-		position: static;
-		margin: 0 0 0.15rem;
-	}
-
 	.note-tag {
 		display: inline-flex;
 		align-items: center;
@@ -90,12 +95,23 @@ const tags = resolvePostTags(post.data.tags, lang);
 		padding: 0.12rem 0.55rem;
 	}
 
-	.note-card__date {
-		justify-self: end;
+	.note-card__meta {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		flex-wrap: wrap;
+		gap: 0.35rem 1rem;
 	}
 
+	.note-card__date {
+		margin-inline-start: auto;
+	}
 	.note-card__body {
 		min-width: 0;
+	}
+
+	.note-card__body :global(> :first-child) {
+		margin-top: 0;
 	}
 
 	.note-card__body :global(img) {

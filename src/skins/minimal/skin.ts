@@ -1,5 +1,5 @@
-import copy from "./copy.ts";
 import type { Skin } from "../types.ts";
+import copy from "./copy.ts";
 
 export default {
 	id: "minimal",
@@ -7,8 +7,8 @@ export default {
 	copy,
 	palette: {
 		light: {
-			hull: "#faf9fb",
-			surface: "#faf9fb",
+			hull: "#faf8f5",
+			surface: "#faf8f5",
 			text: "#29262d",
 			muted: "#68616f",
 			accent: "oklch(0.5 0.18 312)",

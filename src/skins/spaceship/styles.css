@@ -16,7 +16,7 @@ html[data-skin="spaceship"] .skin-preference label {
 }
 html[data-skin="spaceship"] .skin-preference select {
 	color: var(--color-global-text);
-	background: linear-gradient(var(--metal-top), var(--metal-bottom));
+	background: linear-gradient(to bottom, var(--metal-top), var(--metal-bottom));
 	border: 1px solid var(--hull-edge);
 	border-radius: 7px;
 	font: inherit;

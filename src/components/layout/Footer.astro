@@ -1,13 +1,33 @@
 ---
+import RSSLink from "@/components/RSSLink.astro";
 import type { Lang } from "@/i18n/config";
+import { defaultLang } from "@/i18n/config";
 import { siteConfig } from "@/site.config";
 
 interface Props {
 	lang?: Lang;
 	home?: boolean | undefined;
 }
+const { lang = defaultLang } = Astro.props;
 ---
 
 <footer class="site-footer">
+	<RSSLink lang={lang} />
 	<p>© {new Date().getFullYear()} {siteConfig.author}</p>
 </footer>
+
+<style>
+	.site-footer {
+		display: flex;
+		flex-flow: row nowrap;
+		align-items: center;
+		justify-content: center;
+		gap: 1rem;
+		padding-inline: 0;
+		text-align: left;
+	}
+	.site-footer p {
+		min-width: 0;
+		overflow-wrap: anywhere;
+	}
+</style>

@@ -1,0 +1,46 @@
+---
+import { Icon } from "astro-icon/components";
+import { type FeedKind, feedLabel } from "@/data/feed-content";
+import type { Lang } from "@/i18n/config";
+import { localePath } from "@/i18n/utils";
+
+interface Props {
+	lang: Lang;
+	kind?: FeedKind;
+}
+const { lang, kind = "all" } = Astro.props;
+const href = `${localePath(lang, "/subscribe/")}${kind === "all" ? "" : `#feed-${kind}`}`;
+const label =
+	lang === "zh"
+		? `RSS 订阅${feedLabel(kind, lang)}，查看订阅方法`
+		: `RSS: subscribe to ${feedLabel(kind, lang).toLowerCase()} and see how it works`;
+---
+
+<a class="rss-link" href={href} aria-label={label} data-rss-kind={kind}>
+	<Icon class="rss-link__icon" name="mdi:rss" aria-hidden="true" focusable="false" />
+	<span class="action-label">{lang === "zh" ? "RSS 订阅" : "RSS"}</span>
+</a>
+
+<style>
+	.rss-link {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.45rem;
+		min-height: 44px;
+		flex-shrink: 0;
+		color: color-mix(in srgb, var(--color-brand) 80%, var(--color-global-text));
+		font: 600 0.8rem / 1.4 var(--skin-font);
+		white-space: nowrap;
+		text-decoration: none;
+	}
+	.action-label {
+		text-decoration: underline;
+		text-underline-offset: 4px;
+	}
+	.rss-link :global(svg) {
+		width: 26px;
+		height: 26px;
+		flex-shrink: 0;
+		color: var(--rss-color, currentColor);
+	}
+</style>

@@ -4,6 +4,7 @@ import { expect, test } from "@playwright/test";
 test("first visit opens the cabin for 2–3 seconds and subsequent visits are immediate", async ({
 	page,
 }) => {
+	await page.addInitScript(() => localStorage.setItem("blog-skin", "spaceship"));
 	await page.emulateMedia({ reducedMotion: "no-preference" });
 	await page.goto("/zh/", { waitUntil: "commit" });
 	const start = Date.now();
@@ -16,6 +17,7 @@ test("first visit opens the cabin for 2–3 seconds and subsequent visits are im
 	await expect(page.locator("#home-name")).toBeVisible();
 });
 test("boarding can be skipped with keyboard and replayed", async ({ page }) => {
+	await page.addInitScript(() => localStorage.setItem("blog-skin", "spaceship"));
 	await page.goto("/zh/");
 	await expect(page.locator("#skip-boarding")).toBeFocused();
 	await page.keyboard.press("Enter");
@@ -28,6 +30,7 @@ test("boarding can be skipped with keyboard and replayed", async ({ page }) => {
 	await expect(page.getByRole("button", { name: "↻ 重新登船" })).toBeFocused();
 });
 test("direct article, reduced motion and hash links open immediately", async ({ page }) => {
+	await page.addInitScript(() => localStorage.setItem("blog-skin", "spaceship"));
 	await page.goto("/zh/blogs/verification-reading/");
 	await expect(page.locator("#boarding")).toHaveCount(0);
 	await expect(page.locator(".reading-body")).toBeVisible();
@@ -54,10 +57,15 @@ test("album viewer supports keyboard, focus return, full-screen controls and acc
 }) => {
 	await openAlbum(page);
 	const first = page.locator("[data-photo-src]").first();
+	await expect(page.locator(".photo-figure figcaption")).toHaveCount(0);
+	const alt = await first.locator("img").getAttribute("alt");
+	expect(alt).toBeTruthy();
 	await first.focus();
 	await page.keyboard.press("Enter");
 	const dialog = page.getByRole("dialog", { name: "照片浏览器" });
 	await expect(dialog).toBeVisible();
+	await expect(page.locator(".viewer-caption")).toHaveCount(0);
+	await expect(page.locator(".viewer-image")).toHaveAttribute("alt", alt ?? "");
 	await expect(page.locator(".viewer-image")).toHaveAttribute(
 		"src",
 		(await first.getAttribute("href")) ?? "missing-original",
@@ -133,6 +141,7 @@ test("failed images have recovery and notes use accessible photo controls", asyn
 	await page.getByRole("button", { name: "关闭预览" }).click();
 });
 test("music stays silent through navigation and after the boarding duration", async ({ page }) => {
+	await page.addInitScript(() => localStorage.setItem("blog-skin", "spaceship"));
 	await page.goto("/zh/", { waitUntil: "commit" });
 	await expect(page.locator("#home-name")).toBeVisible();
 	await expect(page.locator("#boarding")).not.toBeVisible({ timeout: 4000 });
@@ -156,7 +165,10 @@ test("music stays silent through navigation and after the boarding duration", as
 
 test("a slow ship becomes visible within the first ten seconds", async ({ page }) => {
 	await page.setViewportSize({ width: 1440, height: 900 });
-	await page.addInitScript(() => localStorage.setItem("boarding-seen", "1"));
+	await page.addInitScript(() => {
+		localStorage.setItem("blog-skin", "spaceship");
+		localStorage.setItem("boarding-seen", "1");
+	});
 	await page.goto("/zh/");
 	const scene = page.locator(".hangar-traffic");
 	await expect(scene).toHaveAttribute("data-space-active", "true");
@@ -189,7 +201,10 @@ test("pause freezes actual scene animation and persists across pages and reloads
 	page,
 }) => {
 	await page.setViewportSize({ width: 1440, height: 900 });
-	await page.addInitScript(() => localStorage.setItem("boarding-seen", "1"));
+	await page.addInitScript(() => {
+		localStorage.setItem("blog-skin", "spaceship");
+		localStorage.setItem("boarding-seen", "1");
+	});
 	await page.goto("/zh/");
 	await page.locator("[data-toggle-space]").click();
 	const ship = page.locator(".hangar-traffic .passing-ship").first();
@@ -213,7 +228,10 @@ test("pause freezes actual scene animation and persists across pages and reloads
 });
 test("offscreen and background scenes stop; reduced motion takes priority", async ({ page }) => {
 	await page.setViewportSize({ width: 1440, height: 900 });
-	await page.addInitScript(() => localStorage.setItem("boarding-seen", "1"));
+	await page.addInitScript(() => {
+		localStorage.setItem("blog-skin", "spaceship");
+		localStorage.setItem("boarding-seen", "1");
+	});
 	await page.goto("/zh/");
 	const scene = page.locator(".hangar-traffic");
 	await expect(scene).toHaveAttribute("data-space-active", "true");
@@ -247,7 +265,10 @@ test("navigation softly masks only the approaching hero edge and remains usable"
 	page,
 }) => {
 	await page.setViewportSize({ width: 1440, height: 900 });
-	await page.addInitScript(() => localStorage.setItem("boarding-seen", "1"));
+	await page.addInitScript(() => {
+		localStorage.setItem("blog-skin", "spaceship");
+		localStorage.setItem("boarding-seen", "1");
+	});
 	await page.goto("/zh/");
 	await page.evaluate(() => window.scrollTo({ top: 180, behavior: "instant" }));
 	const hero = page.locator("#main");
@@ -265,7 +286,10 @@ test("navigation softly masks only the approaching hero edge and remains usable"
 test("floating controls support keyboard and replay is only at the home bottom", async ({
 	page,
 }) => {
-	await page.addInitScript(() => localStorage.setItem("boarding-seen", "1"));
+	await page.addInitScript(() => {
+		localStorage.setItem("blog-skin", "spaceship");
+		localStorage.setItem("boarding-seen", "1");
+	});
 	await page.goto("/zh/blogs/verification-reading/");
 	await expect(
 		page.locator("[data-replay-home], [data-replay-boarding], .cabin-console"),
@@ -298,6 +322,10 @@ test("controls remain usable when storage is blocked", async ({ page }) => {
 		});
 	});
 	await page.goto("/en/");
+	await page.evaluate(() =>
+		document.dispatchEvent(new CustomEvent("skin-change", { detail: { skin: "spaceship" } })),
+	);
+	await expect(page.locator("html")).toHaveAttribute("data-skin", "spaceship");
 	await page.locator("#skip-boarding").click();
 	await page.locator("[data-toggle-space]").click();
 	await expect(page.locator("html")).toHaveAttribute("data-space-motion", "paused");

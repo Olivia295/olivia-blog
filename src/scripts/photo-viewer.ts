@@ -3,23 +3,25 @@ export function initPhotoViewer() {
 	const dialog = document.querySelector<HTMLDialogElement>("#photo-viewer");
 	if (!dialog) return;
 	// Leave content links intact, including photos that intentionally lead to an album or article.
-	document.querySelectorAll<HTMLImageElement>(".note-card__body img").forEach((img) => {
-		if (img.closest("a,button")) return;
-		const button = document.createElement("button");
-		button.type = "button";
-		button.className = "note-photo";
-		button.dataset.photoSrc = img.currentSrc || img.src;
-		button.dataset.photoAlt = img.alt;
-		button.setAttribute(
-			"aria-label",
-			`${dialog.dataset.fallback}: ${img.alt || (document.documentElement.lang.startsWith("zh") ? "查看大图" : "View photo")}`,
-		);
-		img.replaceWith(button);
-		button.append(img);
-	});
+	document
+		.querySelectorAll<HTMLImageElement>(".note-card__body img, .article-content img")
+		.forEach((img) => {
+			if (img.closest("a,button")) return;
+			const button = document.createElement("button");
+			button.type = "button";
+			button.className = img.closest(".article-content") ? "article-photo" : "note-photo";
+			button.dataset.photoSrc = img.currentSrc || img.src;
+			button.dataset.photoAlt = img.alt;
+			button.setAttribute(
+				"aria-label",
+				`${dialog.dataset.fallback}: ${img.alt || (document.documentElement.lang.startsWith("zh") ? "查看大图" : "View photo")}`,
+			);
+			const media = img.closest("picture") || img;
+			media.replaceWith(button);
+			button.append(media);
+		});
 	const image = dialog.querySelector<HTMLImageElement>(".viewer-image")!;
 	const counter = dialog.querySelector<HTMLElement>(".viewer-counter")!;
-	const caption = dialog.querySelector<HTMLElement>(".viewer-caption")!;
 	const error = dialog.querySelector<HTMLElement>(".viewer-error")!;
 	const original = dialog.querySelector<HTMLAnchorElement>("[data-viewer-original]")!;
 	const fullscreen = dialog.querySelector<HTMLButtonElement>("[data-viewer-fullscreen]")!;
@@ -35,12 +37,14 @@ export function initPhotoViewer() {
 		if (!item) return;
 		image.hidden = false;
 		error.hidden = true;
-		const src = item.dataset.photoSrc || (item instanceof HTMLAnchorElement ? item.href : "");
+		const thumbnail = item.querySelector<HTMLImageElement>("img");
+		const src = item.classList.contains("article-photo")
+			? thumbnail?.currentSrc || thumbnail?.src || item.dataset.photoSrc || ""
+			: item.dataset.photoSrc || (item instanceof HTMLAnchorElement ? item.href : "");
 		image.alt = item.dataset.photoAlt || `${dialog.dataset.fallback} ${index + 1}`;
 		image.src = src;
 		original.href = src;
 		counter.textContent = `${index + 1} / ${gallery.length}`;
-		caption.textContent = item.dataset.photoAlt || "";
 		previous.disabled = next.disabled = gallery.length < 2;
 		if (!matchMedia("(prefers-reduced-motion: reduce)").matches)
 			image.animate(
@@ -68,7 +72,8 @@ export function initPhotoViewer() {
 			return;
 		event.preventDefault();
 		opener = target;
-		const group = target.closest(".album-page,.note-card,.note-card--preview") || document;
+		const group =
+			target.closest(".album-page,.note-card,.note-card--preview,.article-content") || document;
 		gallery = [...group.querySelectorAll<HTMLElement>("[data-photo-src]")];
 		index = gallery.indexOf(target);
 		show();

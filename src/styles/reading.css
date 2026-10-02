@@ -1,0 +1,199 @@
+/* Shared reading behavior and layout; skin typography remains in the skin. */
+.article-meta {
+	display: flex;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: 0.25rem 1rem;
+	min-width: 0;
+}
+.article-meta__details {
+	margin: 0;
+}
+.article-meta__actions {
+	min-width: 0;
+	max-width: 100%;
+	font-size: 0.8125rem;
+}
+.article-meta__actions .copy-link {
+	max-width: 100%;
+}
+.article-meta__actions:has(.copy-link__fallback:not([hidden])) {
+	flex-basis: 100%;
+}
+.article-meta__actions noscript {
+	min-width: 0;
+	overflow-wrap: anywhere;
+}
+.reading-layout:not(.reading-layout--with-toc) {
+	grid-template-columns: minmax(0, 1fr);
+}
+.reading-layout:not(.reading-layout--with-toc) .reading-body {
+	margin-inline: auto;
+}
+.reading-layout .article-toc {
+	min-width: 0;
+	max-height: none;
+	overflow: visible;
+}
+.article-toc .article-toc__summary {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 0.75rem;
+	min-height: 44px;
+	padding: 0.4rem 0.2rem;
+	color: var(--color-global-text);
+	list-style: none;
+}
+.article-toc__summary::-webkit-details-marker {
+	display: none;
+}
+.article-toc__chevron {
+	flex: none;
+	color: var(--color-muted);
+}
+.article-toc[open] .article-toc__chevron {
+	transform: rotate(180deg);
+}
+.article-toc .article-toc__nav {
+	max-height: calc(100dvh - var(--header-height, 150px) - 100px);
+	padding: 0.25rem 0.25rem 0.4rem;
+	overflow-y: auto;
+	overscroll-behavior: contain;
+	scrollbar-width: thin;
+}
+.article-toc .article-toc__list {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.article-toc__nav > .article-toc__list {
+	border-inline-start: 1px solid color-mix(in oklch, var(--color-global-text) 14%, transparent);
+}
+.article-toc__item > .article-toc__list {
+	padding-inline-start: 0.75rem;
+}
+.article-toc .article-toc__item {
+	margin: 0;
+}
+.article-toc .article-toc__link {
+	position: relative;
+	display: block;
+	min-height: 32px;
+	margin: 0;
+	padding: 0.35rem 0.25rem 0.35rem 0.8rem;
+	color: var(--color-muted);
+	font-size: 0.8125rem;
+	font-weight: 400;
+	line-height: 1.6;
+	text-decoration: none;
+	overflow-wrap: anywhere;
+}
+.article-toc .article-toc__link:hover,
+.article-toc .article-toc__link:focus-visible {
+	color: var(--color-global-text);
+}
+.article-toc .article-toc__link[aria-current="location"] {
+	color: var(--color-global-text);
+	font-weight: 600;
+}
+.article-toc__link[aria-current="location"]::before {
+	content: "";
+	position: absolute;
+	inset-block: 0.55rem;
+	inset-inline-start: -1px;
+	width: 2px;
+	border-radius: 60% 40% 50% 45%;
+	background: var(--color-brand);
+	transform: rotate(-2deg);
+}
+@media (min-width: 801px) {
+	.reading-layout.reading-layout--with-toc {
+		grid-template-columns: minmax(0, 1fr) minmax(160px, 190px);
+		gap: clamp(1.5rem, 3vw, 2.75rem);
+	}
+}
+@media (max-width: 800px) {
+	.article-toc .article-toc__nav {
+		max-height: min(52dvh, 24rem);
+		padding-bottom: 0.75rem;
+	}
+	.article-toc .article-toc__link {
+		min-height: 44px;
+		padding-block: 0.65rem;
+		font-size: 0.875rem;
+	}
+}
+.article-content :is(h2, h3, h4, h5, h6)[id] {
+	scroll-margin-top: calc(var(--header-height, 150px) + 24px);
+}
+.article-content .article-photo {
+	display: block;
+	max-width: 100%;
+	margin: 1.6em auto;
+	padding: 0;
+	cursor: zoom-in;
+}
+.article-content .article-photo img {
+	display: block;
+	margin: 0;
+}
+.article-end {
+	margin-top: 2rem;
+	padding-top: 1rem;
+	border-top: 1px solid var(--skin-border, var(--color-muted));
+}
+.article-end .article-related__label {
+	margin: 0 0 0.25rem;
+	color: var(--color-muted);
+	font-size: 0.875rem;
+}
+.article-end .article-related ul {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.article-end .article-related li {
+	margin: 0;
+}
+.article-related a {
+	display: flex;
+	align-items: baseline;
+	justify-content: space-between;
+	gap: 0.75rem;
+	min-height: 44px;
+	padding-block: 0.4rem;
+	color: var(--color-global-text);
+	font-size: 0.9375rem;
+	line-height: 1.6;
+	text-decoration: none;
+}
+.article-related a span:first-child {
+	min-width: 0;
+	overflow-wrap: anywhere;
+}
+.article-related a:hover span:first-child {
+	text-decoration: underline;
+	text-underline-offset: 4px;
+}
+.article-related a span[aria-hidden] {
+	flex: none;
+	color: var(--color-muted);
+}
+.article-back {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 0.4rem;
+	min-height: 44px;
+	padding: 0.45rem 0.6rem;
+	color: var(--color-brand);
+	font-size: 0.9rem;
+	text-decoration: none;
+}
+.article-related + .article-back {
+	margin-top: 0.5rem;
+}
+.article-back .paper-action__icon {
+	flex: none;
+}

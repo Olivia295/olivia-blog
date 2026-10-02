@@ -13,8 +13,13 @@ type TagDef = {
 
 const TAGS: TagDef[] = [
 	{ id: "excerpt", zh: "摘抄", en: "Excerpt", aliases: ["摘抄", "excerpt", "quote"] },
-	{ id: "note", zh: "随记", en: "Note", aliases: ["随记", "note", "jot", "memo"] },
-	{ id: "rec", zh: "推荐", en: "Recommend", aliases: ["推荐", "recommend", "rec", "pick"] },
+	{ id: "note", zh: "快录", en: "Quick note", aliases: ["随记", "快录", "note", "jot", "memo"] },
+	{
+		id: "rec",
+		zh: "分享",
+		en: "Share",
+		aliases: ["推荐", "分享", "recommend", "rec", "pick", "share"],
+	},
 ];
 
 const byAlias = new Map<string, TagDef>();

@@ -4,15 +4,13 @@ import type { PostTabId } from "@/data/post-tags";
 import type { Lang } from "@/i18n/config";
 import { localePath } from "@/i18n/utils";
 
-export const POST_PAGE_SIZE = 20;
+/** Notes share one reading page; each entry keeps its own stable anchor. */
+export function noteHref(lang: Lang, id: string) {
+	return `${localePath(lang, "/posts/")}#post-${encodeURIComponent(id)}`;
+}
 
-export function postsHref(lang: Lang, filter: PostTabId, n: number) {
-	if (filter === "all") {
-		return n <= 1 ? localePath(lang, "/posts/") : localePath(lang, `/posts/${n}/`);
-	}
-	return n <= 1
-		? localePath(lang, `/posts/${filter}/`)
-		: localePath(lang, `/posts/${filter}/${n}/`);
+export function postsHref(lang: Lang, filter: PostTabId = "all") {
+	return `${localePath(lang, "/posts/")}${filter === "all" ? "" : `?type=${filter}`}`;
 }
 
 /** Filter out draft notes based on the environment */

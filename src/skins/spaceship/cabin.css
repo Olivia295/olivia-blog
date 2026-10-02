@@ -180,26 +180,9 @@ html[data-skin="spaceship"][data-theme="dark"] .hangar-backdrop {
 :where(html[data-skin="spaceship"]) .log-entry {
 	border-bottom: 1px solid var(--seam);
 }
-:where(html[data-skin="spaceship"]) .note-preview-text {
-	font-size: 15px;
-	line-height: 1.9;
-}
-:where(html[data-skin="spaceship"]) .preview-photo {
-	border: 3px solid var(--metal-bottom);
-	border-radius: 6px;
-}
-:where(html[data-skin="spaceship"]) .photo-count {
-	font: 11px / 1.8 var(--mono);
-	color: var(--color-muted);
-}
-:where(html[data-skin="spaceship"]) .preview-meta time,
 :where(html[data-skin="spaceship"]) .article-preview time {
 	font: 11px / 1.8 var(--mono);
 	color: var(--color-muted);
-}
-:where(html[data-skin="spaceship"]) .preview-detail {
-	font-size: 12px;
-	color: var(--color-brand);
 }
 :where(html[data-skin="spaceship"]) .preview-tags {
 	color: var(--color-brand);
@@ -212,7 +195,6 @@ html[data-skin="spaceship"][data-theme="dark"] .hangar-backdrop {
 	line-height: 1.6;
 }
 :where(html[data-skin="spaceship"]) .article-preview h3 a:hover,
-:where(html[data-skin="spaceship"]) .preview-detail:hover,
 :where(html[data-skin="spaceship"]) .home-more:hover {
 	color: var(--color-brand);
 	text-decoration: underline;
@@ -411,9 +393,6 @@ html[data-skin="spaceship"][data-theme="dark"] .hangar-backdrop {
 }
 :where(html[data-skin="spaceship"]) .viewer-image {
 	border-radius: 3px;
-}
-:where(html[data-skin="spaceship"]) .viewer-caption {
-	font-size: 14px;
 }
 :where(html[data-skin="spaceship"]) .viewer-error {
 	line-height: 2;
@@ -778,9 +757,6 @@ html[data-skin="spaceship"][data-theme="dark"] .hangar-backdrop {
 @media (max-width: 600px) {
 	:where(html[data-skin="spaceship"]) .viewer-stage > button {
 		background: #273337dd;
-	}
-	:where(html[data-skin="spaceship"]) .viewer-caption {
-		font-size: 12px;
 	}
 }
 @media (prefers-reduced-motion: reduce) {

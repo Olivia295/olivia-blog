@@ -17,13 +17,101 @@ const t = useTranslations(lang);
 const toc = generateToc(headings);
 ---
 
-<details class="article-toc">
-	<summary>{t("blog.toc")}</summary>
-	<nav aria-label={t("blog.toc")}>
-		<ol>{toc.map((heading) => <TOCHeading heading={heading} />)}</ol>
+<details class="article-toc" data-pagefind-ignore>
+	<summary class="article-toc__summary">
+		<span>{t("blog.toc")}</span>
+		<svg
+			class="article-toc__chevron"
+			width="14"
+			height="14"
+			viewBox="0 0 14 14"
+			fill="none"
+			aria-hidden="true"
+			focusable="false"
+		>
+			<path
+				d="m3 5 4 4 4-4"
+				stroke="currentColor"
+				stroke-width="1.25"
+				stroke-linecap="round"
+				stroke-linejoin="round"></path>
+		</svg>
+	</summary>
+	<nav class="article-toc__nav" aria-label={t("blog.toc")}>
+		<ol class="article-toc__list">{toc.map((heading) => <TOCHeading heading={heading} />)}</ol>
 	</nav>
 </details>
 <script>
 	const toc = document.querySelector<HTMLDetailsElement>(".article-toc");
-	if (toc && matchMedia("(min-width: 801px)").matches) toc.open = true;
+	if (toc) {
+		const desktop = matchMedia("(min-width: 801px)");
+		const adapt = () => {
+			toc.open = desktop.matches;
+		};
+		adapt();
+		desktop.addEventListener("change", adapt);
+		const nav = toc.querySelector<HTMLElement>("nav");
+		const sections = [...toc.querySelectorAll<HTMLAnchorElement>("a[href^='#']")].flatMap(
+			(link) => {
+				const heading = document.getElementById(link.getAttribute("href")?.slice(1) || "");
+				return heading ? [{ link, heading }] : [];
+			},
+		);
+		let scheduled = false;
+		let currentLink: HTMLAnchorElement | undefined;
+		const update = () => {
+			scheduled = false;
+			const offset =
+				(document.querySelector("#main-header")?.getBoundingClientRect().bottom ?? 0) + 24;
+			let current = sections.at(0);
+			for (const section of sections) {
+				// Native anchor scrolling rounds positions; heading geometry can remain fractional.
+				if (section.heading.getBoundingClientRect().top <= offset + 1) current = section;
+				else break;
+			}
+			if (window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 2)
+				current = sections.at(-1);
+			for (const section of sections) {
+				if (section === current) section.link.setAttribute("aria-current", "location");
+				else section.link.removeAttribute("aria-current");
+			}
+			if (current && current.link !== currentLink && nav && toc.open) {
+				const linkBox = current.link.getBoundingClientRect();
+				const navBox = nav.getBoundingClientRect();
+				if (linkBox.top < navBox.top) nav.scrollTop += linkBox.top - navBox.top;
+				else if (linkBox.bottom > navBox.bottom) nav.scrollTop += linkBox.bottom - navBox.bottom;
+			}
+			currentLink = current?.link;
+		};
+		const schedule = () => {
+			if (!scheduled) {
+				scheduled = true;
+				requestAnimationFrame(update);
+			}
+		};
+		document.addEventListener("scroll", schedule, { passive: true });
+		window.addEventListener("resize", schedule, { passive: true });
+		window.addEventListener("load", schedule, { once: true });
+		nav?.addEventListener("click", (event) => {
+			if (
+				desktop.matches ||
+				event.button !== 0 ||
+				event.metaKey ||
+				event.ctrlKey ||
+				event.shiftKey ||
+				event.altKey
+			)
+				return;
+			const link = event.target instanceof Element ? event.target.closest("a") : null;
+			const section = sections.find((item) => item.link === link);
+			if (!section) return;
+			// Let the native anchor navigate after collapsing, then keep keyboard focus in the text.
+			toc.open = false;
+			requestAnimationFrame(() => {
+				section.heading.tabIndex = -1;
+				section.heading.focus({ preventScroll: true });
+			});
+		});
+		update();
+	}
 </script>

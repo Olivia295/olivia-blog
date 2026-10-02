@@ -1,6 +1,7 @@
 import { type CollectionEntry, getCollection } from "astro:content";
 import { isBarePreview } from "@/data/bare";
-import { seriesCatalog, seriesInfo } from "@/data/site-series";
+import { normalizeSeries } from "@/data/series";
+import { expandSeries, seriesCatalog, seriesContains } from "@/data/site-series";
 
 /** filter out draft posts based on the environment */
 export async function getAllBlogs(): Promise<CollectionEntry<"blog">[]> {
@@ -12,7 +13,7 @@ export async function getAllBlogs(): Promise<CollectionEntry<"blog">[]> {
 		...blog,
 		data: {
 			...blog.data,
-			series: [...new Set(blog.data.series.map((name) => seriesInfo(name).zh))],
+			series: normalizeSeries(seriesCatalog, blog.data.series),
 		},
 	}));
 }
@@ -36,13 +37,17 @@ export function blogSeries(blog: CollectionEntry<"blog">): string[] {
 	return blog.data.series ?? [];
 }
 
+export function blogInSeries(blog: CollectionEntry<"blog">, name: string): boolean {
+	return blogSeries(blog).some((child) => seriesContains(name, child));
+}
+
 export function groupBlogsBySeries(
 	blogs: CollectionEntry<"blog">[],
 	uncategorized: string,
 ): Record<string, CollectionEntry<"blog">[]> {
 	const grouped: Record<string, CollectionEntry<"blog">[]> = {};
 	for (const blog of blogs) {
-		const names = blogSeries(blog);
+		const names = expandSeries(blogSeries(blog)).map((entry) => entry.zh);
 		if (!names.length) {
 			grouped[uncategorized] ??= [];
 			grouped[uncategorized].push(blog);
@@ -56,11 +61,11 @@ export function groupBlogsBySeries(
 	return grouped;
 }
 
-/** Named series that actually exist on published blogs, sorted by site/series.json. */
-export function getNamedSeries(blogs: CollectionEntry<"blog">[]): string[] {
-	const names = new Set<string>();
+/** Configured series stay discoverable even while their first article is being written. */
+export function getNamedSeries(blogs: CollectionEntry<"blog">[], includeEmpty = true): string[] {
+	const names = new Set<string>(includeEmpty ? seriesCatalog.map((entry) => entry.zh) : []);
 	for (const blog of blogs) {
-		for (const name of blogSeries(blog)) names.add(name);
+		for (const entry of expandSeries(blogSeries(blog))) names.add(entry.zh);
 	}
 	const order = seriesCatalog.map((entry) => entry.zh);
 	return [...names].sort((a, b) => {
@@ -76,6 +81,6 @@ export function getNamedSeries(blogs: CollectionEntry<"blog">[]): string[] {
 export function getSeriesWithCount(blogs: CollectionEntry<"blog">[]): [string, number][] {
 	return getNamedSeries(blogs).map((name) => [
 		name,
-		blogs.filter((blog) => blogSeries(blog).includes(name)).length,
+		blogs.filter((blog) => blogInSeries(blog, name)).length,
 	]);
 }

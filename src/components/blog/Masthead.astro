@@ -2,7 +2,7 @@
 import { Image } from "astro:assets";
 import type { CollectionEntry } from "astro:content";
 import FormattedDate from "@/components/FormattedDate.astro";
-import { seriesHref, seriesLabel } from "@/data/site-series";
+import { seriesHref, seriesPath } from "@/data/site-series";
 import { defaultLang, type Lang } from "@/i18n/config";
 import { getLangFromUrl, useTranslations } from "@/i18n/utils";
 
@@ -46,8 +46,8 @@ const dateTimeOptions: Intl.DateTimeFormatOptions = {
 <h1 class="title">
 	{data.title}
 </h1>
-<div class="flex flex-wrap items-center gap-x-3 gap-y-2">
-	<p class="font-semibold">
+<div class="article-meta">
+	<p class="article-meta__details font-semibold">
 		<FormattedDate date={data.publishDate} dateTimeOptions={dateTimeOptions} lang={lang} /> /{" "}
 		{readingTimeLabel}
 	</p>
@@ -64,15 +64,33 @@ const dateTimeOptions: Intl.DateTimeFormatOptions = {
 			</span>
 		)
 	}
+	{
+		Astro.slots.has("actions") && (
+			<div class="article-meta__actions" data-pagefind-ignore>
+				<slot name="actions" />
+			</div>
+		)
+	}
 </div>
 {
 	data.series.length > 0 && (
-		<p class="mt-2 flex flex-wrap gap-x-3 gap-y-1">
+		<div class="article-series mt-2 flex flex-wrap gap-x-5 gap-y-1" aria-label={t("blogs.series")}>
 			{data.series.map((name) => (
-				<a class="cactus-link" href={seriesHref(name, lang)}>
-					{seriesLabel(name, lang)}
-				</a>
+				<span class="flex flex-wrap items-baseline gap-x-2">
+					{seriesPath(name).map((entry, index) => (
+						<>
+							{index > 0 && (
+								<span aria-hidden="true" class="text-muted">
+									/
+								</span>
+							)}
+							<a class="cactus-link" href={seriesHref(entry.id, lang)}>
+								{entry[lang]}
+							</a>
+						</>
+					))}
+				</span>
 			))}
-		</p>
+		</div>
 	)
 }

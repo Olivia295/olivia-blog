@@ -1,5 +1,6 @@
 ---
 import { WEBMENTION_PINGBACK, WEBMENTION_URL } from "astro:env/client";
+import { feedLabel, feedPath } from "@/data/feed-content";
 import { settings } from "@/data/settings";
 import { siteIconMime, siteIconSrc } from "@/data/site-assets";
 import { defaultLang, type Lang, ogLocale } from "@/i18n/config";
@@ -10,7 +11,14 @@ import "@/styles/global.css";
 
 type Props = SiteMeta & { lang?: Lang };
 
-const { articleDate, description, ogImage, title, lang = defaultLang } = Astro.props;
+const {
+	articleDate,
+	description: suppliedDescription,
+	ogImage,
+	title,
+	lang = defaultLang,
+} = Astro.props;
+const description = suppliedDescription?.trim() || siteConfig.description;
 
 const titleSeparator = "•";
 const siteTitle = `${title} ${titleSeparator} ${siteConfig.title}`;
@@ -19,6 +27,7 @@ const socialImageURL = new URL(ogImage ? ogImage : "/defaults/social-card.png", 
 const t = useTranslations(lang);
 const blogsRss = localePath(lang, "/rss.xml");
 const postsRss = localePath(lang, "/posts/rss.xml");
+const allRss = feedPath("all", lang);
 ---
 
 <meta charset="utf-8" />
@@ -80,6 +89,7 @@ const postsRss = localePath(lang, "/posts/rss.xml");
 <link href="/sitemap-index.xml" rel="sitemap" />
 
 {/* RSS auto-discovery */}
+<link href={allRss} title={feedLabel("all", lang)} rel="alternate" type="application/rss+xml" />
 <link href={blogsRss} title={t("blogs.title")} rel="alternate" type="application/rss+xml" />
 <link href={postsRss} title={t("posts.title")} rel="alternate" type="application/rss+xml" />
 

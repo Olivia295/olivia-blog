@@ -1,0 +1,263 @@
+---
+import { Icon } from "astro-icon/components";
+import {
+	type Recommendation,
+	isSpotifyRecommendation,
+	recommendationCover,
+	recommendationLinkLabel,
+	recommendationMediaUrl,
+} from "@/data/recommendation";
+import type { Lang } from "@/i18n/config";
+
+interface Props {
+	recommendation: Recommendation;
+	lang: Lang;
+	postId: string;
+	filePath?: string | undefined;
+	compact?: boolean;
+}
+
+const { recommendation: item, lang, postId, filePath, compact = false } = Astro.props;
+const coverSource = await recommendationCover(item);
+const cover = coverSource && recommendationMediaUrl(coverSource, postId, filePath);
+const audio = item.audio && recommendationMediaUrl(item.audio, postId, filePath);
+const Title = compact ? "h3" : "h2";
+const spotify = isSpotifyRecommendation(item);
+const linkLabel = recommendationLinkLabel(item, lang);
+---
+
+<div
+	class:list={[
+		"recommendation",
+		`recommendation--${item.kind}`,
+		{ "recommendation--compact": compact },
+	]}
+>
+	{
+		cover && (
+			<a
+				class="recommendation__cover"
+				href={item.url}
+				target="_blank"
+				rel="noopener noreferrer"
+				aria-label={item.title}
+			>
+				<img
+					src={cover}
+					alt={item.title}
+					width={item.kind === "music" ? 300 : 200}
+					height="300"
+					loading="lazy"
+					decoding="async"
+				/>
+			</a>
+		)
+	}
+	<div class="recommendation__copy">
+		<Title class="recommendation__title">{item.title}</Title>
+		{item.creator && <p class="recommendation__creator">{item.creator}</p>}
+		{
+			audio && !compact && (
+				<audio
+					controls
+					preload="none"
+					src={audio}
+					aria-label={lang === "en" ? `Play ${item.title}` : `播放 ${item.title}`}
+				>
+					<a href={audio}>{lang === "en" ? "Open audio file" : "打开音频文件"}</a>
+				</audio>
+			)
+		}
+		<a
+			class:list={["recommendation__link", { "recommendation__link--spotify": spotify }]}
+			href={item.url}
+			target="_blank"
+			rel="noopener noreferrer"
+			aria-label={linkLabel}
+		>
+			{
+				spotify && (
+					<Icon
+						class="recommendation__service-icon"
+						name="mdi:spotify"
+						aria-hidden="true"
+						focusable="false"
+					/>
+				)
+			}
+			<span class="action-label">
+				{
+					spotify ? (
+						<>
+							<span class="recommendation__link-full">{linkLabel}</span>
+							<span class="recommendation__link-short">Spotify</span>
+						</>
+					) : (
+						linkLabel
+					)
+				}
+			</span>
+			<span class="recommendation__link-arrow" aria-hidden="true">↗</span>
+		</a>
+		{
+			audio && !compact && (
+				<a class="recommendation__audio-link" href={audio}>
+					{lang === "en" ? "Open audio file" : "打开音频文件"}
+				</a>
+			)
+		}
+		{
+			audio && !compact && (
+				<p class="recommendation__audio-error" hidden role="status">
+					{lang === "en"
+						? "This audio is unavailable. Try opening the file or listening on the music platform."
+						: "音频暂时无法播放，可以打开音频文件，或前往音乐平台收听。"}
+				</p>
+			)
+		}
+	</div>
+</div>
+
+<script>
+	document.querySelectorAll<HTMLImageElement>(".recommendation__cover img").forEach((image) => {
+		const hideFailedCover = () => {
+			const cover = image.closest<HTMLElement>(".recommendation__cover");
+			if (cover) cover.hidden = true;
+		};
+		image.addEventListener("error", hideFailedCover);
+		if (image.complete && image.naturalWidth === 0) hideFailedCover();
+	});
+	document.querySelectorAll<HTMLAudioElement>(".recommendation audio").forEach((audio) => {
+		const error = audio
+			.closest(".recommendation")
+			?.querySelector<HTMLElement>(".recommendation__audio-error");
+		if (!error) return;
+		audio.addEventListener("error", () => {
+			error.hidden = false;
+		});
+		audio.addEventListener("playing", () => {
+			error.hidden = true;
+		});
+		if (audio.error) error.hidden = false;
+	});
+</script>
+
+<style>
+	.recommendation {
+		display: flex;
+		align-items: flex-start;
+		gap: clamp(0.8rem, 3vw, 1.4rem);
+		min-width: 0;
+		padding-block: 0.45rem;
+	}
+	.recommendation__cover {
+		flex: 0 0 clamp(4.5rem, 18vw, 7.5rem);
+		align-self: flex-start;
+		display: block;
+		aspect-ratio: 2 / 3;
+		background: color-mix(in srgb, var(--color-global-text) 5%, transparent);
+		border-radius: 4px;
+	}
+	.recommendation--music .recommendation__cover {
+		flex-basis: clamp(4rem, 18vw, 7.5rem);
+		aspect-ratio: 1;
+	}
+	.recommendation__cover[hidden] {
+		display: none;
+	}
+	.recommendation__cover img {
+		display: block;
+		width: 100%;
+		height: 100%;
+		object-fit: contain;
+		border-radius: inherit;
+	}
+	.recommendation__copy {
+		min-width: 0;
+		flex: 1;
+		overflow-wrap: anywhere;
+	}
+	.recommendation__title {
+		margin: 0;
+		font-size: clamp(1.05rem, 3vw, 1.3rem);
+		line-height: 1.5;
+		font-weight: 650;
+	}
+	.recommendation__creator {
+		margin: 0.25rem 0 0;
+		font-size: 0.85rem;
+		color: var(--color-muted);
+	}
+	.recommendation__link,
+	.recommendation__audio-link {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.35rem;
+		min-height: 44px;
+		color: var(--color-brand);
+		font-size: 0.85rem;
+		text-decoration: underline;
+		text-underline-offset: 4px;
+	}
+	.recommendation__audio-link {
+		margin-inline-start: 0.8rem;
+		font-size: 0.75rem;
+	}
+	.recommendation__link {
+		text-decoration: none;
+	}
+	.action-label {
+		text-decoration: underline;
+		text-underline-offset: 4px;
+	}
+	.recommendation__link :global(.recommendation__service-icon) {
+		width: 24px;
+		height: 24px;
+		flex-shrink: 0;
+		color: var(--spotify-color, currentColor);
+	}
+	.recommendation__link-arrow {
+		font-size: 0.75em;
+		opacity: 0.65;
+		flex-shrink: 0;
+	}
+	.recommendation__link-short {
+		display: none;
+	}
+	.recommendation__audio-error {
+		margin: 0.3rem 0 0;
+		font-size: 0.8rem;
+		color: var(--color-global-text);
+	}
+	.recommendation audio {
+		display: block;
+		width: 100%;
+		max-width: 22rem;
+		height: 44px;
+		margin-top: 0.75rem;
+	}
+	.recommendation--compact .recommendation__cover {
+		flex-basis: 4rem;
+	}
+	.recommendation--compact .recommendation__title {
+		font-size: 1rem;
+	}
+	@media (max-width: 480px) {
+		.recommendation__link-full {
+			display: none;
+		}
+		.recommendation__link-short {
+			display: inline;
+		}
+		.recommendation:has(audio) {
+			flex-wrap: wrap;
+		}
+		.recommendation:has(audio) .recommendation__copy {
+			flex-basis: 100%;
+		}
+		.recommendation__audio-link {
+			display: flex;
+			margin-inline-start: 0;
+		}
+	}
+</style>

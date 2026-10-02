@@ -10,13 +10,11 @@ const {
 } = Astro.props;
 ---
 
-<li class={`${depth > 2 ? "ms-2" : ""}`}>
-	<a class={`hover:text-accent ${depth <= 2 ? "mt-3" : "mt-2 text-xs"}`} href={`#${slug}`}
-		><span aria-hidden="true" class="me-0.5">#</span>{text}</a
-	>
+<li class="article-toc__item" data-heading-level={depth}>
+	<a class="article-toc__link" href={`#${slug}`}>{text}</a>
 	{
 		!!children.length && (
-			<ol>
+			<ol class="article-toc__list">
 				{children.map((subheading) => (
 					<Astro.self heading={subheading} />
 				))}

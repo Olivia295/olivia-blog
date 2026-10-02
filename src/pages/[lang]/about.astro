@@ -1,6 +1,5 @@
 ---
 import { Icon } from "astro-icon/components";
-import SkinSelect from "@/skins/SkinSelect.astro";
 import FloatingBack from "@/components/FloatingBack.astro";
 import PageHeader from "@/components/PageHeader.astro";
 import { pageLead } from "@/data/page-copy";
@@ -9,6 +8,7 @@ import { publicImageSize } from "@/data/site-assets";
 import type { Lang } from "@/i18n/config";
 import { getStaticLangPaths, useTranslations } from "@/i18n/utils";
 import PageLayout from "@/layouts/Base.astro";
+import SkinSelect from "@/skins/SkinSelect.astro";
 
 export function getStaticPaths() {
 	return getStaticLangPaths();
@@ -27,6 +27,13 @@ const bio = profile.bio[lang];
 const portraitAlt = profile.portraitAlt[lang];
 const facts = profile.facts[lang];
 const portraitSize = await publicImageSize(profile.portraitSrc);
+const profileLinks = profile.links.filter(
+	(link) => !/^https?:\/\/space\.bilibili\.com\/?$/.test(link.href),
+);
+const linkGroups = [
+	{ id: "about-friends-heading", title: t("about.findMe"), links: profileLinks },
+	{ id: "about-shared-heading", title: t("about.recommendedLocation"), links: profile.sharedLinks },
+];
 ---
 
 <PageLayout lang={lang} meta={meta}>
@@ -75,28 +82,30 @@ const portraitSize = await publicImageSize(profile.portraitSrc);
 		</div>
 
 		{
-			profile.links.length > 0 && (
-				<section class="about__friends" aria-labelledby="about-friends-heading">
-					<p class="about__label" id="about-friends-heading">
-						{t("about.findMe")}
-					</p>
-					<ul class="about__links" role="list">
-						{profile.links.map((link) => (
-							<li>
-								<a
-									class="about__link"
-									href={link.href}
-									target={link.href.startsWith("mailto:") ? undefined : "_blank"}
-									rel={link.href.startsWith("mailto:") ? undefined : "noopener noreferrer"}
-								>
-									<Icon aria-hidden="true" class="about__link-icon" name={link.icon} />
-									<span>{link.label}</span>
-								</a>
-							</li>
-						))}
-					</ul>
-				</section>
-			)
+			linkGroups
+				.filter((group) => group.links.length > 0)
+				.map((group) => (
+					<section class="about__friends" aria-labelledby={group.id}>
+						<p class="about__label" id={group.id}>
+							{group.title}
+						</p>
+						<ul class="about__links" role="list">
+							{group.links.map((link) => (
+								<li>
+									<a
+										class="about__link"
+										href={link.href}
+										target={link.href.startsWith("mailto:") ? undefined : "_blank"}
+										rel={link.href.startsWith("mailto:") ? undefined : "noopener noreferrer"}
+									>
+										<Icon aria-hidden="true" class="about__link-icon" name={link.icon} />
+										<span class="action-label">{link.label}</span>
+									</a>
+								</li>
+							))}
+						</ul>
+					</section>
+				))
 		}
 		<SkinSelect lang={lang} />
 	</section>
@@ -168,6 +177,7 @@ const portraitSize = await publicImageSize(profile.portraitSrc);
 	.about__fact {
 		margin: 0;
 		min-width: 0;
+		overflow-wrap: anywhere;
 	}
 
 	.about__fact dt {

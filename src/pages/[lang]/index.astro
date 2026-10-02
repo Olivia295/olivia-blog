@@ -1,9 +1,9 @@
 ---
-import SkinSlot from "@/skins/SkinSlot.astro";
 import FormattedDate from "@/components/FormattedDate.astro";
+import Recommendation from "@/components/post/Recommendation.astro";
 import { getAllBlogs } from "@/data/blog";
-import { notePreview } from "@/data/note-preview";
-import { getAllPosts } from "@/data/post";
+import { entryPreview } from "@/data/note-preview";
+import { getAllPosts, noteHref } from "@/data/post";
 import { resolvePostTags } from "@/data/post-tags";
 import { profile } from "@/data/profile";
 import { settings } from "@/data/settings";
@@ -14,28 +14,34 @@ import type { Lang } from "@/i18n/config";
 import { getStaticLangPaths, localePath, useTranslations } from "@/i18n/utils";
 import PageLayout from "@/layouts/Base.astro";
 import { siteConfig } from "@/site.config";
+import SkinSlot from "@/skins/SkinSlot.astro";
 export function getStaticPaths() {
 	return getStaticLangPaths();
 }
 const lang = Astro.params.lang as Lang;
 const t = useTranslations(lang);
+const posts = sortTimeline(
+	(await getAllPosts())
+		.filter((entry) => !entry.data.draft)
+		.map((post) => ({ key: post.id, date: contentDate(post.data.publishDate), post })),
+).slice(0, settings.home.notes);
+const notes = settings.sections.posts
+	? await Promise.all(
+			posts.map(async ({ post, date }) => ({
+				post,
+				date,
+				href: noteHref(lang, post.id),
+				preview: await entryPreview(post, noteHref(lang, post.id), siteConfig.url),
+			})),
+		)
+	: [];
 const blogs = sortTimeline(
 	(await getAllBlogs())
 		.filter((e) => !e.data.draft)
 		.map((blog) => ({ key: blog.id, date: contentDate(blog.data.publishDate), blog })),
 ).slice(0, settings.home.articles);
-const posts = sortTimeline(
-	(await getAllPosts())
-		.filter((e) => !e.data.draft)
-		.map((post) => ({ key: post.id, date: contentDate(post.data.publishDate), post })),
-).slice(0, settings.home.notes);
-const notes = await Promise.all(
-	posts.map(async (entry) => ({
-		...entry,
-		preview: await notePreview(entry.post.body ?? "", entry.post.id),
-	})),
-);
 const portraitSize = await publicImageSize(siteHeroSrc);
+const portraitNote = profile.bio[lang].at(-1);
 const heroAlt =
 	settings.home.portraitAlt[lang] ||
 	(siteHeroSrc === "/defaults/portrait.svg"
@@ -45,8 +51,8 @@ const heroAlt =
 		: lang === "zh"
 			? `${profile.name} 的个人图片`
 			: `A personal picture of ${profile.name}`);
-const showNotes = settings.sections.posts && (!settings.sections.hideEmpty || notes.length > 0);
 const showBlogs = settings.sections.blogs && (!settings.sections.hideEmpty || blogs.length > 0);
+const showNotes = settings.sections.posts && (!settings.sections.hideEmpty || notes.length > 0);
 const empty =
 	lang === "zh"
 		? "这里还很安静，新的分享会慢慢到来。"
@@ -59,164 +65,215 @@ const empty =
 		<div class="foyer-copy">
 			<SkinSlot position="home-eyebrow" lang={lang} />
 			<h1 id="home-name">
-				{settings.home.greeting[lang]}<br />{profile.name}<span aria-hidden="true"
-					>.</span
-				>
+				{settings.home.greeting[lang]}<br />{profile.name}<span aria-hidden="true">.</span>
+				<svg class="signature-stroke" viewBox="0 0 240 20" aria-hidden="true" focusable="false">
+					<path pathLength="1" d="M3 12 C52 3 151 5 233 8 M39 17 C105 11 177 12 218 13"></path>
+				</svg>
 			</h1>
 			<p>{settings.intro[lang]}</p>
 			{
 				settings.sections.about && (
-					<a class="welcome-link" href={localePath(lang, "/about/")}>
-						{lang === "zh" ? "很高兴你来做客" : "Make yourself at home"}{" "}
+					<a class="welcome-link paper-action" href={localePath(lang, "/about/")}>
+						<span class="action-label">
+							{lang === "zh" ? "很高兴你来做客" : "Make yourself at home"}
+						</span>
 						<span aria-hidden="true">↗</span>
 					</a>
 				)
 			}
 		</div>
 		<figure class="hero-portrait">
-			<img
-				src={siteHeroSrc}
-				width={portraitSize?.width}
-				height={portraitSize?.height}
-				alt={heroAlt}
-				fetchpriority="high"
-				decoding="async"
-			/>
+			<details
+				class="hero-postcard"
+				style={`--portrait-ratio: ${portraitSize?.width || 3} / ${portraitSize?.height || 4}`}
+			>
+				<summary>
+					<img
+						src={siteHeroSrc}
+						width={portraitSize?.width}
+						height={portraitSize?.height}
+						alt={heroAlt}
+						fetchpriority="high"
+						decoding="async"
+					/>
+					<span class="postcard-caption">
+						<span class="postcard-open">{lang === "zh" ? "翻到背面" : "Turn it over"}</span>
+						<span class="postcard-close">{lang === "zh" ? "回到正面" : "Back to the portrait"}</span
+						>
+						<svg viewBox="0 0 28 24" aria-hidden="true"
+							><path d="M4 8C12 2 23 4 24 12s-9 12-17 6m0 0 1-6m-1 6 6 1"></path></svg
+						>
+					</span>
+				</summary>
+				<div class="postcard-story">
+					<span class="postcard-greeting">{lang === "zh" ? "你好呀，" : "Hello there,"}</span>
+					<p>{portraitNote || profile.role[lang]}</p>
+					<span class="postcard-signature">{profile.name}</span>
+				</div>
+			</details>
+			<svg class="portrait-doodle" viewBox="0 0 72 64" aria-hidden="true"
+				><path
+					d="m39 5 3 15 14 5-14 3-5 15-3-15-14-4 15-4 4-15ZM12 40l2 7 7 2-7 2-2 7-2-7-6-2 7-2 1-7M57 42l5 5m-1-13 6 1"
+				></path></svg
+			>
 		</figure>
 		<SkinSlot position="home-status" lang={lang} />
 	</section>
-	<section
-		class="recent-columns"
-		id="recent-heading"
-		aria-label={lang === "zh" ? "最近的分享" : "Recent sharing"}
-	>
-		{
-			showNotes && (
-				<section class="recent-column recent-notes" aria-labelledby="notes-heading">
-					<div class="section-heading">
-						<>
-							<h2 id="notes-heading">{lang === "zh" ? "最近短记" : "Recent notes"}</h2>
-							<span>MOMENTS / 01</span>
-						</>
-					</div>
-					{notes.length ? (
-						<ol class="recent-list" role="list">
-							{notes.map(({ post, date, preview }) => (
-								<li class="log-entry note-preview" data-kind="post" data-date={date?.toISOString()}>
-									<article class="note-card--preview">
-										<div class="preview-tags">
-											{resolvePostTags(post.data.tags, lang)
-												.slice(0, 2)
-												.map((tag) => (
-													<span>{tag.label}</span>
-												))}
-										</div>
-										<p class="note-preview-text">
-											{preview.text ||
-												(lang === "zh" ? "用照片记下的片刻。" : "A moment in photographs.")}
-										</p>
-										{preview.photos.length > 0 && (
-											<div class="preview-photo-row">
-												<a
-													class="preview-photo"
-													href={preview.photos[0]!.src}
-													data-photo-src={preview.photos[0]!.src}
-													data-photo-alt={preview.photos[0]!.alt}
-													aria-label={
-														lang === "zh"
-															? `查看短记照片，共 ${preview.photos.length} 张`
-															: `View note photo, ${preview.photos.length} in total`
-													}
-												>
-													<img
-														src={preview.photos[0]!.src}
-														alt={preview.photos[0]!.alt}
-														width="96"
-														height="96"
-														loading="lazy"
-													/>
-												</a>
-												<a class="photo-count" href={localePath(lang, `/posts/#post-${post.id}`)}>
-													{lang === "zh"
-														? `${preview.photos.length} 张照片`
-														: `${preview.photos.length} photos`}{" "}
+	{
+		(showNotes || showBlogs) && (
+			<section
+				class="recent-columns"
+				id="recent-heading"
+				aria-label={lang === "zh" ? "最近的分享" : "Recent sharing"}
+			>
+				{showNotes && (
+					<section class="recent-column recent-notes" aria-labelledby="notes-heading">
+						<div class="section-heading">
+							<h2 id="notes-heading">{lang === "zh" ? "最近随记" : "Recent notes"}</h2>
+							{lang === "en" && <span>Notes</span>}
+						</div>
+						{notes.length ? (
+							<ol class="recent-list" role="list">
+								{notes.map(({ post, date, href, preview }) => (
+									<li
+										class="log-entry note-preview"
+										data-kind="post"
+										data-date={date?.toISOString()}
+									>
+										<article class="note-card--preview">
+											<div class="preview-tags">
+												{resolvePostTags(post.data.tags, lang)
+													.slice(0, 2)
+													.map((tag) => (
+														<span class:list={["note-tag", `note-tag--${tag.id}`]}>
+															{tag.label}
+														</span>
+													))}
+											</div>
+											{post.data.recommendation && (
+												<Recommendation
+													recommendation={post.data.recommendation}
+													lang={lang}
+													postId={post.id}
+													filePath={post.filePath}
+													compact
+												/>
+											)}
+											{resolvePostTags(post.data.tags, lang).some((tag) => tag.id === "excerpt")
+												? preview.text && (
+														<div
+															class="note-preview-excerpt note-card__body prose prose-sm prose-cactus max-w-none"
+															set:html={preview.html}
+														/>
+													)
+												: preview.text && <p class="note-preview-text">{preview.text}</p>}
+											{preview.photos[0] && (
+												<div class="preview-photo-row">
+													<a
+														class="preview-photo"
+														href={preview.photos[0].src}
+														data-photo-src={preview.photos[0].src}
+														data-photo-alt={preview.photos[0].alt}
+														aria-label={
+															lang === "zh"
+																? `查看照片：${preview.photos[0].alt || "随记照片"}`
+																: `View photo: ${preview.photos[0].alt || "Note photo"}`
+														}
+													>
+														<img
+															src={preview.photos[0].src}
+															alt={preview.photos[0].alt}
+															width="128"
+															height="96"
+															loading="lazy"
+															decoding="async"
+														/>
+													</a>
+													{preview.photos.length > 1 && (
+														<a class="photo-count" href={href}>
+															{lang === "zh"
+																? `共 ${preview.photos.length} 张照片`
+																: `${preview.photos.length} photos`}
+														</a>
+													)}
+												</div>
+											)}
+											<div class="preview-meta">
+												<FormattedDate date={post.data.publishDate} lang={lang} />
+												<a class="preview-detail" href={href}>
+													{lang === "zh" ? "查看随记" : "Read note"}{" "}
 													<span aria-hidden="true">↗</span>
 												</a>
 											</div>
-										)}
-										<div class="preview-meta">
-											<FormattedDate date={post.data.publishDate} lang={lang} />
-											<a class="preview-detail" href={localePath(lang, `/posts/#post-${post.id}`)}>
-												{lang === "zh" ? "阅读短记" : "Read note"} <span aria-hidden="true">↗</span>
-											</a>
-										</div>
-									</article>
-								</li>
-							))}
-						</ol>
-					) : (
-						<p class="recent-empty">{empty}</p>
-					)}
-					<a class="home-more" href={localePath(lang, "/posts/")}>
-						{lang === "zh" ? "全部短记" : "All notes"} →
-					</a>
-				</section>
-			)
-		}
-		{
-			showBlogs && (
-				<section class="recent-column recent-articles" aria-labelledby="articles-heading">
-					<div class="section-heading">
-						<>
-							<h2 id="articles-heading">{lang === "zh" ? "最近文章" : "Recent writing"}</h2>
-							<span>WRITING / 02</span>
-						</>
-					</div>
-					{blogs.length ? (
-						<ol class="recent-list" role="list">
-							{blogs.map(({ blog, date }) => (
-								<li
-									class="log-entry article-preview"
-									data-kind="blog"
-									data-date={date?.toISOString()}
-								>
-									<article>
-										<h3>
-											<a href={localePath(lang, `/blogs/${blog.id}/`)}>
-												{blog.data.title} <span aria-hidden="true">↗</span>
-											</a>
-										</h3>
-										<FormattedDate date={blog.data.publishDate} lang={lang} />
-										<div class="preview-tags">
-											{blog.data.series.slice(0, 3).map((name) => (
-												<a href={seriesHref(name, lang)}>{seriesLabel(name, lang)}</a>
-											))}
-											{blog.data.series.length > 3 && (
-												<span
-													aria-label={
-														lang === "zh"
-															? `还有 ${blog.data.series.length - 3} 个系列`
-															: `${blog.data.series.length - 3} more series`
-													}
-												>
-													+{blog.data.series.length - 3}
-												</span>
-											)}
-										</div>
-									</article>
-								</li>
-							))}
-						</ol>
-					) : (
-						<p class="recent-empty">{empty}</p>
-					)}
-					<a class="home-more" href={localePath(lang, "/blogs/")}>
-						{lang === "zh" ? "全部文章" : "All writing"} →
-					</a>
-				</section>
-			)
-		}
-		{!showBlogs && !showNotes && <p class="recent-empty">{empty}</p>}
-	</section>
+										</article>
+									</li>
+								))}
+							</ol>
+						) : (
+							<p class="recent-empty">{empty}</p>
+						)}
+						<a class="home-more paper-action" href={localePath(lang, "/posts/")}>
+							<span class="action-label">{lang === "zh" ? "全部随记" : "All notes"}</span>
+							<span aria-hidden="true">→</span>
+						</a>
+					</section>
+				)}
+				{showBlogs && (
+					<section class="recent-column recent-articles" aria-labelledby="articles-heading">
+						<div class="section-heading">
+							<>
+								<h2 id="articles-heading">{lang === "zh" ? "最近文章" : "Recent writing"}</h2>
+								{lang === "en" && <span>Writing</span>}
+							</>
+						</div>
+						{blogs.length ? (
+							<ol class="recent-list" role="list">
+								{blogs.map(({ blog, date }) => (
+									<li
+										class="log-entry article-preview"
+										data-kind="blog"
+										data-date={date?.toISOString()}
+									>
+										<article>
+											<h3>
+												<a href={localePath(lang, `/blogs/${blog.id}/`)}>
+													{blog.data.title} <span aria-hidden="true">↗</span>
+												</a>
+											</h3>
+											<FormattedDate date={blog.data.publishDate} lang={lang} />
+											<div class="preview-tags">
+												{blog.data.series.slice(0, 3).map((name) => (
+													<a href={seriesHref(name, lang)}>{seriesLabel(name, lang)}</a>
+												))}
+											</div>
+										</article>
+									</li>
+								))}
+							</ol>
+						) : (
+							<p class="recent-empty">{empty}</p>
+						)}
+						<a class="home-more paper-action" href={localePath(lang, "/blogs/")}>
+							<span class="action-label">{lang === "zh" ? "全部文章" : "All writing"}</span>
+							<span aria-hidden="true">→</span>
+						</a>
+					</section>
+				)}
+			</section>
+		)
+	}
 	<SkinSlot position="home-controls" lang={lang} />
 </PageLayout>
+
+<style>
+	.note-preview-excerpt {
+		min-width: 0;
+		overflow-wrap: anywhere;
+	}
+	.note-preview-excerpt :global(> :first-child) {
+		margin-top: 0;
+	}
+	.note-preview-excerpt :global(> :last-child) {
+		margin-bottom: 0;
+	}
+</style>

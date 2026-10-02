@@ -61,9 +61,9 @@ const menuLinks = (await sectionLinks()).map((link) => ({
 			<span class="site-wordmark">{siteConfig.title}</span>
 		</a>
 		<div class="header-tools">
-			<Search lang={lang} />
-			<LanguageSwitcher lang={lang} />
+			<Search lang={lang} />	
 			<ThemeToggle lang={lang} />
+            <LanguageSwitcher lang={lang} />
 		</div>
 	</div>
 	<nav aria-label={t("nav.main")} class="site-nav" id="navigation-menu">

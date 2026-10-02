@@ -6,6 +6,7 @@ test.beforeEach(async ({ page }) => {
 test("navigation: desktop search precedes Home and mobile keeps its original tools", async ({
 	page,
 }) => {
+	await page.addInitScript(() => localStorage.setItem("blog-skin", "spaceship"));
 	await page.setViewportSize({ width: 1440, height: 900 });
 	await page.goto("/en/");
 	await expect(page.locator(".cabin-console")).toHaveCount(0);
@@ -33,36 +34,57 @@ test("series: translations, aliases, language switching and legacy links agree",
 	page,
 }) => {
 	await page.goto("/en/");
-	const labels = page.locator(".recent-articles .preview-tags");
-	await expect(labels.first()).toContainText("Nexus Codex");
-	await expect(labels.first()).not.toContainText("枢纽宝典");
-	await page.goto("/zh/blogs/?series=" + encodeURIComponent("冻冰时代"));
-	await expect(page.locator(".blogs-board")).toHaveAttribute("data-series", "icy-era");
-	await expect(page.locator("[data-panel=icy-era]")).toContainText("冷冰时代");
+	const labels = page.locator(
+		'.recent-articles .log-entry:has(a[href="/en/blogs/AboutEras/"]) .preview-tags',
+	);
+	await expect(labels).toContainText("Nexus Codex");
+	await expect(labels).toContainText("Era Memoirs");
+	await expect(labels).not.toContainText(/枢纽宝典|时代回忆录/);
+	await page.goto(`/zh/blogs/?series=${encodeURIComponent("旧测试系列")}`);
+	await expect(page.locator(".blogs-board")).toHaveAttribute("data-series", "verification");
+	const panel = page.locator('[data-panel="verification"]');
+	await expect(panel.getByRole("heading", { name: "测试系列", exact: true })).toBeVisible();
+	await expect(panel).toContainText("测试系列介绍");
+	await expect(panel).toContainText("2 篇文章 · 按发布先后阅读");
+	await expect(panel.getByRole("link", { name: "从第一篇读起" })).toHaveAttribute(
+		"href",
+		"/zh/blogs/verification-reading/",
+	);
+	expect(
+		await panel
+			.locator("li a")
+			.evaluateAll((links) => links.map((link) => link.getAttribute("href"))),
+	).toEqual(["/zh/blogs/verification-reading/", "/zh/blogs/verification-reading-next/"]);
 	await page.locator('[data-set-locale="en"]').click();
-	await expect(page).toHaveURL(/\/en\/blogs\/\?series=icy-era/);
-	await expect(page.locator('[data-series="icy-era"].series-nav__btn')).toHaveText("Icy Era");
-	await expect(page.locator('[data-series="icy-era"].series-nav__btn')).toHaveAttribute(
+	await expect(page).toHaveURL(/\/en\/blogs\/\?series=verification/);
+	await expect(page.locator('[data-series="verification"].series-nav__btn')).toHaveAccessibleName(
+		"Verification series",
+	);
+	await expect(panel).toContainText("Test series introduction");
+	await expect(page.locator('[data-series="verification"].series-nav__btn')).toHaveAttribute(
 		"aria-pressed",
 		"true",
 	);
-	await page.goto("/en/tags/icy%20era/");
-	await expect(page).toHaveURL(/\/en\/blogs\/\?series=icy-era/);
-	await page.goto("/en/blogs/tags/golden%20era/");
-	await expect(page).toHaveURL(/\/en\/blogs\/\?series=golden-era/);
+	await page.goto("/en/tags/old%20verification/");
+	await expect(page).toHaveURL(/\/en\/blogs\/\?series=verification/);
+	await page.goto("/en/blogs/tags/verification%20series/");
+	await expect(page).toHaveURL(/\/en\/blogs\/\?series=verification/);
 	await page.goto("/en/blogs/AboutEras/");
-	await expect(page.locator('a[href$="series=nexus-codex"]')).toHaveText("Nexus Codex");
+	await expect(page.locator('#blog-hero a[href$="series=nexus-codex"]')).toHaveText("Nexus Codex");
 });
 
 test("layout: content routes share window gutters and the same scroll treatment", async ({
 	page,
 }) => {
+	await page.addInitScript(() => localStorage.setItem("blog-skin", "spaceship"));
 	await page.setViewportSize({ width: 1440, height: 900 });
 	await page.setViewportSize({ width: 1440, height: 500 });
 	await page.goto("/zh/");
 	await page.locator(".recent-columns").scrollIntoViewIfNeeded();
 	await expect(page.locator("#main")).toHaveAttribute("data-header-overlap", "true");
-	await expect(page.locator("#main > .content-soft-edge")).toBeVisible();
+	await expect(
+		page.locator('#main [data-skin-layer="spaceship"] .content-soft-edge'),
+	).toBeVisible();
 	await page.goto("/zh/gallery/");
 	const album = await page.locator("a.set").first().getAttribute("href");
 	if (!album) throw new Error("Missing album route");
@@ -99,6 +121,7 @@ test("layout: content routes share window gutters and the same scroll treatment"
 test("traffic: distinct ships and planets cross inside the window and pause together", async ({
 	page,
 }) => {
+	await page.addInitScript(() => localStorage.setItem("blog-skin", "spaceship"));
 	await page.setViewportSize({ width: 1440, height: 900 });
 	await page.goto("/zh/");
 	const scene = page.locator(".surround-window-left .space-scene");
@@ -161,10 +184,9 @@ test("traffic: distinct ships and planets cross inside the window and pause toge
 	).toBe(true);
 });
 
-test("footer: copyright sits below its own line and clear of floating controls", async ({
-	page,
-}) => {
-	for (const width of [390, 1440]) {
+test("footer: RSS precedes copyright in one row clear of floating controls", async ({ page }) => {
+	await page.addInitScript(() => localStorage.setItem("blog-skin", "spaceship"));
+	for (const width of [320, 390, 1440, 2194]) {
 		await page.setViewportSize({ width, height: 900 });
 		for (const route of ["/en/about/", "/zh/blogs/verification-reading/"]) {
 			await page.goto(route);
@@ -172,14 +194,18 @@ test("footer: copyright sits below its own line and clear of floating controls",
 			await expect(page.locator(".site-footer")).not.toContainText(/A little light|留一盏灯/);
 			const footer = await page.locator(".site-footer").boundingBox();
 			const label = await page.locator(".site-footer p").boundingBox();
+			const rss = await page.locator(".site-footer .rss-link").boundingBox();
 			const toggle = await page.locator("[data-toggle-space]").boundingBox();
-			expect(label!.y).toBeGreaterThan(footer!.y + 16);
+			if (!footer || !label || !rss || !toggle)
+				throw new Error("Missing footer or floating control");
+			expect(label.y).toBeGreaterThan(footer.y + 16);
+			expect(Math.abs(label.y + label.height / 2 - (rss.y + rss.height / 2))).toBeLessThan(1);
+			expect(rss.x + rss.width).toBeLessThan(label.x);
 			expect(
 				await page.locator(".site-footer").evaluate((el) => getComputedStyle(el).borderTopWidth),
 			).toBe("1px");
-			expect(label!.y + label!.height <= toggle!.y || label!.x >= toggle!.x + toggle!.width).toBe(
-				true,
-			);
+			expect(label.y + label.height <= toggle.y || label.x >= toggle.x + toggle.width).toBe(true);
+			expect(rss.y + rss.height <= toggle.y || rss.x >= toggle.x + toggle.width).toBe(true);
 			expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
 				true,
 			);

@@ -2,6 +2,7 @@ import { defineCollection } from "astro:content";
 import path from "node:path";
 import { glob } from "astro/loaders";
 import { z } from "astro/zod";
+import { postSchema } from "./data/post-schema";
 
 function entryId(entry: string) {
 	const parts = entry.replace(/\\/g, "/").split("/");
@@ -13,6 +14,10 @@ function entryId(entry: string) {
 }
 
 const titleSchema = z.string().min(1);
+const descriptionSchema = z
+	.string()
+	.trim()
+	.transform((text) => (/^\/+$/u.test(text) ? "" : text));
 
 const blog = defineCollection({
 	loader: glob({
@@ -23,7 +28,7 @@ const blog = defineCollection({
 	schema: ({ image }) =>
 		z.object({
 			title: titleSchema,
-			description: z.string(),
+			description: descriptionSchema,
 			coverImage: z
 				.object({
 					alt: z.string(),
@@ -91,16 +96,7 @@ const post = defineCollection({
 		pattern: "**/*.{md,mdx}",
 		generateId: ({ entry }) => entryId(entry),
 	}),
-	schema: z.object({
-		title: titleSchema.optional(),
-		tags: z
-			.array(z.string())
-			.default([])
-			.transform((arr) => [...new Set(arr.map((tag) => tag.trim()).filter(Boolean))]),
-		description: z.string().optional(),
-		draft: z.boolean().default(false),
-		publishDate: z.iso.datetime({ offset: true }).transform((val) => new Date(val)),
-	}),
+	schema: postSchema,
 });
 
 const tag = defineCollection({

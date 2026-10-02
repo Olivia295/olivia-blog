@@ -7,20 +7,20 @@ const localized = z.object({ zh: z.string(), en: z.string() });
 const fact = z.object({ label: z.string(), value: z.string() });
 const color = z.string().regex(/^#[0-9a-f]{6}$/i, "Use a six-digit hex color");
 const palette = z.object({ hull: color, surface: color, text: color, muted: color, accent: color });
+const profileLinkSchema = z.object({
+	id: z.string(),
+	label: z.string(),
+	href: z.string().refine((v) => /^(https?:\/\/|mailto:)/.test(v), "Use https:// or mailto:"),
+	icon: z.string().default("mdi:link-variant"),
+});
 const profileSchema = z.object({
 	name: z.string(),
 	role: localized,
 	bio: z.object({ zh: z.array(z.string()), en: z.array(z.string()) }),
 	portraitAlt: localized,
 	facts: z.object({ zh: z.array(fact), en: z.array(fact) }),
-	links: z.array(
-		z.object({
-			id: z.string(),
-			label: z.string(),
-			href: z.string().refine((v) => /^(https?:\/\/|mailto:)/.test(v), "Use https:// or mailto:"),
-			icon: z.string().default("mdi:link-variant"),
-		}),
-	),
+	links: z.array(profileLinkSchema),
+	sharedLinks: z.array(profileLinkSchema).default([]),
 	portrait: z.string().optional(),
 });
 const settingsSchema = z.object({
