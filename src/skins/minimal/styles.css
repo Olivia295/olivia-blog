@@ -8,6 +8,10 @@ html[data-skin="minimal"] {
 	--skin-focus-radius: 3px;
 	--mono: ui-monospace, SFMono-Regular, Menlo, monospace;
 	--editorial-heading: Georgia, "Songti SC", "STSong", serif;
+	/* Serif where the system has a good one; otherwise CJK falls back to the UI sans, never SimSun. */
+	--reading-font:
+		"Iowan Old Style", Georgia, "Songti SC", "Noto Serif CJK SC", "Source Han Serif SC",
+		"PingFang SC", "Microsoft YaHei", sans-serif;
 	--skin-border: color-mix(in oklch, var(--color-global-text) 14%, transparent);
 	--paper-radius: 7px 13px 6px 11px / 10px 6px 12px 7px;
 	--rss-color: #b45116;
@@ -263,6 +267,20 @@ html[data-skin="minimal"]
 	html[data-skin="minimal"] .hero-postcard[open] .postcard-story {
 		animation: postcard-reveal 240ms ease-out;
 	}
+	/* Pages settle in once; nothing keeps moving while reading. "backwards" leaves no transform behind. */
+	html[data-skin="minimal"] .site-main:not(.site-main--home) > :not(.reading-progress) {
+		animation: postcard-reveal 420ms ease-out backwards;
+	}
+}
+/* Section underlines draw in as each heading scrolls into view. */
+@supports (animation-timeline: view()) {
+	@media (prefers-reduced-motion: no-preference) {
+		html[data-skin="minimal"] .article-content > h2::after {
+			animation: minimal-ink-line linear both;
+			animation-timeline: view();
+			animation-range: entry 20% cover 35%;
+		}
+	}
 }
 @keyframes postcard-reveal {
 	from {
@@ -353,23 +371,78 @@ html[data-skin="minimal"] .preview-photo {
 	border-radius: var(--paper-radius);
 	padding: 4px;
 }
+/* Article reading: a book-like serif page with a calm rhythm. Custom blocks inside articles keep their own headings. */
 html[data-skin="minimal"] .reading-body {
+	--reading-ink: color-mix(in oklch, var(--color-global-text) 88%, var(--color-global-bg));
+	color: var(--reading-ink);
+	font-family: var(--reading-font);
 	font-size: 18px;
-	line-height: 1.95;
+	line-height: 1.9;
+	letter-spacing: 0.01em;
+	font-variant-numeric: oldstyle-nums proportional-nums;
 }
-html[data-skin="minimal"] .reading-body blockquote {
-	border-left: 2px solid var(--color-brand);
-	background: color-mix(in oklch, var(--color-brand) 4%, transparent);
+html[data-skin="minimal"] .reading-body p {
+	margin-block: 1.15em;
+}
+html[data-skin="minimal"] .article-content > :is(h2, h3, h4) {
+	color: var(--color-global-text);
+	font-family: var(--editorial-heading);
+	font-weight: 600;
+	letter-spacing: 0;
+	line-height: 1.45;
+}
+html[data-skin="minimal"] .article-content > h2 {
+	position: relative;
+	margin: 2.6em 0 1em;
+	padding-bottom: 0.45em;
+	font-size: 1.4em;
+}
+html[data-skin="minimal"] .article-content > h2::after {
+	content: "";
+	position: absolute;
+	bottom: 0;
+	left: 0;
+	width: 2.2em;
+	height: 8px;
+	background: var(--color-brand);
+	mask: var(--ink-line) center / 100% 100% no-repeat;
+	opacity: 0.55;
+}
+html[data-skin="minimal"] .article-content > h3 {
+	margin: 2em 0 0.6em;
+	font-size: 1.15em;
+}
+html[data-skin="minimal"] .article-content > blockquote {
+	margin: 1.8em 0;
+	padding: 0.2em 0 0.2em 1.2em;
+	border-left: 2px solid color-mix(in oklch, var(--color-brand) 55%, transparent);
+	background: none;
+	color: var(--color-muted);
 	font-style: normal;
+}
+html[data-skin="minimal"] .article-content > hr {
+	height: auto;
+	margin: 3em 0;
+	border: 0;
+	color: var(--color-muted);
+	text-align: center;
+	letter-spacing: 1em;
+}
+html[data-skin="minimal"] .article-content > hr::before {
+	content: "···";
 }
 html[data-skin="minimal"] .reading-body img {
 	border-radius: 4px;
 }
-html[data-skin="minimal"] .reading-body h2 {
-	font-size: 1.45em;
+html[data-skin="minimal"] .reading-body figcaption {
+	margin-top: 0.75em;
+	color: var(--color-muted);
+	font-family: var(--skin-font);
+	font-size: 0.8rem;
+	text-align: center;
 }
-html[data-skin="minimal"] .reading-body h3 {
-	font-size: 1.2em;
+html[data-skin="minimal"] .reading-body ::selection {
+	background: color-mix(in oklch, var(--color-brand) 20%, transparent);
 }
 html[data-skin="minimal"] #blog-hero h1 {
 	font: 600 clamp(1.8rem, 3vw, 2.7rem) / 1.4 var(--editorial-heading);

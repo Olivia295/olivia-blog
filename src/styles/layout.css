@@ -311,6 +311,13 @@ body {
 }
 .reading-body p {
 	margin-block: 1.4em;
+	text-wrap: pretty;
+}
+/* Typesetting the browser can do for mixed Chinese and Latin text. */
+.reading-body {
+	text-autospace: normal;
+	text-spacing-trim: normal;
+	hanging-punctuation: allow-end;
 }
 .reading-body pre,
 .reading-body .expressive-code {
