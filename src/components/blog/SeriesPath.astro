@@ -1,0 +1,39 @@
+---
+import { seriesHref, seriesPath } from "@/data/site-series";
+import type { Lang } from "@/i18n/config";
+import { useTranslations } from "@/i18n/utils";
+
+interface Props {
+	series: string[];
+	lang: Lang;
+	class?: string;
+}
+
+const { series, lang, class: className } = Astro.props;
+---
+
+{
+	series.length > 0 && (
+		<div
+			class:list={["article-series flex flex-wrap gap-x-5 gap-y-1", className]}
+			aria-label={useTranslations(lang)("blogs.series")}
+		>
+			{series.map((name) => (
+				<span class="flex flex-wrap items-baseline gap-x-2">
+					{seriesPath(name).map((entry, index) => (
+						<>
+							{index > 0 && (
+								<span aria-hidden="true" class="text-muted">
+									/
+								</span>
+							)}
+							<a class="cactus-link" href={seriesHref(entry.id, lang)} data-series-link={entry.id}>
+								{entry[lang]}
+							</a>
+						</>
+					))}
+				</span>
+			))}
+		</div>
+	)
+}

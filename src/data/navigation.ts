@@ -14,6 +14,7 @@ export async function sectionLinks() {
 		: null;
 	return menuLinkDefs.filter((link) => {
 		const key = link.path.replaceAll("/", "") as "blogs" | "posts" | "gallery" | "about";
+		if (!key) return true;
 		return sections[key] && (key === "about" || !counts || counts[key] > 0);
 	});
 }

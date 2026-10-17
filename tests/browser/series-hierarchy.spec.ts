@@ -29,7 +29,7 @@ for (const lang of ["zh", "en"] as const) {
 			lang === "zh" ? "5 篇文章" : "5 articles",
 		);
 		const parentLinks = await parent
-			.locator(".blog-row__title a")
+			.locator("h3 a")
 			.evaluateAll((links) => links.map((link) => link.getAttribute("href")));
 		expect(parentLinks.sort()).toEqual(
 			["AboutEras", ...eras.map((era) => era.article)].map((id) => `/${lang}/blogs/${id}/`).sort(),
@@ -43,8 +43,8 @@ for (const lang of ["zh", "en"] as const) {
 			await expect(board).toHaveAttribute("data-series", era.id);
 			await expect(button).toHaveAttribute("aria-pressed", "true");
 			const child = page.locator(`[data-panel="${era.id}"]`);
-			await expect(child.locator(".blog-row__title a")).toHaveCount(1);
-			await expect(child.locator(".blog-row__title a")).toHaveAttribute("href", `/${lang}/blogs/${era.article}/`);
+			await expect(child.locator("h3 a")).toHaveCount(1);
+			await expect(child.locator("h3 a")).toHaveAttribute("href", `/${lang}/blogs/${era.article}/`);
 			await expect(child.locator(".series-intro__meta")).toContainText(
 				lang === "zh" ? "1 篇文章" : "1 articles",
 			);
@@ -104,7 +104,7 @@ for (const skin of ["minimal", "spaceship"]) {
 			const panel = page.locator(`[data-panel="${id}"]`);
 			await expect(panel).toBeVisible();
 			if (id !== "embodied-records") {
-				await expect(panel.locator(".blog-row__title a")).toHaveCount(0);
+				await expect(panel.locator("h3 a")).toHaveCount(0);
 				await expect(panel.locator(".series-intro__meta")).toContainText("0 articles");
 				await expect(panel.getByRole("link", { name: "Start with the first story" })).toHaveCount(
 					0,

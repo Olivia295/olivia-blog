@@ -184,8 +184,6 @@ for (const width of [320, 1440]) {
 		await page.emulateMedia({ reducedMotion: "no-preference" });
 		await page.goto("/zh/");
 		await expect(page.locator(".section-heading > span")).toHaveCount(0);
-		// The logo links home, so the drawn current-page line is checked on a section page.
-		await page.goto("/zh/blogs/");
 		const selected = page.locator('.site-nav__link[aria-current="page"]');
 		expect(await selected.evaluate((el) => getComputedStyle(el, "::after").maskImage)).toContain(
 			"data:image/svg+xml",

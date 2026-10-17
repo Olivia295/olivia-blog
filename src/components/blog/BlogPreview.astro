@@ -1,8 +1,7 @@
 ---
 import type { CollectionEntry } from "astro:content";
+import SeriesPath from "@/components/blog/SeriesPath.astro";
 import FormattedDate from "@/components/FormattedDate.astro";
-import { blogSeries } from "@/data/blog";
-import { seriesHref, seriesInfo, seriesLabel } from "@/data/site-series";
 import { defaultLang, type Lang } from "@/i18n/config";
 import { getLangFromUrl, localePath } from "@/i18n/utils";
 
@@ -14,132 +13,24 @@ interface Props {
 
 const { post, lang: langProp, omitYear = false } = Astro.props;
 const lang = langProp ?? getLangFromUrl(Astro.url) ?? defaultLang;
-const href = localePath(lang, `/blogs/${post.id}/`);
-// Placeholder summaries such as "//" are left out rather than shown as noise.
-const description = /[\p{L}\p{N}]/u.test(post.data.description ?? "") ? post.data.description : "";
-const series = blogSeries(post).map((name) => ({
-	id: seriesInfo(name).id,
-	label: seriesLabel(name, lang),
-	href: seriesHref(seriesInfo(name).id, lang),
-}));
+const { title, description, publishDate, draft, series = [] } = post.data;
+// Placeholder summaries such as "//" are left out.
+const summary = /[\p{L}\p{N}]/u.test(description ?? "") ? description : "";
 ---
 
-<article class="blog-row">
+<article class="grid gap-x-5 gap-y-1 py-4 sm:grid-cols-[5.5rem_minmax(0,1fr)]">
 	<FormattedDate
-		class="blog-row__date"
-		date={post.data.publishDate}
+		class="text-muted text-sm font-semibold"
+		date={publishDate}
 		lang={lang}
 		omitYear={omitYear}
 	/>
-	<div class="blog-row__body">
-		<h3 class="blog-row__title">
-			{post.data.draft && <span class="draft-label">(Draft) </span>}
-			<a href={href}>{post.data.title}</a>
+	<div class="min-w-0">
+		<h3 class="font-semibold">
+			{draft && <span class="draft-label">(Draft) </span>}
+			<a class="cactus-link" href={localePath(lang, `/blogs/${post.id}/`)}>{title}</a>
 		</h3>
-		{description && <p class="blog-row__desc">{description}</p>}
-		{
-			series.length > 0 && (
-				<ul class="blog-row__series" role="list">
-					{series.map((entry) => (
-						<li>
-							<a href={entry.href} data-series-link={entry.id}>
-								{entry.label}
-							</a>
-						</li>
-					))}
-				</ul>
-			)
-		}
+		{summary && <p class="text-muted mt-1 line-clamp-2 text-sm">{summary}</p>}
+		<SeriesPath series={series} lang={lang} class="mt-1.5 text-sm" />
 	</div>
 </article>
-
-<style>
-	.blog-row {
-		position: relative;
-		display: grid;
-		gap: 0.25rem 1.25rem;
-		padding: 0.9rem 0.75rem;
-		margin-inline: -0.75rem;
-		border-radius: 10px;
-		transition: background-color 160ms ease-out;
-	}
-	.blog-row:hover {
-		background: color-mix(in srgb, var(--color-brand) 6%, transparent);
-	}
-	.blog-row__date {
-		color: var(--color-muted);
-		font-size: 0.85rem;
-		font-variant-numeric: tabular-nums;
-		white-space: nowrap;
-	}
-	.blog-row__body {
-		min-width: 0;
-	}
-	.blog-row__title {
-		margin: 0;
-		font-size: 1.05rem;
-		font-weight: 600;
-		line-height: 1.5;
-	}
-	.blog-row__title a {
-		color: inherit;
-		text-decoration: none;
-	}
-	/* The whole row is a target; series links stay clickable above it. */
-	.blog-row__title a::before {
-		content: "";
-		position: absolute;
-		inset: 0;
-		border-radius: inherit;
-	}
-	.blog-row:hover .blog-row__title a,
-	.blog-row__title a:focus-visible {
-		color: var(--color-brand);
-	}
-	.blog-row__desc {
-		display: -webkit-box;
-		margin: 0.3rem 0 0;
-		overflow: hidden;
-		color: var(--color-muted);
-		font-size: 0.9rem;
-		line-height: 1.65;
-		-webkit-box-orient: vertical;
-		-webkit-line-clamp: 2;
-	}
-	.blog-row__series {
-		display: flex;
-		flex-wrap: wrap;
-		gap: 0.4rem;
-		margin: 0.5rem 0 0;
-		padding: 0;
-		list-style: none;
-	}
-	.blog-row__series a {
-		position: relative;
-		z-index: 1;
-		display: inline-flex;
-		align-items: center;
-		min-height: 26px;
-		padding: 0 0.6rem;
-		border-radius: 999px;
-		background: color-mix(in srgb, var(--color-brand) 10%, transparent);
-		color: var(--color-brand);
-		font-size: 0.75rem;
-		text-decoration: none;
-	}
-	.blog-row__series a:hover,
-	.blog-row__series a:focus-visible {
-		background: color-mix(in srgb, var(--color-brand) 18%, transparent);
-	}
-	@media (min-width: 640px) {
-		.blog-row {
-			grid-template-columns: 5.5rem minmax(0, 1fr);
-			align-items: baseline;
-		}
-	}
-	@media (prefers-reduced-motion: reduce) {
-		.blog-row {
-			transition: none;
-		}
-	}
-</style>

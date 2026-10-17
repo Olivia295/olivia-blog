@@ -1,8 +1,8 @@
 ---
 import { Image } from "astro:assets";
 import type { CollectionEntry } from "astro:content";
+import SeriesPath from "@/components/blog/SeriesPath.astro";
 import FormattedDate from "@/components/FormattedDate.astro";
-import { seriesHref, seriesPath } from "@/data/site-series";
 import { defaultLang, type Lang } from "@/i18n/config";
 import { getLangFromUrl, useTranslations } from "@/i18n/utils";
 
@@ -72,25 +72,4 @@ const dateTimeOptions: Intl.DateTimeFormatOptions = {
 		)
 	}
 </div>
-{
-	data.series.length > 0 && (
-		<div class="article-series mt-2 flex flex-wrap gap-x-5 gap-y-1" aria-label={t("blogs.series")}>
-			{data.series.map((name) => (
-				<span class="flex flex-wrap items-baseline gap-x-2">
-					{seriesPath(name).map((entry, index) => (
-						<>
-							{index > 0 && (
-								<span aria-hidden="true" class="text-muted">
-									/
-								</span>
-							)}
-							<a class="cactus-link" href={seriesHref(entry.id, lang)}>
-								{entry[lang]}
-							</a>
-						</>
-					))}
-				</span>
-			))}
-		</div>
-	)
-}
+<SeriesPath series={data.series} lang={lang} class="mt-2" />
