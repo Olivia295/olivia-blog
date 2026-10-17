@@ -57,6 +57,7 @@ const permalink = new URL(`/${lang}/blogs/${post.id}/`, siteConfig.url).href;
 		title,
 	}}
 >
+	<div class="reading-progress" aria-hidden="true"><span></span></div>
 	<article class="grow break-words" data-pagefind-body>
 		<div id="blog-hero" class="mb-12">
 			<Masthead content={post} readingTimeMinutes={readingTimeMinutes} lang={lang}>
@@ -121,3 +122,48 @@ const permalink = new URL(`/${lang}/blogs/${post.id}/`, siteConfig.url).href;
 
 	<FloatingBack />
 </BaseLayout>
+
+<script>
+	const bar = document.querySelector<HTMLElement>(".reading-progress span");
+	const article = document.querySelector<HTMLElement>(".article-content");
+	if (bar && article) {
+		let queued = false;
+		const update = () => {
+			queued = false;
+			const { top, height } = article.getBoundingClientRect();
+			const span = Math.max(1, height - innerHeight * 0.6);
+			bar.style.transform = `scaleX(${Math.min(1, Math.max(0, -top / span))})`;
+		};
+		const schedule = () => {
+			if (!queued) {
+				queued = true;
+				requestAnimationFrame(update);
+			}
+		};
+		addEventListener("scroll", schedule, { passive: true });
+		addEventListener("resize", schedule);
+		update();
+	}
+</script>
+
+<style>
+	.reading-progress {
+		position: fixed;
+		inset: 0 0 auto;
+		z-index: 100;
+		height: 3px;
+		pointer-events: none;
+	}
+	.reading-progress span {
+		display: block;
+		height: 100%;
+		background: var(--color-brand);
+		transform: scaleX(0);
+		transform-origin: left center;
+	}
+	@media print {
+		.reading-progress {
+			display: none;
+		}
+	}
+</style>

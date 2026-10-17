@@ -52,7 +52,7 @@ test("series: translations, aliases, language switching and legacy links agree",
 	);
 	expect(
 		await panel
-			.locator("li a")
+			.locator(".blog-row__title a")
 			.evaluateAll((links) => links.map((link) => link.getAttribute("href"))),
 	).toEqual(["/zh/blogs/verification-reading/", "/zh/blogs/verification-reading-next/"]);
 	await page.locator('[data-set-locale="en"]').click();

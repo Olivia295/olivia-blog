@@ -14,12 +14,11 @@ export const siteConfig: SiteConfig = {
 };
 export const siteShortName = settings.shortName;
 
-/** Bare paths (no locale prefix). Titles come from i18n ui keys. */
+/** Bare paths (no locale prefix). Titles come from i18n ui keys. The site logo links home. */
 export const menuLinkDefs: {
 	path: string;
-	titleKey: "nav.home" | "nav.blogs" | "nav.posts" | "nav.gallery" | "nav.about";
+	titleKey: "nav.blogs" | "nav.posts" | "nav.gallery" | "nav.about";
 }[] = [
-	{ path: "/", titleKey: "nav.home" },
 	{ path: "/blogs/", titleKey: "nav.blogs" },
 	{ path: "/posts/", titleKey: "nav.posts" },
 	{ path: "/gallery/", titleKey: "nav.gallery" },

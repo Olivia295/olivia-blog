@@ -702,7 +702,7 @@ html[data-skin="minimal"] .search-close {
 
 /* Quiet actions: recognizable icons, consistent targets, and an ink underline on intent. */
 html[data-skin="minimal"]
-:is(.paper-action, .rss-link, .recommendation__link, .about__link, .tag-more, .search-close) {
+	:is(.paper-action, .rss-link, .recommendation__link, .about__link, .search-close) {
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
@@ -722,7 +722,7 @@ html[data-skin="minimal"]
 	text-decoration: none;
 }
 html[data-skin="minimal"]
-	:is(.paper-action, .rss-link, .recommendation__link, .about__link, .tag-more, .search-close)
+	:is(.paper-action, .rss-link, .recommendation__link, .about__link, .search-close)
 	:is(svg, [aria-hidden="true"]) {
 	flex-shrink: 0;
 }
@@ -773,7 +773,7 @@ html[data-skin="minimal"]
 	transform: scaleX(1);
 }
 html[data-skin="minimal"]
-	:is(.paper-action, .rss-link, .recommendation__link, .about__link, .tag-more, .search-close):is(
+	:is(.paper-action, .rss-link, .recommendation__link, .about__link, .search-close):is(
 		:hover,
 		:focus-visible,
 		[data-copied="true"]
@@ -793,7 +793,7 @@ html[data-skin="minimal"] :is(a, button, summary, select):focus-visible {
 html[data-skin="minimal"] :is(button:disabled, [aria-disabled="true"]) {
 	cursor: not-allowed;
 }
-html[data-skin="minimal"] :is(.paper-link, .tag-picker__link, .article-toc__link) {
+html[data-skin="minimal"] :is(.paper-link, .article-toc__link) {
 	border-radius: var(--paper-radius);
 }
 html[data-skin="minimal"] .paper-link {
@@ -801,10 +801,7 @@ html[data-skin="minimal"] .paper-link {
 	margin-inline: -0.65rem;
 }
 html[data-skin="minimal"]
-	:is(.paper-link, .tag-picker__link, .article-toc__link, .lang-link, .series-nav__btn):is(
-		:hover,
-		:focus-visible
-	) {
+	:is(.paper-link, .article-toc__link, .lang-link, .series-nav__btn):is(:hover, :focus-visible) {
 	color: var(--color-brand);
 	background: color-mix(in srgb, var(--color-brand) 6%, transparent);
 }
@@ -830,12 +827,10 @@ html[data-skin="minimal"]
 	a:not(:has(img)):is(:hover, :focus-visible) {
 	background-size: 100% 100%;
 }
-html[data-skin="minimal"]
-	:is(.header-tools button, .floating-back, .tag-picker__close, .pager__dot, .pager__arrow) {
+html[data-skin="minimal"] :is(.header-tools button, .floating-back) {
 	border-radius: var(--paper-radius);
 }
-html[data-skin="minimal"]
-	:is(.header-tools button, .floating-back, .tag-picker__close):is(:hover, :focus-visible) {
+html[data-skin="minimal"] :is(.header-tools button, .floating-back):is(:hover, :focus-visible) {
 	color: var(--color-brand);
 	background: color-mix(in srgb, var(--color-brand) 8%, var(--color-global-bg));
 }
@@ -871,7 +866,7 @@ html[data-skin="minimal"]
 		transform: translateX(3px);
 	}
 	html[data-skin="minimal"]
-		:is(.paper-action, .rss-link, .recommendation__link, .about__link, .tag-more):active {
+		:is(.paper-action, .rss-link, .recommendation__link, .about__link):active {
 		transform: translateY(1px);
 		box-shadow: none;
 	}

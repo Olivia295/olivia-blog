@@ -25,7 +25,11 @@ const entries = names.map(seriesInfo).filter((entry) => entry.parent === parent)
 				aria-pressed="false"
 			>
 				<span>{seriesLabel(entry.id, lang)}</span>
-				<span class="series-nav__count" aria-hidden="true">
+				<span
+					class="series-nav__count"
+					aria-hidden="true"
+					data-empty={!counts[entry.zh] || undefined}
+				>
 					{counts[entry.zh] || 0}
 				</span>
 			</button>

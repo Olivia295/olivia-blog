@@ -64,14 +64,14 @@ const meta = {
 			<div data-panel="all">
 				{
 					descYearKeys.map((yearKey) => (
-						<section class="mb-16">
-							<h2 id={`year-${yearKey}`} class="title text-lg">
+						<section class="blog-year">
+							<h2 id={`year-${yearKey}`} class="blog-year__label">
 								<span class="sr-only">{t("blogs.year")}</span>
 								{yearKey}
 							</h2>
-							<ul class="mt-5 space-y-4 text-start">
+							<ul class="blog-list" role="list">
 								{groupedByYear[yearKey]?.map((p) => (
-									<li class="grid gap-1 sm:grid-cols-[auto_1fr] sm:[&_q]:col-start-2">
+									<li>
 										<BlogPreview post={p} lang={lang} omitYear />
 									</li>
 								))}
@@ -115,9 +115,9 @@ const meta = {
 								</p>
 							)}
 						</header>
-						<ul class="mt-5 space-y-4 text-start">
+						<ul class="blog-list" role="list">
 							{postsBySeries.get(name)?.map((p) => (
-								<li class="grid gap-1 sm:grid-cols-[auto_1fr] sm:[&_q]:col-start-2">
+								<li>
 									<BlogPreview post={p} lang={lang} />
 								</li>
 							))}
@@ -159,7 +159,7 @@ const meta = {
 </PageLayout>
 
 <script>
-	const board = document.querySelector(".blogs-board");
+	const board = document.querySelector<HTMLElement>(".blogs-board");
 	if (board) {
 		const menu = board.querySelector<HTMLDetailsElement>(".series-menu");
 		const compact = matchMedia("(max-width: 639px)");
@@ -188,6 +188,14 @@ const meta = {
 			else url.searchParams.set("series", next);
 			history.replaceState(null, "", url);
 		};
+		// Series chips inside the list filter in place instead of reloading the page.
+		board.addEventListener("click", (event) => {
+			const link = (event.target as Element).closest<HTMLAnchorElement>("[data-series-link]");
+			if (!link || event.metaKey || event.ctrlKey || event.shiftKey) return;
+			event.preventDefault();
+			setSeries(link.dataset.seriesLink || "all");
+			board.scrollIntoView({ block: "start" });
+		});
 		buttons.forEach((btn) => {
 			btn.addEventListener("click", () => {
 				setSeries(btn.dataset.series || "all");
@@ -211,6 +219,41 @@ const meta = {
 
 	.series-nav {
 		order: -1;
+	}
+
+	.blog-year + .blog-year {
+		margin-top: 2.5rem;
+	}
+
+	.blog-year__label {
+		position: sticky;
+		top: var(--header-height, 0px);
+		z-index: 2;
+		margin: 0 0 0.25rem;
+		padding-block: 0.4rem;
+		background: var(--color-global-bg);
+		color: var(--color-muted);
+		font-size: 0.8rem;
+		font-weight: 600;
+		letter-spacing: 0.08em;
+	}
+
+	.blog-list {
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+
+	.blog-list > li + li {
+		border-top: 1px solid color-mix(in srgb, currentColor 7%, transparent);
+	}
+
+	.series-intro + .blog-list {
+		margin-top: 1.25rem;
+	}
+
+	.blogs-board :global(.series-nav__btn:has(.series-nav__count[data-empty])) {
+		opacity: 0.5;
 	}
 
 	.series-nav__list {
