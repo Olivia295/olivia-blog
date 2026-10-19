@@ -62,3 +62,6 @@ public/__test__/
 .sync-stage-*/
 src/content/tag/**
 !src/content/tag/.gitkeep
+
+# local AI tool config
+.claude/
